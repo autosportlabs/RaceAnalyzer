@@ -110,7 +110,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.debug.830404498.1379621941" name="mjlj_config.rc" rcbsApplicability="override" resourcePath="resource/mjlj_config.rc" toolsToInvoke="org.eclipse.cdt.managedbuilder.ui.rcbs.485139702">
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.debug.830404498.1379621941" name="mjlj_config.rc" rcbsApplicability="disable" resourcePath="resource/mjlj_config.rc" toolsToInvoke="">
 						<tool command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.9.4/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.485139702" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1009194755" name="Resource Custom Build Step Input Type">
 								<additionalInput kind="additionalinputdependency" paths=""/>

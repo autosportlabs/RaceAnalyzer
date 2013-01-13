@@ -174,7 +174,7 @@ int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, int timeout){
 
 	try{
-		wxLogMessage("Send Cmd (%d): %s",buffer.Len(), buffer.ToAscii());
+		wxLogMessage("Send Cmd (%d): '%s'",buffer.Len(), buffer.ToAscii());
 		wxString response;
 		size_t bufferSize = 8192;
 		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,DEFAULT_TIMEOUT,true);
