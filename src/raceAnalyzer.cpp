@@ -146,7 +146,6 @@ MainFrame::~MainFrame(){
 
 void MainFrame::InitComms(){
 
-	m_scriptPanel->SetComm(&m_raceAnalyzerComm);
 	try{
 		m_raceAnalyzerComm.SetSerialPort(m_appOptions.GetSerialPort());
 	}
@@ -396,10 +395,6 @@ void MainFrame::InitializeComponents(){
 
 	m_configPanel = new ConfigPanel(ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig), this);
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
-
-	m_scriptPanel = new ScriptPanel(this);
-	_frameManager.AddPane(m_scriptPanel, wxAuiPaneInfo().Name(wxT(PANE_SCRIPT)).Caption(wxT(CAPTION_SCRIPT)).Center());
-
 }
 
 

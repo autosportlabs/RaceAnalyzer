@@ -213,6 +213,7 @@ public:
 	AccelConfig accelConfigs[CONFIG_ACCEL_CHANNELS];
 	GpsConfig gpsConfig;
 	LoggerOutputConfig loggerOutputConfig;
+	wxString luaScript;
 
 
 	void SetDefaults();

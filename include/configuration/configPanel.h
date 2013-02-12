@@ -13,6 +13,7 @@
 #include "configuration/loggerOutputConfigPanel.h"
 #include "configuration/gpioPanel.h"
 #include "configuration/gpsConfigPanel.h"
+#include "configuration/scriptPanel.h"
 #include "comm.h"
 
 class ConfigPanelParams {
@@ -67,6 +68,7 @@ class ConfigPanel : public wxPanel, public RaceAnalyzerCommCallback{
 		GpioPanel *m_gpioPanel;
 		GpsConfigPanel *m_gpsPanel;
 		LoggerOutputConfigPanel *m_loggerOutputPanel;
+		ScriptPanel *m_scriptPanel;
 
 
 		RaceCaptureConfig *m_raceCaptureConfig;

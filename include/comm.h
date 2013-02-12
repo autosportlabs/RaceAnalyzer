@@ -96,7 +96,6 @@ private:
 	RaceAnalyzerComm *m_comm;
 	RaceCaptureConfig *m_config;
 	RaceAnalyzerCommCallback *m_callback;
-	wxWindow *m_parent;
 };
 
 class CommException{

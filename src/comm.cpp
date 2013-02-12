@@ -177,12 +177,15 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, i
 		wxLogMessage("Send Cmd (%d): '%s'",buffer.Len(), buffer.ToAscii());
 		wxString response;
 		size_t bufferSize = 8192;
-		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,DEFAULT_TIMEOUT,true);
+		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,timeout,true);
 		wxLogMessage("Cmd Response: %s", response.ToAscii());
 		return response;
 	}
-	catch(SerialException e){
+	catch(SerialException &e){
 		throw CommException(e.GetErrorStatus(), e.GetErrorDetail());
+	}
+	catch(...){
+		throw CommException(-1, "Unknown exception while sending command");
 	}
 }
 
@@ -500,6 +503,9 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			updateWriteConfigPct(++updateCount,callback);
 		}
 
+		{
+			config->luaScript = readScript();
+		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("get config in %f",dur.GetMilliseconds().ToDouble());
 		callback->ReadConfigComplete(true,"");
@@ -637,6 +643,9 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 			wxString result = SendCommand(serialPort, cmd);
 			CheckThrowResult(result);
 			updateWriteConfigPct(++updateCount,callback);
+		}
+		{
+			writeScript(config->luaScript);
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("write config in %f",dur.GetMilliseconds().ToDouble());

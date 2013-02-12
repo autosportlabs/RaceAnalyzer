@@ -18,7 +18,6 @@
 #include "raceAnalyzerConfigBase.h"
 #include "LCDWindow.h"
 #include "AngularMeter.h"
-#include "scriptPanel.h"
 #include "configuration/configPanel.h"
 #include "comm.h"
 #include "configData.h"
@@ -175,7 +174,6 @@ private:
 	DatalogStoreRows			m_datalogData;
 
 	ConfigPanel					*m_configPanel;
-	ScriptPanel					*m_scriptPanel;
 	DatalogChannelsPanel 		*m_channelsPanel;
 
 

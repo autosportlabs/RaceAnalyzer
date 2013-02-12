@@ -304,15 +304,17 @@ size_t CComm::writeChar(char b )
 //
 size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 
+	wxLogMessage("Reading Line...");
 	memset( buf, 0, bufSize );
     size_t tstart = GetTickCount();
     size_t totalRead = 0;
 	DWORD charsRead = 0;
     while ( ( GetTickCount() - tstart ) < timeout && totalRead < bufSize ) {
-
     	bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
+    	wxLogMessage("read result %d (%s)", result, buf);
     	if (!result){
 			int err = GetLastError();
+			wxLogMessage("Error reading result! %d", err);
 			throw SerialException(err, "error reading line from serial port");
     	}
     	if ('\r' == *(buf + totalRead)) break;

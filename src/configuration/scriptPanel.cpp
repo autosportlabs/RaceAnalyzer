@@ -4,22 +4,24 @@
  *  Created on: Apr 30, 2009
  *      Author: brent
  */
-#include "scriptPanel.h"
+#include "configuration/scriptPanel.h"
 
-ScriptPanel::ScriptPanel() : wxPanel()
+ScriptPanel::ScriptPanel() : BaseConfigPanel()
 {
 	InitComponents();
 }
 
 ScriptPanel::ScriptPanel(wxWindow *parent,
 			wxWindowID id,
+			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
-			: wxPanel(	parent,
+			: BaseConfigPanel(	parent,
 						id,
+						config,
 						pos,
 						size,
 						style,
@@ -41,7 +43,8 @@ void ScriptPanel::InitComponents(){
 
 
 
-	m_scriptCtrl = new wxTextCtrl(this,ID_SCRIPT_WINDOW,"", wxDefaultPosition, wxDefaultSize,wxTE_MULTILINE | wxTE_PROCESS_TAB);
+	m_scriptCtrl = new wxStyledTextCtrl(this, ID_SCRIPT_WINDOW);
+	m_scriptCtrl->SetLexer(LUA_LEXER_ID);
 
 	sizer->Add(m_scriptCtrl,1,wxEXPAND);
 
@@ -66,6 +69,9 @@ void ScriptPanel::InitComponents(){
 	this->SetSizer(sizer);
 }
 
+void ScriptPanel::OnConfigUpdated(){
+	m_scriptCtrl->SetValue(m_raceCaptureConfig->luaScript);
+}
 
 void ScriptPanel::InitOptions(){
 
@@ -80,7 +86,7 @@ void ScriptPanel::OnReadScript(wxCommandEvent &event){
 		wxString script = m_comm->readScript();
 		m_scriptCtrl->SetValue(script);
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		wxLogMessage("Error reading script: %s", e.GetErrorMessage().ToAscii());
 	}
 }
@@ -91,7 +97,7 @@ void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 		wxString script = m_scriptCtrl->GetValue();
 		m_comm->writeScript(script);
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		wxLogMessage("Error writing script: %s",e.GetErrorMessage().ToAscii());
 	}
 }
@@ -100,10 +106,14 @@ void ScriptPanel::OnRunScript(wxCommandEvent &event){
 	m_comm->reloadScript();
 }
 
+void ScriptPanel::OnScriptChanged(wxStyledTextEvent &event){
+	m_raceCaptureConfig->luaScript = m_scriptCtrl->GetValue();
+}
 
 BEGIN_EVENT_TABLE ( ScriptPanel, wxPanel )
 	EVT_BUTTON(ID_BUTTON_READ,ScriptPanel::OnReadScript)
 	EVT_BUTTON(ID_BUTTON_WRITE,ScriptPanel::OnWriteScript)
 	EVT_BUTTON(ID_BUTTON_RUN,ScriptPanel::OnRunScript)
+	EVT_STC_CHANGE(ID_SCRIPT_WINDOW, ScriptPanel::OnScriptChanged)
 
 END_EVENT_TABLE()

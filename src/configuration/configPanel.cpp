@@ -60,6 +60,9 @@ void ConfigPanel::InitComponents(){
 	m_gpsPanel = new GpsConfigPanel(m_configNavigation,-1,m_raceCaptureConfig);
 	m_gpsPanel->InitComponents();
 
+	m_scriptPanel = new ScriptPanel(m_configNavigation, -1, m_raceCaptureConfig);
+	m_scriptPanel->SetComm(m_comm);
+
 	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, -1, m_raceCaptureConfig);
 	m_loggerOutputPanel->InitComponents();
 
@@ -70,6 +73,7 @@ void ConfigPanel::InitComponents(){
 	m_configNavigation->AddPage(m_analogPulseOutPanel,"Analog/Pulse Outputs");
 	m_configNavigation->AddPage(m_gpioPanel,"Digital I/O");
 	m_configNavigation->AddPage(m_loggerOutputPanel,"Logging/Telemetry");
+	m_configNavigation->AddPage(m_scriptPanel, "Scripting");
 
 	m_configSettings = new wxPanel(this);
 
@@ -135,6 +139,7 @@ void ConfigPanel::OnConfigUpdated(){
 	m_gpioPanel->OnConfigUpdated();
 	m_gpsPanel->OnConfigUpdated();
 	m_loggerOutputPanel->OnConfigUpdated();
+	m_scriptPanel->OnConfigUpdated();
 }
 
 void ConfigPanel::ReadConfigComplete(bool success, wxString msg){

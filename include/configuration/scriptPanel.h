@@ -9,16 +9,19 @@
 #define SCRIPTPANEL_H_
 
 #include "wx/wxprec.h"
+#include "wx/stc/stc.h"
 #include "raceAnalyzerConfigBase.h"
 #include "commonEvents.h"
 #include "comm.h"
+#include "configuration/baseConfigPanel.h"
 
-class ScriptPanel : public wxPanel{
+class ScriptPanel : public BaseConfigPanel{
 
 	public:
 		ScriptPanel();
 		ScriptPanel(wxWindow *parent,
 					wxWindowID id = -1,
+					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,
@@ -29,6 +32,9 @@ class ScriptPanel : public wxPanel{
 		~ScriptPanel();
 
 		void SetComm(RaceAnalyzerComm *comm);
+		void OnConfigUpdated();
+		void InitComponents();
+
 
 		//event handlers
 	private:
@@ -36,13 +42,15 @@ class ScriptPanel : public wxPanel{
 		void OnReadScript(wxCommandEvent &event);
 		void OnWriteScript(wxCommandEvent &event);
 		void OnRunScript(wxCommandEvent &event);
-		void InitComponents();
+		void OnScriptChanged(wxStyledTextEvent &event);
 		void InitOptions();
 
-		wxTextCtrl *m_scriptCtrl;
+
+		wxStyledTextCtrl *m_scriptCtrl;
 
 		RaceAnalyzerComm *m_comm;
 
+		static const int LUA_LEXER_ID = 15;
 		enum{
 			ID_SCRIPT_WINDOW = wxID_HIGHEST + 10000,
 			ID_BUTTON_READ,
