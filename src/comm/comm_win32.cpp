@@ -311,7 +311,7 @@ size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 	DWORD charsRead = 0;
     while ( ( GetTickCount() - tstart ) < timeout && totalRead < bufSize ) {
     	bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
-    	wxLogMessage("read result %d (%s)", result, buf);
+    	wxLogMessage("read result %d chars %d (%s)", result, charsRead, buf);
     	if (!result){
 			int err = GetLastError();
 			wxLogMessage("Error reading result! %d", err);

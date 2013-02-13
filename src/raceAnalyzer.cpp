@@ -372,10 +372,6 @@ void MainFrame::InitializeMenus(){
 	toolBar->AddTool(ID_CONFIG_MODE, wrench_xpm, wxT("Edit Configuration"));
 	toolBar->AddTool(ID_RUNTIME_MODE, analysis_runtime2_xpm, wxT("Analysis/Monitor Mode"));
 
-//	toolBar->AddTool(ID_RUNTIME_MODE, analysis_runtime2_xpm, wxT("Monitor Runtime Channels"));
-//	toolBar->AddTool(ID_ANALYZE_MODE, analysis_xpm, wxT("Analysis Mode"));
-	toolBar->AddTool(ID_SCRIPT_MODE, script_edit_xpm, wxT("Script Editor"));
-
 	toolBar->AddSeparator();
 
 	toolBar->Realize();
@@ -988,7 +984,6 @@ void MainFrame::LoadConfigurationFile(const wxString fileName){
 		reader.ReadConfiguration(m_currentConfig);
 		if (m_currentConfigFileName) delete m_currentConfigFileName;
 		m_currentConfigFileName = new wxString(fileName);
-//		_configurationPanel->PopulateIgnitionConfig();
 		m_configModified = false;
 		UpdateCommControls();
 		NotifyConfigChanged();

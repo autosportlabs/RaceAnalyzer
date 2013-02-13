@@ -229,6 +229,7 @@ private:
 	Array PulseOutputConfigToJson();
 	Array GpioConfigToJson();
 	Object OutputConfigToJson();
+	Object ScriptToJson();
 
 	void ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson);
 	void PopulateGpsConfig(Object &gpsRoot);
@@ -238,6 +239,7 @@ private:
 	void PopulatePulseOutputConfig(Array &pulseOutputRoot);
 	void PopulateGpioConfig(Array &gpioConfigRoot);
 	void PopulateOutputConfig(Object &outputConfig);
+	void PopulateAutomationConfig(Object &automationConfig);
 
 };
 

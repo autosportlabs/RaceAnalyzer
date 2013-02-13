@@ -104,7 +104,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.flags.1956671771" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-mthreads -Wl,--subsystem,windows -mwindows" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.622454800" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
@@ -113,7 +113,7 @@
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.debug.830404498.1379621941" name="mjlj_config.rc" rcbsApplicability="override" resourcePath="resource/mjlj_config.rc" toolsToInvoke="org.eclipse.cdt.managedbuilder.ui.rcbs.485139702">
 						<tool command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.9.4/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.485139702" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1009194755" name="Resource Custom Build Step Input Type">
-								<additionalInput kind="additionalinputdependency" paths=""/>
+								
 							</inputType>
 							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.249166377" name="Resource Custom Build Step Output Type" outputNames="resource/mjlj_config_resources.o"/>
 						</tool>
@@ -157,7 +157,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.release.512013306" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.release"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.release.33770561" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.release">
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.854591175" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
@@ -166,7 +166,7 @@
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.release.1251057280.998871792" name="mjlj_config.rc" rcbsApplicability="disable" resourcePath="resource/mjlj_config.rc" toolsToInvoke="">
 						<tool command="windres -o &quot;resource/mjlj_config_resources.o&quot; -I&quot;C:/wxWidgets-2.9.4/include&quot; -I&quot;../resource&quot; &quot;../resource/mjlj_config.rc&quot;" customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1734486750" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.595765893" name="Resource Custom Build Step Input Type">
-								<additionalInput kind="additionalinputdependency" paths=""/>
+								
 							</inputType>
 							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.2143260174" name="Resource Custom Build Step Output Type" outputNames="resource/mjlj_config_resources.o"/>
 						</tool>

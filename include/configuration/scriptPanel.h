@@ -43,7 +43,8 @@ class ScriptPanel : public BaseConfigPanel{
 		void OnWriteScript(wxCommandEvent &event);
 		void OnRunScript(wxCommandEvent &event);
 		void OnScriptChanged(wxStyledTextEvent &event);
-		void InitOptions();
+		void StyleEditor(void);
+		void InitOptions(void);
 
 
 		wxStyledTextCtrl *m_scriptCtrl;

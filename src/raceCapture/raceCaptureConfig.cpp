@@ -8,8 +8,7 @@
 
 SampleRates ChannelConfig::sampleRates;
 
-ChannelConfig::ChannelConfig(){
-}
+ChannelConfig::ChannelConfig() : sampleRate(sample_disabled){}
 
 SampleRates ChannelConfig::GetSampleRates(){
 
@@ -146,6 +145,11 @@ void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
 	loggerOutputConfig.p2pDestinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
 }
 
+void RaceCaptureConfig::PopulateAutomationConfig(Object &automationConfig){
+	luaScript = ((String)automationConfig["script"]).Value();
+
+}
+
 void RaceCaptureConfig::FromJson(Object root){
 	PopulateGpsConfig(root["gpsConfig"]);
 	PopulateAnalogConfig(root["analogConfigs"]);
@@ -154,6 +158,7 @@ void RaceCaptureConfig::FromJson(Object root){
 	PopulatePulseOutputConfig(root["pulseOutputConfigs"]);
 	PopulateGpioConfig(root["gpioConfigs"]);
 	PopulateOutputConfig(root["outputConfig"]);
+	PopulateAutomationConfig(root["automation"]);
 }
 
 Object RaceCaptureConfig::ChannelConfigToJson(ChannelConfig &channelConfig){
@@ -273,6 +278,11 @@ Object RaceCaptureConfig::OutputConfigToJson(){
 	return cfg;
 }
 
+Object RaceCaptureConfig::ScriptToJson(){
+	Object cfg;
+	cfg["script"] = String(luaScript.ToAscii());
+	return cfg;
+}
 
 Object RaceCaptureConfig::ToJson(void){
 
@@ -284,5 +294,6 @@ Object RaceCaptureConfig::ToJson(void){
 	objRoot["pulseOutputConfigs"] = PulseOutputConfigToJson();
 	objRoot["gpioConfigs"] = GpioConfigToJson();
 	objRoot["outputConfig"] = OutputConfigToJson();
+	objRoot["automation"] = ScriptToJson();
 	return objRoot;
 }
