@@ -623,7 +623,7 @@ void MainFrame::UpdateAnalysis(){
 /*	m_datalogData.Clear();
 
 	wxArrayString channels;
-	channels.Add("GPSVelocity");
+	channels.Add("GPSSpeed");
 	channels.Add("AccelX");
 	channels.Add("AccelY");
 	channels.Add("AccelZ");

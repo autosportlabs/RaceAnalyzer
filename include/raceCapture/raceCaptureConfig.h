@@ -195,7 +195,7 @@ public:
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
 	ChannelConfig timeCfg;
-	ChannelConfig velocityCfg;
+	ChannelConfig speedCfg;
 };
 
 

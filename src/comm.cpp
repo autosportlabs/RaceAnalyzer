@@ -474,7 +474,7 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			gpsConfig.gpsInstalled = GetIntParam(rsp,"installed") != 0;
 			populateChannelConfig(gpsConfig.latitudeCfg,"lat",rsp);
 			populateChannelConfig(gpsConfig.longitudeCfg,"long",rsp);
-			populateChannelConfig(gpsConfig.velocityCfg,"vel",rsp);
+			populateChannelConfig(gpsConfig.speedCfg,"vel",rsp);
 			populateChannelConfig(gpsConfig.timeCfg,"time",rsp);
 			populateChannelConfig(gpsConfig.qualityCfg,"qual",rsp);
 			populateChannelConfig(gpsConfig.satellitesCfg,"sats",rsp);
@@ -613,7 +613,7 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 				cmd = AppendIntParam(cmd, cfg.gpsInstalled);
 				cmd = AppendChannelConfig(cmd, cfg.latitudeCfg);
 				cmd = AppendChannelConfig(cmd, cfg.longitudeCfg);
-				cmd = AppendChannelConfig(cmd, cfg.velocityCfg);
+				cmd = AppendChannelConfig(cmd, cfg.speedCfg);
 				cmd = AppendChannelConfig(cmd, cfg.timeCfg);
 				cmd = AppendChannelConfig(cmd, cfg.qualityCfg);
 				cmd = AppendChannelConfig(cmd, cfg.satellitesCfg);

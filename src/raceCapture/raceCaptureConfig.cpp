@@ -46,7 +46,7 @@ void RaceCaptureConfig::PopulateGpsConfig(Object &gpsRoot){
 	gpsConfig.startFinishRadius = ((Number)gpsRoot["startFinishRadius"]).Value();
 	ChannelConfigFromJson(gpsConfig.latitudeCfg,gpsRoot["latitude"]);
 	ChannelConfigFromJson(gpsConfig.longitudeCfg,gpsRoot["longitude"]);
-	ChannelConfigFromJson(gpsConfig.velocityCfg,gpsRoot["velocity"]);
+	ChannelConfigFromJson(gpsConfig.speedCfg,gpsRoot["speed"]);
 	ChannelConfigFromJson(gpsConfig.timeCfg,gpsRoot["time"]);
 	ChannelConfigFromJson(gpsConfig.qualityCfg,gpsRoot["quality"]);
 	ChannelConfigFromJson(gpsConfig.satellitesCfg,gpsRoot["satellites"]);
@@ -177,7 +177,7 @@ Object RaceCaptureConfig::GpsConfigToJson(){
 	cfg["startFinishRadius"] = Number(gpsConfig.startFinishRadius);
 	cfg["latitude"] = ChannelConfigToJson(gpsConfig.latitudeCfg);
 	cfg["longitude"] = ChannelConfigToJson(gpsConfig.longitudeCfg);
-	cfg["velocity"] = ChannelConfigToJson(gpsConfig.velocityCfg);
+	cfg["speed"] = ChannelConfigToJson(gpsConfig.speedCfg);
 	cfg["time"]  = ChannelConfigToJson(gpsConfig.timeCfg);
 	cfg["quality"] = ChannelConfigToJson(gpsConfig.qualityCfg);
 	cfg["satellites"] = ChannelConfigToJson(gpsConfig.satellitesCfg);

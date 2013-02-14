@@ -72,7 +72,7 @@ void ScriptPanel::StyleEditor(void){
 	m_scriptCtrl->StyleSetForeground(wxSTC_H_CDATA, *wxRED);
 	m_scriptCtrl->SetTabWidth(4);
 	m_scriptCtrl->SetUseTabs(false);
-	m_scriptCtrl->SetWrapMode(wxSTC_WRAP_WORD);
+	//m_scriptCtrl->SetWrapMode(wxSTC_WRAP_WORD);
 	m_scriptCtrl->SetMarginType(0, wxSTC_MARGIN_NUMBER);
 
 	m_scriptCtrl->SetMarginWidth (MARGIN_LINE_NUMBERS, 15);

@@ -183,7 +183,7 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("GpsSats", 4, "Number of Active Satellites") );
 	channels.Add( DatalogChannel("Latitude", 5, "GPS Latitude in Degrees") );
 	channels.Add( DatalogChannel("Longitude", 6,"GPS Longitude in Degrees") );
-	channels.Add( DatalogChannel("Velocity", 7, "GPS Velocity") );
+	channels.Add( DatalogChannel("Speed", 7, "GPS Speed") );
 	channels.Add( DatalogChannel("LapCount",4, "Lap Count" ));
 	channels.Add( DatalogChannel("LapTime", 16, "Lap Time" ));
 

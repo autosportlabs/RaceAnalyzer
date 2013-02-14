@@ -50,7 +50,7 @@ ChannelConfig * GpsConfigPanel::GetChannelConfig(int i){
 		case 1:
 			return &(cfg.longitudeCfg);
 		case 2:
-			return &(cfg.velocityCfg);
+			return &(cfg.speedCfg);
 		case 3:
 			return &(cfg.timeCfg);
 		case 4:
@@ -82,7 +82,7 @@ wxString GpsConfigPanel::GetChannelLabel(int index){
 		case 1:
 			return "Longitude";
 		case 2:
-			return "Velocity";
+			return "Speed";
 		case 3:
 			return "Time";
 		case 4:
