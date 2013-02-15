@@ -11,14 +11,15 @@
 #include "configuration/baseChannelConfigPanel.h"
 #include "commonEvents.h"
 #include "comm.h"
+#include "configPanelParams.h"
 
 class AnalogInputPanel :  public BaseChannelConfigPanel{
 
 	public:
 		AnalogInputPanel();
 		AnalogInputPanel(wxWindow *parent,
+					ConfigPanelParams *config,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,
@@ -29,6 +30,7 @@ class AnalogInputPanel :  public BaseChannelConfigPanel{
 		wxPanel * GetTopInnerPanel();
 		wxPanel * GetBottomInnerPanel();
 		ChannelConfig * GetChannelConfig(int i);
+		DatalogChannels & GetStandardChannels();
 		int ChannelCount();
 		void UpdatedExtendedFields();
 		void UpdateExtendedChannelFields(int i);

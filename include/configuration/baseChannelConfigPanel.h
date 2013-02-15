@@ -15,8 +15,8 @@ class BaseChannelConfigPanel : public BaseConfigPanel{
 	public:
 		BaseChannelConfigPanel();
 		BaseChannelConfigPanel(wxWindow *parent,
+					ConfigPanelParams *config,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,
@@ -38,6 +38,7 @@ class BaseChannelConfigPanel : public BaseConfigPanel{
 		virtual void UpdateExtendedChannelFields(int i) = 0;
 		virtual wxString GetChannelConfigPanelName(int i) = 0;
 		virtual ChannelConfig * GetChannelConfig(int i) = 0;
+		virtual DatalogChannels & GetStandardChannels() = 0;
 
 		wxTextCtrl * FindTextCtrl(wxString name);
 		wxComboBox * FindComboBoxCtrl(wxString name);
@@ -52,7 +53,7 @@ class BaseChannelConfigPanel : public BaseConfigPanel{
 
 	private:
 		ChannelConfigPanel * FindChannelConfigPanel(int index);
-		ChannelConfigPanel * CreateNewChannelConfigPanel(int index,bool showHeaders, ChannelConfigExtraFields &extraFields, ChannelConfig *channelConfig);
+		ChannelConfigPanel * CreateNewChannelConfigPanel(int index,bool showHeaders, ChannelConfigExtraFields &extraFields, ChannelConfig *channelConfig, DatalogChannels & standardChannelNames);
 
 		RaceAnalyzerComm *m_comm;
 

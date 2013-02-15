@@ -72,7 +72,14 @@ class AppOptions{
 		void SaveAppOptions();
 		void LoadAppOptions();
 
-		DatalogChannels & GetStandardChannels();
+		DatalogChannels & GetAllStandardChannels();
+		DatalogChannels & GetStandardAccelChannels();
+		DatalogChannels & GetStandardGpsChannels();
+		DatalogChannels & GetStandardAnalogChannels();
+		DatalogChannels & GetStandardPulseInputChannels();
+		DatalogChannels & GetStandardAnalogPwmOutputChannels();
+		DatalogChannels & GetStandardGpioChannels();
+
 		DatalogChannelTypes & GetStandardChannelTypes();
 		AnalogGaugeTypes & GetAnalogGaugeTypes();
 
@@ -80,19 +87,32 @@ class AppOptions{
 
 		ChartColors & GetChartColors();
 
-		void LoadDefaultStandardChannels(DatalogChannels &channels);
-		void LoadDefaultStandardChannelTypes(DatalogChannelTypes &channelTypes);
+		void LoadStandardAccelChannels(DatalogChannels &channels);
+		void LoadStandardGpsChannels(DatalogChannels &channels);
+		void LoadStandardAnalogChannels(DatalogChannels &channels);
+		void LoadStandardFrequencyChannels(DatalogChannels &channels);
+		void LoadStandardPwmChannels(DatalogChannels &channels);
+		void LoadStandardGpioChannels(DatalogChannels &channels);
+		void LoadAllStandardChannels(DatalogChannels &channels);
+
+		void LoadStandardChannelTypes(DatalogChannelTypes &channelTypes);
 		void LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes);
 		void LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes);
-
 		DatalogChannelType GetChannelTypeForChannel(wxString channelName);
-
 		DatalogChannelType GetDefaultUnknownChannelType(wxString name);
 
 	private:
 		int 				m_serialPort;
 		bool 				m_autoLoadConfig;
-		DatalogChannels 	m_standardChannels;
+
+		DatalogChannels 	m_allStandardChannels;
+		DatalogChannels 	m_standardAccelChannels;
+		DatalogChannels		m_standardGpsChannels;
+		DatalogChannels 	m_standardAnalogChannels;
+		DatalogChannels		m_standardPulseInputChannels;
+		DatalogChannels		m_standardAnalogPwmOutputChannels;
+		DatalogChannels		m_standardGpioChannels;
+
 		DatalogChannelTypes	m_standardChannelTypes;
 		ChartColors			m_chartColors;
 		AnalogGaugeTypes	m_analogGaugeTypes;

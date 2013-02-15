@@ -6,18 +6,15 @@
  */
 #include "configuration/channelConfigPanel.h"
 #include "wx/sizer.h"
+#include "wx/combobox.h"
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(ChannelConfigExtraFields);
 
-ChannelConfigPanel::ChannelConfigPanel() : wxPanel()
-{
-	ChannelConfigExtraFields emptyFields;
-	InitComponents(false,emptyFields);
-}
 
 ChannelConfigPanel::ChannelConfigPanel(wxWindow *parent,
 			ChannelConfigExtraFields extraFields,
+			DatalogChannels & standardChannels,
 			wxWindowID id,
 			bool showHeaders,
 			ChannelConfig *channelConfig,
@@ -34,7 +31,7 @@ ChannelConfigPanel::ChannelConfigPanel(wxWindow *parent,
 						name)
 {
 	m_channelConfig = channelConfig;
-	InitComponents(showHeaders,extraFields);
+	InitComponents(showHeaders,extraFields,standardChannels);
 	//OnConfigUpdated();
 }
 
@@ -42,7 +39,7 @@ ChannelConfigPanel::~ChannelConfigPanel(){
 
 }
 
-void ChannelConfigPanel::InitComponents(bool showHeaders, ChannelConfigExtraFields &extraFields){
+void ChannelConfigPanel::InitComponents(bool showHeaders, ChannelConfigExtraFields &extraFields, DatalogChannels &standardChannels){
 
 //	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(new wxStaticBox(this,-1,title),wxHORIZONTAL);
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(1 + (int)showHeaders,3 + extraFields.Count(),3,3);
@@ -57,10 +54,12 @@ void ChannelConfigPanel::InitComponents(bool showHeaders, ChannelConfigExtraFiel
 			sizer->Add(new wxStaticText(this,-1,f.header),1,wxEXPAND);
 		}
 	}
-	m_channelLabel = new wxTextCtrl(this,wxID_ANY);
+	m_channelLabel = new wxComboBox(this, wxID_ANY);
 	m_channelLabel->SetMaxLength(ChannelConfig::MAX_LABEL_LENGTH);
 	m_channelLabel->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(ChannelConfigPanel::OnLabelChanged),NULL,this);
 	sizer->Add(m_channelLabel,1,wxEXPAND);
+
+	InitChannelLabelCombo(m_channelLabel, standardChannels);
 
 	m_channelUnits = new wxTextCtrl(this,wxID_ANY);
 	m_channelUnits->SetMaxLength(ChannelConfig::MAX_UNITS_LENGTH);
@@ -98,6 +97,15 @@ void ChannelConfigPanel::SetChannelConfig(ChannelConfig *config){
 	m_channelConfig = config;
 	OnConfigUpdated();
 }
+
+
+void ChannelConfigPanel::InitChannelLabelCombo(wxComboBox *combo, DatalogChannels &standardChannels){
+
+	for (size_t i = 0; i < standardChannels.Count(); i++){
+		combo->Append(standardChannels[i].name);
+	}
+}
+
 
 void ChannelConfigPanel::InitSampleRateCombo(wxComboBox *combo){
 	SampleRates samplerates = ChannelConfig::GetSampleRates();

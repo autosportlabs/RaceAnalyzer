@@ -7,16 +7,16 @@ AnalogPulseOutputPanel::AnalogPulseOutputPanel() : BaseChannelConfigPanel()
 }
 
 AnalogPulseOutputPanel::AnalogPulseOutputPanel(wxWindow *parent,
+			ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseChannelConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -31,13 +31,13 @@ AnalogPulseOutputPanel::~AnalogPulseOutputPanel(){
 
 
 void AnalogPulseOutputPanel::UpdateExtendedChannelFields(int i){
-	PwmConfig &cfg = (m_raceCaptureConfig->pwmConfigs[i]);
+	PwmConfig &cfg = (m_configParams->config->pwmConfigs[i]);
 	m_loggingPrecisionSpinner[i]->SetValue(cfg.loggingPrecision);
 	m_modeCombo[i]->SetSelection(cfg.outputMode);
 }
 
 ChannelConfig * AnalogPulseOutputPanel::GetChannelConfig(int i){
-	return &(m_raceCaptureConfig->pwmConfigs[i].channelConfig);
+	return &(m_configParams->config->pwmConfigs[i].channelConfig);
 }
 
 int AnalogPulseOutputPanel::ChannelCount(){
@@ -45,7 +45,7 @@ int AnalogPulseOutputPanel::ChannelCount(){
 }
 
 ChannelConfigExtraFields AnalogPulseOutputPanel::CreateExtendedChannelFields(int i){
-	PwmConfig &cfg = (m_raceCaptureConfig->pwmConfigs[i]);
+	PwmConfig &cfg = (m_configParams->config->pwmConfigs[i]);
 	ChannelConfigExtraFields extraFields;
 	{
 		ChannelConfigExtraField f;
@@ -139,6 +139,10 @@ void AnalogPulseOutputPanel::OnAdvancedSettings(wxCommandEvent &event){
 	if (dlg.ShowModal() == wxID_OK){
 		*c = dlg.GetConfig();
 	}
+}
+
+DatalogChannels & AnalogPulseOutputPanel::GetStandardChannels(){
+	return m_configParams->appOptions->GetStandardAnalogPwmOutputChannels();
 }
 
 BEGIN_EVENT_TABLE ( AnalogPulseOutputPanel, wxPanel )

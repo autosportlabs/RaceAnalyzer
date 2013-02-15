@@ -16,8 +16,8 @@ class AnalogPulseOutputPanel : public BaseChannelConfigPanel{
 	public:
 		AnalogPulseOutputPanel();
 		AnalogPulseOutputPanel(wxWindow *parent,
+					ConfigPanelParams *configParams,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,
@@ -30,6 +30,7 @@ class AnalogPulseOutputPanel : public BaseChannelConfigPanel{
 		ChannelConfig * GetChannelConfig(int i);
 		int ChannelCount();
 		void UpdatedExtendedFields();
+		DatalogChannels & GetStandardChannels();
 		void UpdateExtendedChannelFields(int i);
 		ChannelConfigExtraFields CreateExtendedChannelFields(int i);
 		wxString GetChannelConfigPanelName(int index);

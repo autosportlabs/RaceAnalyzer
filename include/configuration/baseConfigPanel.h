@@ -8,14 +8,15 @@
 #include "configuration/channelConfigPanel.h"
 #include "commonEvents.h"
 #include "comm.h"
+#include "configuration/configPanelParams.h"
 
 class BaseConfigPanel : public wxPanel{
 
 	public:
 		BaseConfigPanel();
 		BaseConfigPanel(wxWindow *parent,
+					ConfigPanelParams *config,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,
@@ -23,15 +24,12 @@ class BaseConfigPanel : public wxPanel{
 					);
 
 		~BaseConfigPanel();
-
-		void SetComm(RaceAnalyzerComm *comm);
-
 		virtual void OnConfigUpdated() = 0;
 		virtual void InitComponents() = 0;
 
 		//event handlers
 	protected:
-		RaceCaptureConfig *m_raceCaptureConfig;
+		ConfigPanelParams *m_configParams;
 		RaceAnalyzerComm *m_comm;
 
 	private:

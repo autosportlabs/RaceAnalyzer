@@ -14,16 +14,16 @@ AnalogInputPanel::AnalogInputPanel() : BaseChannelConfigPanel()
 }
 
 AnalogInputPanel::AnalogInputPanel(wxWindow *parent,
+			ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseChannelConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -36,12 +36,12 @@ AnalogInputPanel::~AnalogInputPanel(){
 }
 
 void AnalogInputPanel::UpdateExtendedChannelFields(int i){
-	AnalogConfig &cfg = (m_raceCaptureConfig->analogConfigs[i]);
+	AnalogConfig &cfg = (m_configParams->config->analogConfigs[i]);
 	m_loggingPrecisionSpinner[i]->SetValue(cfg.loggingPrecision);
 }
 
 ChannelConfig * AnalogInputPanel::GetChannelConfig(int i){
-	return &(m_raceCaptureConfig->analogConfigs[i].channelConfig);
+	return &(m_configParams->config->analogConfigs[i].channelConfig);
 }
 
 int AnalogInputPanel::ChannelCount(){
@@ -49,7 +49,7 @@ int AnalogInputPanel::ChannelCount(){
 }
 
 ChannelConfigExtraFields AnalogInputPanel::CreateExtendedChannelFields(int i){
-	AnalogConfig &cfg = (m_raceCaptureConfig->analogConfigs[i]);
+	AnalogConfig &cfg = (m_configParams->config->analogConfigs[i]);
 	ChannelConfigExtraFields extraFields;
 	{
 		ChannelConfigExtraField f;
@@ -121,6 +121,10 @@ void AnalogInputPanel::OnAdvancedSettings(wxCommandEvent &event){
 	}
 }
 
+DatalogChannels & AnalogInputPanel::GetStandardChannels(){
+
+	return m_configParams->appOptions->GetStandardAnalogChannels();
+}
 
 BEGIN_EVENT_TABLE ( AnalogInputPanel, wxPanel )
 END_EVENT_TABLE()

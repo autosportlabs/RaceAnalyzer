@@ -9,15 +9,15 @@
 #include "configuration/channelConfigPanel.h"
 #include "configuration/baseChannelConfigPanel.h"
 #include "commonEvents.h"
-#include "comm.h"
+#include "configPanelParams.h"
 
 class LoggerOutputConfigPanel :  public BaseConfigPanel{
 
 	public:
 		LoggerOutputConfigPanel();
 		LoggerOutputConfigPanel(wxWindow *parent,
+					ConfigPanelParams *configParams,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,

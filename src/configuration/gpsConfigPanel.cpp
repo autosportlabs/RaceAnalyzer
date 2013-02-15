@@ -9,29 +9,27 @@ GpsConfigPanel::GpsConfigPanel() : BaseChannelConfigPanel()
 }
 
 GpsConfigPanel::GpsConfigPanel(wxWindow *parent,
+		ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseChannelConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
 						name)
-{
-
-}
+{ }
 
 GpsConfigPanel::~GpsConfigPanel(){
 }
 
 void GpsConfigPanel::UpdatedExtendedFields(){
-	GpsConfig &gpsConfig = m_raceCaptureConfig->gpsConfig;
+	GpsConfig &gpsConfig = m_configParams->config->gpsConfig;
 
 	m_gpsInstalledCheckBox->SetValue(gpsConfig.gpsInstalled);
 	m_startFinishLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishLatitude));
@@ -43,7 +41,7 @@ void GpsConfigPanel::UpdateExtendedChannelFields(int i){
 }
 
 ChannelConfig * GpsConfigPanel::GetChannelConfig(int i){
-	GpsConfig &cfg = m_raceCaptureConfig->gpsConfig;
+	GpsConfig &cfg = m_configParams->config->gpsConfig;
 	switch(i){
 		case 0:
 			return &(cfg.latitudeCfg);
@@ -154,24 +152,29 @@ wxPanel * GpsConfigPanel::GetBottomInnerPanel(){
 
 void GpsConfigPanel::OnGpsInstalledChanged(wxCommandEvent &event){
 	wxCheckBox *c = dynamic_cast<wxCheckBox*>(event.GetEventObject());
-	if (NULL != c) m_raceCaptureConfig->gpsConfig.gpsInstalled = c->GetValue();
+	if (NULL != c) m_configParams->config->gpsConfig.gpsInstalled = c->GetValue();
 }
 
 void GpsConfigPanel::OnStartFinishLatitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishLatitude = atof(c->GetValue());
+	if (NULL != c) m_configParams->config->gpsConfig.startFinishLatitude = atof(c->GetValue());
 }
 
 void GpsConfigPanel::OnStartFinishLongitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishLongitude = atof(c->GetValue());
+	if (NULL != c) m_configParams->config->gpsConfig.startFinishLongitude = atof(c->GetValue());
 
 }
 
 void GpsConfigPanel::OnStartFinishRadiusChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_raceCaptureConfig->gpsConfig.startFinishRadius = atof(c->GetValue());
+	if (NULL != c) m_configParams->config->gpsConfig.startFinishRadius = atof(c->GetValue());
 }
+
+DatalogChannels & GpsConfigPanel::GetStandardChannels(){
+	return m_configParams->appOptions->GetStandardGpsChannels();
+}
+
 
 BEGIN_EVENT_TABLE ( GpsConfigPanel, wxPanel )
 END_EVENT_TABLE()

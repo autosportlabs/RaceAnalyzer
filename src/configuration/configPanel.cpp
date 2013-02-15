@@ -9,16 +9,15 @@ enum{
 };
 
 ConfigPanel::ConfigPanel(
-			ConfigPanelParams params,
 			wxWindow *parent,
+			ConfigPanelParams params,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
-			: m_raceCaptureConfig(params.config),
-			  m_comm(params.comm),
+			: m_configParams(params),
 			  wxPanel(	parent,
 						id,
 						pos,
@@ -42,28 +41,27 @@ void ConfigPanel::InitComponents(){
 
 	m_configNavigation = new wxTreebook(this,-1, wxDefaultPosition, wxSize(600,400),wxNB_LEFT);
 
-	m_analogInputPanel = new AnalogInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_analogInputPanel = new AnalogInputPanel(m_configNavigation, &m_configParams);
 	m_analogInputPanel->InitComponents();
 
-	m_timerInputPanel = new PulseInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_timerInputPanel = new PulseInputPanel(m_configNavigation, &m_configParams);
 	m_timerInputPanel->InitComponents();
 
-	m_accelInputPanel = new AccelInputPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_accelInputPanel = new AccelInputPanel(m_configNavigation, &m_configParams);
 	m_accelInputPanel->InitComponents();
 
-	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation, &m_configParams);
 	m_analogPulseOutPanel->InitComponents();
 
-	m_gpioPanel = new GpioPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_gpioPanel = new GpioPanel(m_configNavigation, &m_configParams);
 	m_gpioPanel->InitComponents();
 
-	m_gpsPanel = new GpsConfigPanel(m_configNavigation,-1,m_raceCaptureConfig);
+	m_gpsPanel = new GpsConfigPanel(m_configNavigation, &m_configParams);
 	m_gpsPanel->InitComponents();
 
-	m_scriptPanel = new ScriptPanel(m_configNavigation, -1, m_raceCaptureConfig);
-	m_scriptPanel->SetComm(m_comm);
+	m_scriptPanel = new ScriptPanel(m_configNavigation, &m_configParams);
 
-	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, -1, m_raceCaptureConfig);
+	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, &m_configParams);
 	m_loggerOutputPanel->InitComponents();
 
 	m_configNavigation->AddPage(m_gpsPanel,"GPS");
@@ -105,13 +103,13 @@ void ConfigPanel::InitOptions(){
 
 void ConfigPanel::OnReadConfig(wxCommandEvent &event){
 	UpdateStatus("Reading Configuration");
-	m_asyncComm = new AsyncRaceAnalyzerComm(m_comm, m_raceCaptureConfig,this);
+	m_asyncComm = new AsyncRaceAnalyzerComm(m_configParams.comm, m_configParams.config, this);
 	m_asyncComm->RunReadConfig();
 }
 
 void ConfigPanel::OnWriteConfig(wxCommandEvent &event){
 	UpdateStatus("Writing Configuration");
-	m_asyncComm = new AsyncRaceAnalyzerComm(m_comm, m_raceCaptureConfig,this);
+	m_asyncComm = new AsyncRaceAnalyzerComm(m_configParams.comm, m_configParams.config, this);
 	m_asyncComm->RunWriteConfig();
 }
 
@@ -155,7 +153,7 @@ void ConfigPanel::ReadConfigComplete(bool success, wxString msg){
 void ConfigPanel::WriteConfigComplete(bool success, wxString msg){
 	if (success){
 		UpdateStatus("Write Configuration Complete");
-		if (m_alsoFlashConfigCheckBox->GetValue()) m_comm->flashCurrentConfig();
+		if (m_alsoFlashConfigCheckBox->GetValue()) m_configParams.comm->flashCurrentConfig();
 	}
 	else{
 		UpdateStatus(wxString::Format("Write Configuration Failed: %s",msg.ToAscii()));

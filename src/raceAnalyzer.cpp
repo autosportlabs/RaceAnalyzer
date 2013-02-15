@@ -389,7 +389,7 @@ void MainFrame::InitializeComponents(){
 
 	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide());
 
-	m_configPanel = new ConfigPanel(ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig), this);
+	m_configPanel = new ConfigPanel(this, ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig, &m_appOptions));
 	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
 }
 

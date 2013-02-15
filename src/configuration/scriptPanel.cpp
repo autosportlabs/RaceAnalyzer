@@ -12,16 +12,16 @@ ScriptPanel::ScriptPanel() : BaseConfigPanel()
 }
 
 ScriptPanel::ScriptPanel(wxWindow *parent,
+			ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -121,7 +121,7 @@ void ScriptPanel::InitComponents(){
 }
 
 void ScriptPanel::OnConfigUpdated(){
-	m_scriptCtrl->SetValue(m_raceCaptureConfig->luaScript);
+	m_scriptCtrl->SetValue(m_configParams->config->luaScript);
 }
 
 void ScriptPanel::InitOptions(void){
@@ -159,7 +159,7 @@ void ScriptPanel::OnRunScript(wxCommandEvent &event){
 }
 
 void ScriptPanel::OnScriptChanged(wxStyledTextEvent &event){
-	m_raceCaptureConfig->luaScript = m_scriptCtrl->GetValue();
+	m_configParams->config->luaScript = m_scriptCtrl->GetValue();
 }
 
 BEGIN_EVENT_TABLE ( ScriptPanel, wxPanel )

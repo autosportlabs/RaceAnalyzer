@@ -20,8 +20,8 @@ class ScriptPanel : public BaseConfigPanel{
 	public:
 		ScriptPanel();
 		ScriptPanel(wxWindow *parent,
+					ConfigPanelParams *config,
 					wxWindowID id = -1,
-					RaceCaptureConfig *config = NULL,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
 					long style = wxTAB_TRAVERSAL,

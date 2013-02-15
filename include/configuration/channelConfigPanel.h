@@ -8,6 +8,7 @@
 #include "controls/steppedSpinCtrl.h"
 #include "commonEvents.h"
 #include "comm.h"
+#include "datalogData.h"
 
 class ChannelConfigExtraField{
 public:
@@ -22,9 +23,9 @@ class ChannelConfigPanel : public wxPanel{
 
 	public:
 
-		ChannelConfigPanel();
 		ChannelConfigPanel(wxWindow *parent,
 					ChannelConfigExtraFields extraFields,
+					DatalogChannels &standardChannelNames,
 					wxWindowID id = -1,
 					bool showHeaders = false,
 					ChannelConfig *channelConfig = NULL,
@@ -46,15 +47,16 @@ class ChannelConfigPanel : public wxPanel{
 		void OnSampleRateChanged(wxCommandEvent &event);
 
 		//controls
-		wxTextCtrl *m_channelLabel;
+		wxComboBox *m_channelLabel;
 		wxTextCtrl *m_channelUnits;
 		wxComboBox *m_channelSampleRate;
 
 		int MapSampleRateToCombo(int sampleRate);
 		sample_rate_t MapSampleRateFromCombo(int index);
 		void SetChannelConfig(ChannelConfig *config);
-		void InitComponents(bool showHeaders, ChannelConfigExtraFields &extraFields);
+		void InitComponents(bool showHeaders, ChannelConfigExtraFields &extraFields, DatalogChannels &standardChannels);
 		void InitSampleRateCombo(wxComboBox *combo);
+		void InitChannelLabelCombo(wxComboBox *combo, DatalogChannels &standardChannels);
 
 		ChannelConfig *m_channelConfig;
 

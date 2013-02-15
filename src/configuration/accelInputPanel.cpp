@@ -6,16 +6,16 @@ AccelInputPanel::AccelInputPanel() : BaseChannelConfigPanel()
 }
 
 AccelInputPanel::AccelInputPanel(wxWindow *parent,
+			ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseChannelConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -30,14 +30,14 @@ AccelInputPanel::~AccelInputPanel(){
 
 
 void AccelInputPanel::UpdateExtendedChannelFields(int i){
-	AccelConfig &cfg = (m_raceCaptureConfig->accelConfigs[i]);
+	AccelConfig &cfg = (m_configParams->config->accelConfigs[i]);
 	m_accelMode[i]->Select(cfg.mode);
 	m_accelMapping[i]->Select(cfg.channel);
 	m_accelZeroValue[i]->SetValue(cfg.zeroValue);
 }
 
 ChannelConfig * AccelInputPanel::GetChannelConfig(int i){
-	return &(m_raceCaptureConfig->accelConfigs[i].channelConfig);
+	return &(m_configParams->config->accelConfigs[i].channelConfig);
 }
 
 int AccelInputPanel::ChannelCount(){
@@ -45,7 +45,7 @@ int AccelInputPanel::ChannelCount(){
 }
 
 ChannelConfigExtraFields AccelInputPanel::CreateExtendedChannelFields(int i){
-	AccelConfig &cfg = (m_raceCaptureConfig->accelConfigs[i]);
+	AccelConfig &cfg = (m_configParams->config->accelConfigs[i]);
 	ChannelConfigExtraFields extraFields;
 	{
 		ChannelConfigExtraField f;
@@ -147,6 +147,11 @@ void AccelInputPanel::OnAccelZeroChanged(wxCommandEvent &event){
 		cfg->zeroValue = s->GetValue();
 	}
 }
+
+DatalogChannels & AccelInputPanel::GetStandardChannels(){
+	return m_configParams->appOptions->GetStandardAccelChannels();
+}
+
 
 BEGIN_EVENT_TABLE ( AccelInputPanel, wxPanel )
 END_EVENT_TABLE()

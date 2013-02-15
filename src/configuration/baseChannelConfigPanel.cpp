@@ -12,16 +12,16 @@ BaseChannelConfigPanel::BaseChannelConfigPanel() : BaseConfigPanel()
 }
 
 BaseChannelConfigPanel::BaseChannelConfigPanel(wxWindow *parent,
+			ConfigPanelParams *configParams,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseConfigPanel(	parent,
+						configParams,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -73,8 +73,8 @@ void BaseChannelConfigPanel::OnConfigUpdated(){
 	UpdatedExtendedFields();
 }
 
-ChannelConfigPanel * BaseChannelConfigPanel::CreateNewChannelConfigPanel(int index,bool showHeaders, ChannelConfigExtraFields &extraFields, ChannelConfig *channelConfig){
-	ChannelConfigPanel *p = new ChannelConfigPanel(this,extraFields,-1,showHeaders,channelConfig);
+ChannelConfigPanel * BaseChannelConfigPanel::CreateNewChannelConfigPanel(int index,bool showHeaders, ChannelConfigExtraFields &extraFields, ChannelConfig *channelConfig, DatalogChannels & standardChannelNames){
+	ChannelConfigPanel *p = new ChannelConfigPanel(this, extraFields, standardChannelNames, -1, showHeaders, channelConfig);
 	p->SetName(GetChannelConfigPanelName(index));
 	return p;
 }
@@ -99,7 +99,7 @@ void BaseChannelConfigPanel::InitComponents(){
 	for (int i=0; i < channelCount;i++){
 		ChannelConfig *channelConfig = GetChannelConfig(i);
 		ChannelConfigExtraFields extraFields = CreateExtendedChannelFields(i);
-		ChannelConfigPanel *ccPanel = CreateNewChannelConfigPanel(i,i == 0,extraFields,channelConfig);
+		ChannelConfigPanel *ccPanel = CreateNewChannelConfigPanel(i,i == 0,extraFields,channelConfig, GetStandardChannels());
 		channelSizer->Add(new wxStaticText(this,-1,GetChannelLabel(i)),1,wxALIGN_BOTTOM);
 		channelSizer->Add(ccPanel,1,wxALIGN_LEFT);
 	}

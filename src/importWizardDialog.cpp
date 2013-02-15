@@ -389,7 +389,7 @@ void MapDatalogChannelsPage::PopulateChannels(){
 			existingChannels,
 			existingChannelTypes);
 
-	DatalogChannels &standardChannels = m_params->appOptions->GetStandardChannels();
+	DatalogChannels &standardChannels = m_params->appOptions->GetAllStandardChannels();
 	DatalogChannelTypes &standardChannelTypes = m_params->appOptions->GetStandardChannelTypes();
 
 	wxArrayString unmatchedHeaders;

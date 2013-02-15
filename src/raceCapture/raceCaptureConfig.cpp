@@ -8,7 +8,7 @@
 
 SampleRates ChannelConfig::sampleRates;
 
-ChannelConfig::ChannelConfig() : sampleRate(sample_disabled){}
+ChannelConfig::ChannelConfig(): sampleRate(sample_disabled){}
 
 SampleRates ChannelConfig::GetSampleRates(){
 

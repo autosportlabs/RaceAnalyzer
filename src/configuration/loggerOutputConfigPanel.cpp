@@ -7,16 +7,16 @@ LoggerOutputConfigPanel::LoggerOutputConfigPanel() : BaseConfigPanel()
 }
 
 LoggerOutputConfigPanel::LoggerOutputConfigPanel(wxWindow *parent,
+		ConfigPanelParams *configParms,
 			wxWindowID id,
-			RaceCaptureConfig *config,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
 			: BaseConfigPanel(	parent,
+						configParms,
 						id,
-						config,
 						pos,
 						size,
 						style,
@@ -29,7 +29,7 @@ LoggerOutputConfigPanel::~LoggerOutputConfigPanel(){
 }
 
 void LoggerOutputConfigPanel::OnConfigUpdated(){
-	LoggerOutputConfig &cfg = (m_raceCaptureConfig->loggerOutputConfig);
+	LoggerOutputConfig &cfg = (m_configParams->config->loggerOutputConfig);
 	m_sdLoggingModeCombo->Select(cfg.loggingMode);
 	m_telemetryModeCombo->Select(cfg.telemetryMode);
 	m_p2pAddressHighTextCtrl->SetValue(wxString::Format("%u",cfg.p2pDestinationAddrHigh));
@@ -124,7 +124,7 @@ void LoggerOutputConfigPanel::InitComponents(){
 void LoggerOutputConfigPanel::OnP2PAddressHighChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_raceCaptureConfig->loggerOutputConfig);
+		LoggerOutputConfig &cfg = (m_configParams->config->loggerOutputConfig);
 		cfg.p2pDestinationAddrHigh = atoi(c->GetValue());
 	}
 }
@@ -132,7 +132,7 @@ void LoggerOutputConfigPanel::OnP2PAddressHighChanged(wxCommandEvent &event){
 void LoggerOutputConfigPanel::OnP2PAddressLowChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_raceCaptureConfig->loggerOutputConfig);
+		LoggerOutputConfig &cfg = (m_configParams->config->loggerOutputConfig);
 		cfg.p2pDestinationAddrLow = atoi(c->GetValue());
 	}
 }
@@ -140,7 +140,7 @@ void LoggerOutputConfigPanel::OnP2PAddressLowChanged(wxCommandEvent &event){
 void LoggerOutputConfigPanel::OnTelemetryModeChanged(wxCommandEvent &event){
 	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_raceCaptureConfig->loggerOutputConfig);
+		LoggerOutputConfig &cfg = (m_configParams->config->loggerOutputConfig);
 		cfg.telemetryMode = (telemetry_mode_t)c->GetSelection();
 	}
 }
@@ -148,7 +148,7 @@ void LoggerOutputConfigPanel::OnTelemetryModeChanged(wxCommandEvent &event){
 void LoggerOutputConfigPanel::OnLoggingModeChanged(wxCommandEvent &event){
 	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_raceCaptureConfig->loggerOutputConfig);
+		LoggerOutputConfig &cfg = (m_configParams->config->loggerOutputConfig);
 		cfg.loggingMode = (logging_mode_t)c->GetSelection();
 	}
 }

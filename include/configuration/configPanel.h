@@ -14,21 +14,13 @@
 #include "configuration/gpioPanel.h"
 #include "configuration/gpsConfigPanel.h"
 #include "configuration/scriptPanel.h"
-#include "comm.h"
-
-class ConfigPanelParams {
-	public:
-		ConfigPanelParams(RaceAnalyzerComm *comm, RaceCaptureConfig *config):
-				comm(comm),config(config){}
-		RaceAnalyzerComm *comm;
-		RaceCaptureConfig *config;
-};
+#include "configPanelParams.h"
 
 class ConfigPanel : public wxPanel, public RaceAnalyzerCommCallback{
 
 	public:
-		ConfigPanel(ConfigPanelParams params,
-					wxWindow *parent,
+		ConfigPanel(wxWindow *parent,
+					ConfigPanelParams params,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
@@ -70,10 +62,8 @@ class ConfigPanel : public wxPanel, public RaceAnalyzerCommCallback{
 		LoggerOutputConfigPanel *m_loggerOutputPanel;
 		ScriptPanel *m_scriptPanel;
 
-
-		RaceCaptureConfig *m_raceCaptureConfig;
+		ConfigPanelParams m_configParams;
 		AsyncRaceAnalyzerComm * m_asyncComm;
-		RaceAnalyzerComm *m_comm;
 
 
 	DECLARE_EVENT_TABLE()

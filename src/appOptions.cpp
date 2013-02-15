@@ -79,14 +79,20 @@ void AppOptions::LoadAppOptions(){
 	config.Read(CONFIG_KEY_DATALOG_CHANNEL_COUNT, &standardChannelCount, DEFAULT_DATALOG_CHANNEL_COUNT );
 
 	if (DEFAULT_DATALOG_CHANNEL_COUNT == standardChannelCount){
-		LoadDefaultStandardChannels(m_standardChannels);
+		LoadAllStandardChannels(m_allStandardChannels);
+		LoadStandardAccelChannels(m_standardAccelChannels);
+		LoadStandardGpsChannels(m_standardGpsChannels);
+		LoadStandardAnalogChannels(m_standardAnalogChannels);
+		LoadStandardFrequencyChannels(m_standardPulseInputChannels);
+		LoadStandardPwmChannels(m_standardAnalogPwmOutputChannels);
+		LoadStandardGpioChannels(m_standardGpioChannels);
 	}
 
 	int standardChannelTypesCount = 0;
 	config.Read(CONFIG_KEY_DATALOG_CHANNEL_TYPE_COUNT, &standardChannelTypesCount, DEFAULT_DATALOG_CHANNEL_TYPES_COUNT );
 
 	if (DEFAULT_DATALOG_CHANNEL_TYPES_COUNT == standardChannelTypesCount){
-		LoadDefaultStandardChannelTypes(m_standardChannelTypes);
+		LoadStandardChannelTypes(m_standardChannelTypes);
 	}
 
 	wxString chartColorString;
@@ -114,8 +120,32 @@ void AppOptions::LoadAppOptions(){
 
 }
 
-DatalogChannels & AppOptions::GetStandardChannels(){
-	return m_standardChannels;
+DatalogChannels & AppOptions::GetStandardAccelChannels(){
+	return m_standardAccelChannels;
+}
+
+DatalogChannels & AppOptions::GetStandardGpsChannels(){
+	return m_standardGpsChannels;
+}
+
+DatalogChannels & AppOptions::GetStandardAnalogChannels(){
+	return m_standardAnalogChannels;
+}
+
+DatalogChannels & AppOptions::GetStandardPulseInputChannels(){
+	return m_standardPulseInputChannels;
+}
+
+DatalogChannels & AppOptions::GetStandardAnalogPwmOutputChannels(){
+	return m_standardAnalogPwmOutputChannels;
+}
+
+DatalogChannels & AppOptions::GetStandardGpioChannels(){
+	return m_standardGpioChannels;
+}
+
+DatalogChannels & AppOptions::GetAllStandardChannels(){
+	return m_allStandardChannels;
 }
 
 DatalogChannelTypes & AppOptions::GetStandardChannelTypes(){
@@ -137,9 +167,9 @@ DatalogChannelType AppOptions::GetDefaultUnknownChannelType(wxString name){
 
 DatalogChannelType AppOptions::GetChannelTypeForChannel(wxString channelName){
 	//search through this. maybe change this to a wxHashMap for better efficiency
-	size_t count = m_standardChannels.Count();
+	size_t count = m_allStandardChannels.Count();
 	for (size_t i = 0; i < count; i++){
-		DatalogChannel &channel = m_standardChannels[i];
+		DatalogChannel &channel = m_allStandardChannels[i];
 		if (channel.name == channelName){
 			int typeId = channel.typeId;
 			return m_standardChannelTypes[typeId];
@@ -148,7 +178,7 @@ DatalogChannelType AppOptions::GetChannelTypeForChannel(wxString channelName){
 	return GetDefaultUnknownChannelType(channelName);
 }
 
-void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
+void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 
 	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
 	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
@@ -169,14 +199,15 @@ void AppOptions::LoadDefaultStandardChannelTypes(DatalogChannelTypes &types){
 	types.Add( DatalogChannelType("Time", "Seconds", 0, 0, 1000, 2));
 }
 
-void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
-
+void AppOptions::LoadStandardAccelChannels(DatalogChannels &channels){
 	//Accelerometer inputs
 	channels.Add( DatalogChannel("AccelX", 1, "Accelerometer X Axis") );
 	channels.Add( DatalogChannel("AccelY", 1, "Accelerometer Y Axis") );
 	channels.Add( DatalogChannel("AccelZ", 1, "Accelerometer Z Axis") );
 	channels.Add( DatalogChannel("Yaw", 2, "Accelerometer Z Axis Rotation") );
+}
 
+void AppOptions::LoadStandardGpsChannels(DatalogChannels &channels){
 	//GPS inputs
 	channels.Add( DatalogChannel("Time", 3, "GPS Time in UTC") );
 	channels.Add( DatalogChannel("Qual", 4, "GPS signal quality indicator") );
@@ -186,7 +217,9 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("Speed", 7, "GPS Speed") );
 	channels.Add( DatalogChannel("LapCount",4, "Lap Count" ));
 	channels.Add( DatalogChannel("LapTime", 16, "Lap Time" ));
+}
 
+void AppOptions::LoadStandardAnalogChannels(DatalogChannels &channels){
 	//Analog inputs
 	channels.Add( DatalogChannel("Battery", 8, "Battery Voltage") );
 	channels.Add( DatalogChannel("Analog1", 8, "Analog Input 1") );
@@ -199,7 +232,9 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("OilPressure", 9, "Oil Pressure") );
 	channels.Add( DatalogChannel("OilTemp", 10, "Engine Oil Temperature") );
 	channels.Add( DatalogChannel("CoolantTemp", 10, "Engine Coolant Temperature") );
+}
 
+void AppOptions::LoadStandardFrequencyChannels(DatalogChannels &channels){
 	//Frequency Inputs
 	channels.Add( DatalogChannel("Freq1", 11, "Frequency Input 1") );
 	channels.Add( DatalogChannel("Freq2", 11, "Frequency Input 2") );
@@ -208,7 +243,9 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("WheelSpeed", 12, "Wheel Speed in RPM") );
 	channels.Add( DatalogChannel("PulseWidth", 13, "Signal Pulse width in Ms.") );
 	channels.Add( DatalogChannel("DutyCycle", 14, "Signal Duty Cycle in %") );
+}
 
+void AppOptions::LoadStandardPwmChannels(DatalogChannels &channels){
 	//Analog Outputs
 	channels.Add( DatalogChannel("Vout1", 8, "Analog Output 1") );
 	channels.Add( DatalogChannel("Vout2", 8, "Analog Output 2") );
@@ -220,7 +257,9 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("FreqOut2", 11, "Frequency Output 2") );
 	channels.Add( DatalogChannel("FreqOut3", 11, "Frequency Output 3") );
 	channels.Add( DatalogChannel("FreqOut4", 11, "Frequency Output 4") );
+}
 
+void AppOptions::LoadStandardGpioChannels(DatalogChannels &channels){
 	//Digital Inputs
 	channels.Add(DatalogChannel("GPI1", 15, "Digital Input 1") );
 	channels.Add(DatalogChannel("GPI2", 15, "Digital Input 2") );
@@ -230,6 +269,16 @@ void AppOptions::LoadDefaultStandardChannels(DatalogChannels &channels){
 	channels.Add(DatalogChannel("GPO1", 15, "Digital Output 1") );
 	channels.Add(DatalogChannel("GPO2", 15, "Digital Output 2") );
 	channels.Add(DatalogChannel("GPO3", 15, "Digital Output 3") );
+}
+
+void AppOptions::LoadAllStandardChannels(DatalogChannels &channels){
+
+	LoadStandardAccelChannels(channels);
+	LoadStandardGpsChannels(channels);
+	LoadStandardAnalogChannels(channels);
+	LoadStandardFrequencyChannels(channels);
+	LoadStandardPwmChannels(channels);
+	LoadStandardGpioChannels(channels);
 }
 
 void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes){
