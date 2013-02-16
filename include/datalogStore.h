@@ -36,6 +36,26 @@ private:
 };
 
 
+class DatalogHeader{
+public:
+	DatalogHeader(wxString rawHeader);
+	wxString channelName;
+	wxString units;
+	int sampleRate;
+};
+
+class DatalogInfo{
+public:
+	DatalogInfo();
+	DatalogInfo(int timeOffset, int maxSampleRate, const wxString &name, const wxString &notes);
+	int timeOffset;
+	int maxSampleRate;
+	wxString name;
+	wxString notes;
+};
+
+WX_DECLARE_OBJARRAY(DatalogHeader, DatalogHeaders);
+
 class DatalogStore {
 
 public:
@@ -49,10 +69,11 @@ public:
 	void CreateNew(wxString filePath);
 	wxString GetFileName();
 	bool IsOpen();
+	int FindMaxSampleRate(DatalogHeaders &datalogHeaders);
 	void ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener = NULL);
 
 	size_t CountFileLines(wxFFile &file);
-	void ReadDatalogInfo(int datalogId, int &timeOffset, wxString &name, wxString &notes);
+	void ReadDatalogInfo(int datalogId, DatalogInfo &info);
 	void ReadChannels(DatalogChannels &channels);
 	void ReadChannelTypes(DatalogChannelTypes &channelTypes);
 	void ReadDatalog(DatalogStoreRows &data, int datalogId, wxArrayString &names, int fromTimePoint, int toTimepoint = TIMEPOINT_REST);
@@ -68,7 +89,7 @@ public:
 	void ImportChannels(DatalogChannels &channels);
 	void ImportChannelTypes(DatalogChannelTypes &channelTypes);
 	void ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds);
-	void GetDatalogHeaders(wxArrayString &headers, wxFFile &file);
+	void GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file);
 	int GetTopDatalogId();
 
 private:
@@ -76,12 +97,14 @@ private:
 	void SetFilename(wxString name);
 	void CreateTables();
 	size_t ReadLine(wxString &buffer, wxFFile &file);
+	void StripQuotes(wxString &values);
 	size_t ExtractValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns = NULL);
 
+	int InsertDatalogInfo(const DatalogInfo &info);
 	void InsertDatalogRow(sqlite3_stmt *query, int id, int timePoint, wxArrayString &values);
 	void AddDatalogChannel(int channelId, DatalogChannel &channel);
 	bool DatalogColumnExists(wxString &name);
-	sqlite3_stmt * CreateDatalogInsertPreparedStatement(wxArrayString &columns, wxArrayInt &selectedColumns);
+	sqlite3_stmt * CreateDatalogInsertPreparedStatement(DatalogHeaders &headers, wxArrayInt &selectedColumns);
 	int GetTopTimePoint();
 
 	bool m_isOpen;

@@ -7,17 +7,58 @@
 #include "datalogStore.h"
 #include "wx/tokenzr.h"
 #include "logging.h"
+#include "raceCapture/raceCaptureConfig.h"
+#include "util/stringUtil.h"
 
 #define DEFAULT_WORKING_PATH "."
 #define DEFAULT_DATASTORE_NAME "untitled.radb"
 #define DATALOG_ITEM_DELIMITER ","
-#define DATALOG_ITEM_STRING_DELIMETER "\""
-#define DATALOG_ITEM_STRING_DELIMITER_ESCAPE "\"\""
 #define DATALOG_STORE_FILE_EXTENSION ".radb"
 
 
 #define DATALOG_FILE_COMMENT "#"
 #define IMPORT_PROGRESS_COARSENESS 100
+
+
+DatalogHeader::DatalogHeader(wxString rawHeader) : sampleRate(0) {
+
+	wxStringTokenizer tk(rawHeader, "|", wxTOKEN_RET_EMPTY);
+	int index = 0;
+	while (tk.HasMoreTokens()){
+		switch(index){
+			case 0:
+			{
+				wxString channelName = tk.GetNextToken();
+				StringUtil::StripQuotes(channelName);
+				this->channelName = channelName;
+				break;
+			}
+			case 1:
+			{
+				wxString units = tk.GetNextToken();
+				StringUtil::StripQuotes(units);
+				this->units = units;
+				break;
+			}
+			case 2:
+			{
+				long sampleRate;
+				if (tk.GetNextToken().ToLong(&sampleRate,10)){
+					this->sampleRate = sampleRate;
+				}
+				break;
+			}
+		}
+		index++;
+	}
+}
+
+#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+WX_DEFINE_OBJARRAY(DatalogHeaders);
+
+DatalogInfo::DatalogInfo() : timeOffset(0), maxSampleRate(sample_disabled), name(""), notes(""){}
+DatalogInfo::DatalogInfo(int timeOffset, int maxSampleRate, const wxString &name, const wxString &notes) :
+		timeOffset(timeOffset), maxSampleRate(maxSampleRate), name(name), notes(notes) {}
 
 DatalogStore::DatalogStore() : m_isOpen(false),m_db(NULL),m_datastoreName(DEFAULT_DATASTORE_NAME){
 
@@ -88,7 +129,7 @@ void DatalogStore::CreateTables(){
 
 	{
 		const char *CREATE_DATALOG_INFO_TABLE_SQL = \
-		"CREATE TABLE datalogInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, timeOffset INTEGER NOT NULL, name TEXT NOT NULL, notes TEXT NULL)";
+		"CREATE TABLE datalogInfo(id INTEGER PRIMARY KEY AUTOINCREMENT, maxSampleRate INTEGER NOT NULL, timeOffset INTEGER NOT NULL, name TEXT NOT NULL, notes TEXT NULL)";
 		int rc = sqlite3_exec(m_db, CREATE_DATALOG_INFO_TABLE_SQL, NULL, NULL, &sqlErrMsg);
 		if ( rc != SQLITE_OK ){
 			wxString errMsg = wxString::Format("Error creating 'datalogInfo' table: %s", sqlErrMsg);
@@ -155,7 +196,7 @@ void DatalogStore::CreateTables(){
 }
 
 
-void DatalogStore::GetDatalogHeaders(wxArrayString &headers, wxFFile &file){
+void DatalogStore::GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file){
 
 	wxString line;
 
@@ -163,7 +204,13 @@ void DatalogStore::GetDatalogHeaders(wxArrayString &headers, wxFFile &file){
 	if (! ReadLine(line, file)){
 		throw FileAccessException("Could not read Datalog File header", file.GetName());
 	}
-	ExtractValues(headers,line);
+	wxArrayString rawHeaders;
+	ExtractValues(rawHeaders, line);
+
+	for (int i = 0; i < rawHeaders.Count(); i++){
+		DatalogHeader header(rawHeaders[i]);
+		headers.Add(header);
+	}
 }
 
 void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds){
@@ -211,6 +258,62 @@ void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds
 	sqlite3_finalize(stmt);
 }
 
+int DatalogStore::FindMaxSampleRate(DatalogHeaders &datalogHeaders){
+	int sampleRate = sample_disabled;
+	for (int i = 0; i < datalogHeaders.Count(); i++){
+		int testSampleRate = datalogHeaders[i].sampleRate;
+		if (testSampleRate > sampleRate) sampleRate = testSampleRate;
+	}
+	return sampleRate;
+}
+
+int DatalogStore::InsertDatalogInfo(const DatalogInfo &info){
+
+	const char * INSERT_DATALOG_INFO_SQL = "INSERT INTO datalogInfo (timeOffset, maxSampleRate, name, notes) values (?,?,?,?)";
+
+	sqlite3_stmt *infoStmt;
+
+	{
+		int rc = sqlite3_prepare(m_db, INSERT_DATALOG_INFO_SQL, strlen(INSERT_DATALOG_INFO_SQL), &infoStmt, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to prepare Insert DatalogInfo statement", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_int(infoStmt, 1, info.timeOffset);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind timeOffset parameter for datalogInfo", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_int(infoStmt, 2, info.maxSampleRate);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind maxSampleRate parameter for datalogInfo", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_text(infoStmt, 3, info.name.ToAscii(), info.name.Length(), SQLITE_STATIC);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind name parameter for datalogInfo", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_text(infoStmt, 4, info.notes.ToAscii(), info.notes.Length(), SQLITE_STATIC);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind notes parameter for datalogInfo", rc);
+		}
+	}
+
+	int rc = sqlite3_step(infoStmt);
+	if (SQLITE_DONE != rc){
+		VERBOSE(FMT("error inserting: %s %d",sqlite3_errmsg(m_db),rc));
+		throw DatastoreException("failed to insert datalogInfo record" ,rc);
+	}
+
+	sqlite3_finalize(infoStmt);
+
+	return GetTopDatalogId();
+}
 
 void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener){
 
@@ -227,65 +330,30 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 		datalogFile.Seek(0,wxFromStart);
 	}
 
-	wxArrayString columnNames;
+	DatalogHeaders headers;
 	wxArrayInt selectedColumns;
-	GetDatalogHeaders(columnNames,datalogFile);
+	GetDatalogHeaders(headers,datalogFile);
 
 	//Select the columns we are inserting
-	size_t columnNamesCount = columnNames.Count();
-	for (size_t i = 0; i < columnNamesCount; i++){
-		int id = DatalogChannelUtil::FindChannelIdByName(channels, columnNames[i]);
+	size_t datalogHeadersCount = headers.Count();
+	for (size_t i = 0; i < datalogHeadersCount; i++){
+		int id = DatalogChannelUtil::FindChannelIdByName(channels, headers[i].channelName);
 		selectedColumns.Add(id >= 0 ? 1 : 0);
 	}
 
 	int timeOffset = 0;
+	int maxSampleRate = FindMaxSampleRate(headers);
 
 	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
 
-	const char * INSERT_DATALOG_INFO_SQL = "INSERT INTO datalogInfo (timeOffset, name, notes) values (?,?,?)";
+	DatalogInfo datalogInfo(timeOffset, maxSampleRate, name, notes);
+	int datalogId = InsertDatalogInfo(datalogInfo);
 
-	sqlite3_stmt *infoStmt;
-
-	{
-		int rc = sqlite3_prepare(m_db, INSERT_DATALOG_INFO_SQL, strlen(INSERT_DATALOG_INFO_SQL), &infoStmt, NULL);
-		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to prepare Insert DatalogInfo statement", rc);
-		}
-	}
-	{
-		int rc = sqlite3_bind_int(infoStmt,1,timeOffset);
-		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to bind timeOffset parameter for datalogInfo", rc);
-		}
-	}
-	{
-		int rc = sqlite3_bind_text(infoStmt,2,name.ToAscii(), name.Length(), SQLITE_STATIC);
-		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to bind name parameter for datalogInfo", rc);
-		}
-	}
-	{
-		int rc = sqlite3_bind_text(infoStmt,3,notes.ToAscii(), notes.Length(), SQLITE_STATIC);
-		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to bind notes parameter for datalogInfo", rc);
-		}
-	}
-
-	int rc = sqlite3_step(infoStmt);
-	if (SQLITE_DONE != rc){
-		VERBOSE(FMT("error inserting: %s %d",sqlite3_errmsg(m_db),rc));
-		throw DatastoreException("failed to insert datalogInfo record" ,rc);
-	}
-
-	sqlite3_finalize(infoStmt);
-
-	int datalogId = GetTopDatalogId();
-
-	sqlite3_stmt *insertStmt = CreateDatalogInsertPreparedStatement(columnNames, selectedColumns);
+	sqlite3_stmt *insertStmt = CreateDatalogInsertPreparedStatement(headers, selectedColumns);
 
 	wxArrayString values;
 	int timePoint = 0;
-	int logInterval = 100; //TODO detect this from file. in Milliseconds
+	int logInterval = 1000 / maxSampleRate; //in milliseconds
 	wxString line;
 
 	int progressReportCoarseness = datalogLines / IMPORT_PROGRESS_COARSENESS;
@@ -307,18 +375,17 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 
 	sqlite3_finalize(insertStmt);
 	if (NULL != progressListener) progressListener->UpdateProgress(100);
-
 }
 
-sqlite3_stmt * DatalogStore::CreateDatalogInsertPreparedStatement(wxArrayString &columns, wxArrayInt &selectedColumns){
+sqlite3_stmt * DatalogStore::CreateDatalogInsertPreparedStatement(DatalogHeaders &headers, wxArrayInt &selectedColumns){
 
 	sqlite3_stmt *query;
 
-	size_t count = columns.Count();
+	size_t count = headers.Count();
 
 	wxString sql = "INSERT INTO datalog(id,timePoint,";
 	for (size_t i = 0; i < count; i++){
-		if (selectedColumns[i]) sql += columns[i] + ",";
+		if (selectedColumns[i]) sql += headers[i].channelName + ",";
 	}
 	sql.RemoveLast();
 
@@ -475,9 +542,9 @@ bool DatalogStore::DatalogColumnExists(wxString &channelName){
 	return found;
 }
 
-void DatalogStore::ReadDatalogInfo(int datalogId, int &timeOffset, wxString &name, wxString &notes){
+void DatalogStore::ReadDatalogInfo(int datalogId, DatalogInfo &info){
 
-	const char *SELECT_DATALOG_INFO = "Select timeOffset, name, notes from datalogInfo where id = ?";
+	const char *SELECT_DATALOG_INFO = "Select timeOffset, maxSampleRate, name, notes from datalogInfo where id = ?";
 
 	sqlite3_stmt *query;
 	{
@@ -493,9 +560,10 @@ void DatalogStore::ReadDatalogInfo(int datalogId, int &timeOffset, wxString &nam
 		}
 	}
 	while( sqlite3_step(query) == SQLITE_ROW){
-		timeOffset = sqlite3_column_int(query, 0);
-		name = sqlite3_column_text(query,1);
-		notes = sqlite3_column_text(query,2);
+		info.timeOffset = sqlite3_column_int(query, 0);
+		info.maxSampleRate = sqlite3_column_int(query, 1);
+		info.name = sqlite3_column_text(query, 2);
+		info.notes = sqlite3_column_text(query, 3);
 	}
 	sqlite3_finalize(query);
 }
@@ -729,6 +797,7 @@ size_t DatalogStore::ReadLine(wxString &buffer, wxFFile &file){
 	return readCount;
 }
 
+
 size_t DatalogStore::ExtractValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns){
 
 	wxStringTokenizer tok(line, DATALOG_ITEM_DELIMITER, wxTOKEN_RET_EMPTY);
@@ -740,12 +809,7 @@ size_t DatalogStore::ExtractValues(wxArrayString &valueList, wxString &line, wxA
 		wxString value = tok.NextToken();
 		value.Strip(wxString::both);
 		//process string value
-		size_t len = value.Length();
-		if (len > 0 && value[0] == '"' && value[len - 1] == '"'){
-			value.Remove(0,1);
-			value.RemoveLast(1);
-			value.Replace(DATALOG_ITEM_STRING_DELIMITER_ESCAPE, DATALOG_ITEM_STRING_DELIMETER, true);
-		}
+		StringUtil::StripQuotes(value);
 		if (NULL == selectedColumns || (count < selectedColumnsCount && selectedColumns->Item(count))){
 			valueList.Add(value);
 			VERBOSE(FMT("Adding value: %s",value.ToAscii()));

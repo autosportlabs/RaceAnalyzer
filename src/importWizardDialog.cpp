@@ -372,8 +372,8 @@ void MapDatalogChannelsPage::PopulateChannels(){
 		return;
 	}
 
-	wxArrayString headers;
-	store->GetDatalogHeaders(headers,file);
+	DatalogHeaders headers;
+	store->GetDatalogHeaders(headers, file);
 
 	DatalogChannels existingChannels;
 	DatalogChannelTypes existingChannelTypes;
@@ -381,7 +381,7 @@ void MapDatalogChannelsPage::PopulateChannels(){
 	store->GetAllChannels(existingChannels);
 	store->GetChannelTypes(existingChannelTypes);
 
-	wxArrayString remainingHeaders;
+	DatalogHeaders remainingHeaders;
 	AddExistingChannels(headers,
 			remainingHeaders,
 			channels,
@@ -392,7 +392,7 @@ void MapDatalogChannelsPage::PopulateChannels(){
 	DatalogChannels &standardChannels = m_params->appOptions->GetAllStandardChannels();
 	DatalogChannelTypes &standardChannelTypes = m_params->appOptions->GetStandardChannelTypes();
 
-	wxArrayString unmatchedHeaders;
+	DatalogHeaders unmatchedHeaders;
 	AddExistingChannels(remainingHeaders,
 			unmatchedHeaders,
 			channels,
@@ -402,24 +402,22 @@ void MapDatalogChannelsPage::PopulateChannels(){
 
 	size_t unmatchedCount = unmatchedHeaders.Count();
 	for (size_t i = 0; i < unmatchedCount; i++){
-		channels.Add(DatalogChannel(unmatchedHeaders[i]));
+		channels.Add(DatalogChannel(unmatchedHeaders[i].channelName));
 	}
 
 }
 
-void MapDatalogChannelsPage::AddExistingChannels(wxArrayString &headers, wxArrayString &remainingHeaders,
+void MapDatalogChannelsPage::AddExistingChannels(DatalogHeaders &headers, DatalogHeaders &remainingHeaders,
 		DatalogChannels &channels,
 		DatalogChannelTypes &channelTypes,
 		DatalogChannels &existingChannels,
 		DatalogChannelTypes &existingChannelTypes
 		){
-
-
 	size_t count = headers.Count();
 
 	for (size_t i = 0; i < count; i++){
-		wxString header = headers[i];
-		int id = DatalogChannelUtil::FindChannelIdByName(existingChannels,header);
+		DatalogHeader header = headers[i];
+		int id = DatalogChannelUtil::FindChannelIdByName(existingChannels,header.channelName);
 		if (id >= 0){
 			DatalogChannel channel = existingChannels[id];
 			DatalogChannelType channelType = existingChannelTypes[channel.typeId];

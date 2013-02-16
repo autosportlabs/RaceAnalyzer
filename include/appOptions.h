@@ -54,10 +54,6 @@ WX_DECLARE_OBJARRAY(wxColor,ChartColors);
 WX_DECLARE_STRING_HASH_MAP(AnalogGaugeType, AnalogGaugeTypes);
 WX_DECLARE_STRING_HASH_MAP(DigitalGaugeType, DigitalGaugeTypes);
 
-
-
-
-
 class AppOptions{
 
 	public:

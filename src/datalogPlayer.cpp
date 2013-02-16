@@ -81,7 +81,7 @@ void * DatalogPlayer::Entry(){
 		m_shouldPlay->Wait();
 		Tick(m_offset);
 		m_shouldPlay->Post();
-		wxThread::Sleep(33);
+		wxThread::Sleep(1000 / m_datalogInfo.maxSampleRate);
 
 		m_offset += m_multiplier;
 
@@ -106,6 +106,7 @@ void DatalogPlayer::Requery(int datalogId){
 	for (size_t i = 0; i < m_datalogChannels.Count(); i++){
 		channelNames.Add(m_datalogChannels[i].name);
 	}
+	m_datalogStore->ReadDatalogInfo(datalogId, m_datalogInfo);
 	m_datalogStore->ReadDatalog(m_datalogData, datalogId, channelNames, 0);
 	m_datalogId = datalogId;
 

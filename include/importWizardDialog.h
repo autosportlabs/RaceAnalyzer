@@ -122,8 +122,8 @@ public:
 	void OnWizardPageChanging(wxWizardEvent &event);
 	void PopulateChannels();
 	void AddExistingChannels(
-			wxArrayString &headers,
-			wxArrayString &remainingHeaders,
+			DatalogHeaders &headers,
+			DatalogHeaders &remainingHeaders,
 			DatalogChannels &channels,
 			DatalogChannelTypes &channelTypes,
 			DatalogChannels &existingChannels,

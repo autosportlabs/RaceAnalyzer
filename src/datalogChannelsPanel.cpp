@@ -99,13 +99,11 @@ void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 
 
 	grid->SetEditable(false);
-	wxString name;
-	wxString notes;
-	int timeOffset;
-	m_datalogStore->ReadDatalogInfo(datalogId,timeOffset,name,notes);
+	DatalogInfo datalogInfo;
+	m_datalogStore->ReadDatalogInfo(datalogId,datalogInfo);
 
-	INFO(FMT("Read Datalog Info %s",name.ToAscii()));
-	m_datalogSessionsNotebook->AddPage(grid,name);
+	INFO(FMT("Read Datalog Info %s",datalogInfo.name.ToAscii()));
+	m_datalogSessionsNotebook->AddPage(grid,datalogInfo.name);
 
 	grid->CreateGrid(0,GRID_ROWS);
 	grid->SetSelectionMode(wxGrid::wxGridSelectRows);

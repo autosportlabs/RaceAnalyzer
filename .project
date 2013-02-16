@@ -3,6 +3,8 @@
 	<name>raceAnalyzer</name>
 	<comment></comment>
 	<projects>
+		<project>gaugeWorks</project>
+		<project>sqlite</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

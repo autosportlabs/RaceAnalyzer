@@ -39,6 +39,7 @@ public:
 private:
 	void Tick(size_t offset);
 
+	DatalogInfo m_datalogInfo;
 	int m_datalogId;
 	int m_offset;
 	int m_multiplier;
