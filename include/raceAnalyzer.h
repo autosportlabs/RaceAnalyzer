@@ -76,7 +76,6 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void ClearStatusMessage();
 	void UpdateCommControls();
 	void UpdateAnalyzerView();
-	void UpdateDatalogSessions();
 	void UpdateAnalysis();
 	void ConfigModified();
 	void TerminateApp();

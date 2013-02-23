@@ -33,9 +33,9 @@ public:
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void SetBufferSize(wxArrayString &channelNames, size_t size);
+	void SetBufferSize(ViewChannels &channelNames, size_t size);
 	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
-	void UpdateValue(wxString &name, size_t index, double value);
+	void UpdateValue(ViewChannel &channel, size_t index, double value);
 	void ScrollLineChart(int thumbPosition);
 	void SetOffset(int offset);
 

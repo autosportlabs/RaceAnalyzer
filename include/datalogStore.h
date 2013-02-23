@@ -44,15 +44,6 @@ public:
 	int sampleRate;
 };
 
-class DatalogInfo{
-public:
-	DatalogInfo();
-	DatalogInfo(int timeOffset, int maxSampleRate, const wxString &name, const wxString &notes);
-	int timeOffset;
-	int maxSampleRate;
-	wxString name;
-	wxString notes;
-};
 
 WX_DECLARE_OBJARRAY(DatalogHeader, DatalogHeaders);
 

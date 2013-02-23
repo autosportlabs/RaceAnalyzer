@@ -28,11 +28,11 @@ public:
 	~AnalogGaugePane();
 	void InitComponents();
 
-	void CreateGauge(int datalogId, wxString channelName);
+	void CreateGauge(ViewChannel &channel);
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &channelName, size_t index, double value);
+	void UpdateValue(ViewChannel &channel, size_t index, double value);
 
 
 private:
@@ -40,7 +40,7 @@ private:
 	ChartParams			m_chartParams;
 	DatalogStoreRows 	m_channelData;
 	int					m_dataOffset;
-	wxString			m_channelName;
+	ViewChannel			m_channel;
 
 	DECLARE_EVENT_TABLE()
 };

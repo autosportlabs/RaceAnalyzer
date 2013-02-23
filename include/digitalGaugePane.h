@@ -27,14 +27,14 @@ public:
 	~DigitalGaugePane();
 	void InitComponents();
 
-	void CreateGauge(int datalogId, wxString channelName);
+	void CreateGauge(ViewChannel &channel);
 
 	//from RaceAnalyzerChannelView
 	void SetChartParams(ChartParams params);
-	void UpdateValue(wxString &name, size_t index, double value);
+	void UpdateValue(ViewChannel &channel, size_t index, double value);
 
 private:
-	wxString			m_channelName;
+	ViewChannel			m_channel;
 	LCDDisplay			*m_lcdDisplay;
 	ChartParams			m_chartParams;
 	unsigned int		m_valuePrecision;

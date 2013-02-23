@@ -165,24 +165,24 @@ DatalogChannelType AppOptions::GetDefaultUnknownChannelType(wxString name){
 	return channelType;
 }
 
-DatalogChannelType AppOptions::GetChannelTypeForChannel(wxString channelName){
+DatalogChannelType AppOptions::GetChannelTypeForChannel(ViewChannel &channel){
 	//search through this. maybe change this to a wxHashMap for better efficiency
 	size_t count = m_allStandardChannels.Count();
 	for (size_t i = 0; i < count; i++){
-		DatalogChannel &channel = m_allStandardChannels[i];
-		if (channel.name == channelName){
-			int typeId = channel.typeId;
+		DatalogChannel &datalogChannel = m_allStandardChannels[i];
+		if (datalogChannel.name == channel.channelName){
+			int typeId = datalogChannel.typeId;
 			return m_standardChannelTypes[typeId];
 		}
 	}
-	return GetDefaultUnknownChannelType(channelName);
+	return GetDefaultUnknownChannelType(channel.channelName);
 }
 
 void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 
 	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
 	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
-	types.Add( DatalogChannelType("Rotation", "Degrees/Sec", 5, -300.0, 300.0, 2) );
+	types.Add( DatalogChannelType("Rotation", "Deg/Sec", 5, -300.0, 300.0, 2) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0, 2) );
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
 	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());

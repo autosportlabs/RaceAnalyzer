@@ -18,11 +18,12 @@ public:
 	const static int MAX_PLAYBACK_MULTIPLIER = 25;
 	DatalogPlayer();
 	~DatalogPlayer();
-	void PlayFwd(int datalogId);
-	void PlayRev(int datalogId);
-	void Requery(int datalogId);
+	void PlayFwd(void);
+	void PlayRev(void);
+	void RequeryAll(void);
+	void Requery(int datalogId, DatalogSnapshots &rowCollection);
 	void AddView(RaceAnalyzerChannelView *view);
-	void InitView(RaceAnalyzerChannelView *view, size_t datalogLength);
+	void InitView(RaceAnalyzerChannelView *view, DatalogSnapshot &snapshot);
 	void Pause();
 	void SkipFwd();
 	void SkipRev();
@@ -31,22 +32,25 @@ public:
 	void StopPlayback();
 	void SetPlaybackMultiplier(int multiplier);
 	int GetPlaybackMultiplier();
-	void UpdateDataHistory(HistoricalView *view, wxArrayString &channels, size_t fromIndex, size_t toIndex);
+	void UpdateDataHistory(HistoricalView *view, ViewChannels &channels, size_t fromIndex, size_t toIndex);
+	void DatalogSessionsUpdated(void);
 
 	void Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views);
 	void * Entry();
 
 private:
+	DatalogSnapshot * GetDatalogSnapshot(int datalogId);
 	void Tick(size_t offset);
 
-	DatalogInfo m_datalogInfo;
-	int m_datalogId;
+	int m_shouldReloadSessions;
 	int m_offset;
 	int m_multiplier;
+	int m_maxSampleRate;
+	size_t m_maxDatalogRowCount;
 
+	wxArrayInt m_datalogIds;
 	DatalogStore *m_datalogStore;
-	DatalogChannels m_datalogChannels;
-	DatalogStoreRows  m_datalogData;
+	DatalogSnapshots  m_datalogSnapshots;
 	RaceAnalyzerChannelViews * m_views;
 	wxSemaphore * m_shouldPlay;
 

@@ -32,10 +32,10 @@ AnalogGaugePane::~AnalogGaugePane(){
 
 }
 
-void AnalogGaugePane::CreateGauge(int datalogId, wxString channelName){
+void AnalogGaugePane::CreateGauge(ViewChannel &channel){
 
-	m_channelName = channelName;
-	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channelName);
+	m_channel = channel;
+	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channel);
 
 	m_angularMeter->SetRange(type.minValue, type.maxValue);
 	AppOptions *options = m_chartParams.appOptions;
@@ -58,8 +58,8 @@ void AnalogGaugePane::SetChartParams(ChartParams params){
 }
 
 
-void AnalogGaugePane::UpdateValue(wxString &channelName, size_t index, double value){
-	if (m_channelName == channelName && DatalogValue::NULL_VALUE != value) m_angularMeter->SetValue(value);
+void AnalogGaugePane::UpdateValue(ViewChannel &channel, size_t index, double value){
+	if (m_channel == channel && DatalogValue::NULL_VALUE != value) m_angularMeter->SetValue(value);
 }
 
 void AnalogGaugePane::InitComponents(){
