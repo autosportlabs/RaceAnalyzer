@@ -505,6 +505,7 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 
 		{
 			config->luaScript = readScript();
+			updateWriteConfigPct(++updateCount,callback);
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("get config in %f",dur.GetMilliseconds().ToDouble());
@@ -521,7 +522,7 @@ void RaceAnalyzerComm::updateWriteConfigPct(int count,RaceAnalyzerCommCallback *
 			CONFIG_TIMER_CHANNELS +
 			CONFIG_ACCEL_CHANNELS +
 			CONFIG_ANALOG_PULSE_CHANNELS +
-			CONFIG_GPIO_CHANNELS + 3; // 3 extra = gps, start/finish, logger output config
+			CONFIG_GPIO_CHANNELS + 4; // 4 extra = gps, start/finish, logger output config , scripting
 
 	int pct =  (count * 100) / total;
 	callback->OnProgress(pct);
@@ -646,6 +647,7 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 		}
 		{
 			writeScript(config->luaScript);
+			updateWriteConfigPct(++updateCount,callback);
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("write config in %f",dur.GetMilliseconds().ToDouble());

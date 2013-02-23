@@ -37,9 +37,9 @@ DigitalGaugePane::~DigitalGaugePane(){
 
 }
 
-void DigitalGaugePane::CreateGauge(int datalogId, wxString channelName){
+void DigitalGaugePane::CreateGauge(ViewChannel &channel){
 
-	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channelName);
+	DatalogChannelType type = m_chartParams.appOptions->GetChannelTypeForChannel(channel);
 
 	AppOptions *options = m_chartParams.appOptions;
 
@@ -52,16 +52,15 @@ void DigitalGaugePane::CreateGauge(int datalogId, wxString channelName){
 		m_lcdDisplay->SetLightColour(gaugeType.digitOnColor);
 		m_valuePrecision = gaugeType.valuePrecision;
 	}
-	m_channelName = channelName;
+	m_channel = channel;
 }
 
 void DigitalGaugePane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-
-void DigitalGaugePane::UpdateValue(wxString &name, size_t index, double value){
-	if (m_channelName == name && DatalogValue::NULL_VALUE != value){
+void DigitalGaugePane::UpdateValue(ViewChannel &channel, size_t index, double value){
+	if (m_channel == channel && DatalogValue::NULL_VALUE != value){
 		m_lcdDisplay->SetValue(wxString::Format(VALUE_FORMAT[m_valuePrecision],value));
 	}
 }

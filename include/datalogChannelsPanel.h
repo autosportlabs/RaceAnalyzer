@@ -9,7 +9,7 @@
 #define DATALOGCHANNELSPANEL_H_
 
 #include "wx/wxprec.h"
-#include "wx/grid.h"
+#include "wx/treelist.h"
 #include "wx/notebook.h"
 #include "datalogStore.h"
 #include "commonEvents.h"
@@ -17,6 +17,12 @@
 #include "appPrefs.h"
 #include "raceCapture/raceCaptureConfig.h"
 
+class ChannelNode : public wxClientData{
+public:
+	ChannelNode(int datalogId, wxString &channelName) : wxClientData(), datalogId(datalogId), channelName(channelName) {}
+	int datalogId;
+	wxString channelName;
+};
 
 class DatalogChannelsParams{
 public:
@@ -49,9 +55,8 @@ class DatalogChannelsPanel : public wxPanel{
 					const wxString &name = "panel"
 					);
 
-		void UpdateDatalogSessions();
+		void DatalogSessionsUpdated();
 		void AddDatalogSession(int id);
-		void ReloadChannels(DatalogChannels &channels, DatalogChannelTypes &channelTypes, wxGrid *grid);
 		void UpdateRuntimeValues();
 
 		void SetMarkerOffset(size_t offset);
@@ -63,13 +68,14 @@ class DatalogChannelsPanel : public wxPanel{
 
 		void InitComponents();
 		void InitOptions();
+		wxTreeListCtrl * CreateChannelsList(void);
 		void PopulateSelectedChannels(DatalogChannelSelectionSet *selectionSet);
 		void OnNewLineChart(wxCommandEvent &event);
 		void OnNewAnalogGauge(wxCommandEvent &event);
 		void OnNewDigitalGauge(wxCommandEvent &event);
 		void OnNewGPSView(wxCommandEvent &event);
 		void OnAddChannelView(wxCommandEvent &event);
-		void DoGridContextMenu(wxGridEvent &event);
+		void DoGridContextMenu(wxTreeListEvent &event);
 		void OnPlayForward(wxCommandEvent &event);
 		void OnPlayReverse(wxCommandEvent &event);
 		void OnPause(wxCommandEvent &event);
@@ -79,8 +85,7 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnSeekReverse(wxCommandEvent &event);
 
 
-		wxArrayInt		m_datalogIdList;
-		wxNotebook 		*m_datalogSessionsNotebook;
+		wxTreeListCtrl	*m_channelsList;
 		size_t 			m_markerOffset;
 		DatalogStore 	*m_datalogStore;
 		AppOptions		*m_appOptions;
@@ -94,8 +99,7 @@ class DatalogChannelsPanel : public wxPanel{
 
 enum{
 
-	ID_DATALOG_SESSIONS_NOTEBOOK = wxID_HIGHEST + 1,
-	ID_DATALOG_CHANNELS_GRID,
+	ID_DATALOG_CHANNELS_LIST = wxID_HIGHEST + 1,
 	ID_NEW_LINE_CHART,
 	ID_NEW_ANALOG_GAUGE,
 	ID_NEW_DIGITAL_GAUGE,

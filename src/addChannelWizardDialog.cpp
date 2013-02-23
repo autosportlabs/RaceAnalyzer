@@ -295,7 +295,7 @@ void AddChannelWizard::InitChannelViews(){
 void AddChannelWizard::OnWizardFinished(wxWizardEvent &event){
 	ChannelViews selectedViews = m_viewSelectorPage->GetSelectedChannelViews();
 	wxArrayString selectedChannelNames = m_channelSelectorPage->GetSelectedChannels();
-
+/*
 	size_t selectedViewsCount = selectedViews.Count();
 	for (size_t viewIndex = 0; viewIndex < selectedViewsCount; viewIndex++){
 		DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
@@ -305,6 +305,7 @@ void AddChannelWizard::OnWizardFinished(wxWizardEvent &event){
 		addEvent.SetClientData(selectionSet);
 		GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 	}
+	*/
 }
 
 BEGIN_EVENT_TABLE ( AddChannelWizard, wxWizard )

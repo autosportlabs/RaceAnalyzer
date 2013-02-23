@@ -53,22 +53,17 @@ void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
 		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
 
-		wxArrayString &channelNames = sel.channelNames;
+		wxString channelName = sel.channelName;
+		ViewChannel viewChannel(sel.datalogId, sel.channelName);
 
-		for (size_t channelIndex = 0; channelIndex < channelNames.Count(); channelIndex++){
+		DatalogChannelType channelType = appOptions->GetChannelTypeForChannel(viewChannel);
 
-			wxString channelName = channelNames[channelIndex];
+		Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
+		int newRangeId = lineChart->AddRange(range);
 
-			DatalogChannelType channelType = appOptions->GetChannelTypeForChannel(channelName);
-
-			Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
-
-			int newRangeId = lineChart->AddRange(range);
-
-			Series *series = new Series(0, newRangeId, 0, channelName, chartColors[currentColor], channelType.precision);
-			currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
-			lineChart->AddSeries(channelName, series);
-		}
+		Series *series = new Series(0, newRangeId, 0, viewChannel.ToString(), chartColors[currentColor], channelType.precision);
+		currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
+		lineChart->AddSeries(viewChannel.ToString(), series);
 	}
 }
 
@@ -77,13 +72,14 @@ void LineChartPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
 }
 
-void LineChartPane::SetBufferSize(wxArrayString &channels, size_t size){
+void LineChartPane::SetBufferSize(ViewChannels &channels, size_t size){
 
-	wxArrayString enabledChannels;
-	for (wxArrayString::iterator it = channels.begin(); it != channels.end(); ++it){
-		Series *series = m_lineChart->GetSeries(*it);
+	ViewChannels enabledChannels;
+	for (int i = 0; i < channels.Count(); i++){
+		ViewChannel &channel = channels[i];
+		Series *series = m_lineChart->GetSeries(channel.ToString());
 		if (NULL != series){
-			enabledChannels.Add(*it);
+			enabledChannels.Add(channel);
 			series->SetBufferSize(size);
 		}
 	}
@@ -98,7 +94,7 @@ void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t 
 
 	for (size_t i = 0; i < historyArray.size(); i++){
 		ViewDataHistory &history = historyArray[i];
-		Series *series = m_lineChart->GetSeries(history.channelName);
+		Series *series = m_lineChart->GetSeries(history.channel.ToString());
 		if (NULL != series){
 			for (size_t i = fromIndex; i < toIndex; i++){
 				series->SetValueAt(i, history.values[i]);
@@ -108,8 +104,8 @@ void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t 
 	}
 }
 
-void LineChartPane::UpdateValue(wxString &name, size_t index, double value){
-	Series *series = m_lineChart->GetSeries(name);
+void LineChartPane::UpdateValue(ViewChannel &channel, size_t index, double value){
+	Series *series = m_lineChart->GetSeries(channel.ToString());
 	if (NULL != series){
 		m_lineChart->SetMarkerIndex(index);
 		int center = m_lineChart->GetSize().GetWidth() / 2;

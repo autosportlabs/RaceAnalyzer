@@ -5,6 +5,7 @@
 #include "wx/hashmap.h"
 #include "raceAnalyzerConfigBase.h"
 
+
 class AnalogGaugeType{
 
 public:
@@ -94,7 +95,7 @@ class AppOptions{
 		void LoadStandardChannelTypes(DatalogChannelTypes &channelTypes);
 		void LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes);
 		void LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes);
-		DatalogChannelType GetChannelTypeForChannel(wxString channelName);
+		DatalogChannelType GetChannelTypeForChannel(ViewChannel &channel);
 		DatalogChannelType GetDefaultUnknownChannelType(wxString name);
 
 	private:

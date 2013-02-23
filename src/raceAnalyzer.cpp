@@ -416,7 +416,7 @@ void MainFrame::OnRequestDatalogData(wxCommandEvent &event){
 	event.StopPropagation();
 	RequestDatalogRangeParams *params = (RequestDatalogRangeParams *)event.GetClientData();
 
-	m_datalogPlayer.UpdateDataHistory(params->view, params->channelNames, params->fromIndex, params->toIndex);
+	m_datalogPlayer.UpdateDataHistory(params->view, params->channels, params->fromIndex, params->toIndex);
 
 	delete params;
 }
@@ -605,17 +605,14 @@ void MainFrame::OnImportDatalog(wxCommandEvent& event){
 
 void MainFrame::OnImportWizardFinished(wxWizardEvent &event){
 	UpdateAnalyzerView();
+	m_datalogPlayer.DatalogSessionsUpdated();
 }
 
 void MainFrame::UpdateAnalyzerView(){
 
 	INFO("Updating Analyzer view");
-	UpdateDatalogSessions();
+	m_channelsPanel->DatalogSessionsUpdated();
 	INFO("Updating Analyzer view complete");
-}
-
-void MainFrame::UpdateDatalogSessions(){
-	m_channelsPanel->UpdateDatalogSessions();
 }
 
 void MainFrame::UpdateAnalysis(){
@@ -710,10 +707,7 @@ wxString MainFrame::GetMultipleSelectionLabel(DatalogChannelSelectionSet *select
 	size_t selCount = selectionSet->Count();
 	for (size_t selIndex = 0; selIndex < selCount; selIndex++){
 		DatalogChannelSelection &sel = selectionSet->Item(selIndex);
-		wxArrayString &channelNames = sel.channelNames;
-		for (size_t channelIndex = 0; channelIndex < channelNames.Count(); channelIndex++){
-			label.Append(wxString::Format("%s %s", (selIndex == 0 && channelIndex == 0 ? " " : " : "), channelNames[channelIndex].ToAscii()));
-		}
+		label.Append(wxString::Format("%s %s", (selIndex == 0  ? " " : " : "), sel.channelName.ToAscii()));
 	}
 	return label;
 }
@@ -750,31 +744,33 @@ void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
 
-		for (size_t c = 0; c < sel.channelNames.Count(); c++){
-			wxString channelName = sel.channelNames[c];
+		DatalogInfo datalogInfo;
+		m_datalogStore.ReadDatalogInfo(datalogId, datalogInfo);
 
-			AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
-			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
-			gaugePane->CreateGauge(datalogId,channelName);
-			m_channelViews.Add(gaugePane);
+		wxString channelName = sel.channelName;
 
-			wxString name = wxString::Format("analogGauge_%lu", (unsigned long)m_channelViews.Count());
-			wxString caption = wxString::Format("%s", channelName.ToAscii());
+		AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
+		gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+		ViewChannel viewChannel(datalogId, channelName);
 
-			_frameManager.AddPane(gaugePane,
-					wxAuiPaneInfo().
-					BestSize(150,150).
-					MinSize(150,150).
-					Name(name).
-					Caption(caption).
-					Bottom().
-					Layer(1).
-					Position(2).
-					Show(true));
+		gaugePane->CreateGauge(viewChannel);
+		m_channelViews.Add(gaugePane);
 
-			_frameManager.Update();
-		}
+		wxString name = wxString::Format("analogGauge_%lu", (unsigned long)m_channelViews.Count());
+		wxString caption = wxString::Format("%s - %s", datalogInfo.name, channelName.ToAscii());
 
+		_frameManager.AddPane(gaugePane,
+				wxAuiPaneInfo().
+				BestSize(150,150).
+				MinSize(150,150).
+				Name(name).
+				Caption(caption).
+				Bottom().
+				Layer(1).
+				Position(2).
+				Show(true));
+
+		_frameManager.Update();
 	}
 }
 
@@ -785,87 +781,101 @@ void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
 
+		DatalogInfo datalogInfo;
+		m_datalogStore.ReadDatalogInfo(datalogId, datalogInfo);
 
+		wxString channelName = sel.channelName;
 
-		for (size_t c = 0; c < sel.channelNames.Count(); c++){
+		DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
+		gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
 
-			DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
-			gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
-			wxString channelName = sel.channelNames[c];
+		ViewChannel viewChannel(datalogId, channelName);
+		gaugePane->CreateGauge(viewChannel);
+		m_channelViews.Add(gaugePane);
+		wxString name = wxString::Format("digitalGauge_%lu", (unsigned long)m_channelViews.Count());
+		wxString caption = wxString::Format("%s - %s", datalogInfo.name.ToAscii(), channelName.ToAscii());
 
-			gaugePane->CreateGauge(datalogId,channelName);
-			m_channelViews.Add(gaugePane);
-			wxString name = wxString::Format("digitalGauge_%lu", (unsigned long)m_channelViews.Count());
-			wxString caption = wxString::Format("%s", channelName.ToAscii());
+		_frameManager.AddPane(gaugePane,
+				wxAuiPaneInfo().
+				BestSize(150,50).
+				MinSize(150,50).
+				Name(name).
+				Caption(caption).
+				Bottom().
+				Layer(1).
+				Position(2).
+				Show(true));
 
-			_frameManager.AddPane(gaugePane,
-					wxAuiPaneInfo().
-					BestSize(150,50).
-					MinSize(150,50).
-					Name(name).
-					Caption(caption).
-					Bottom().
-					Layer(1).
-					Position(2).
-					Show(true));
-
-			_frameManager.Update();
-		}
-
+		_frameManager.Update();
 	}
 }
 
 void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 	size_t selectionSetCount = selectionSet->Count();
+	wxString longitudeChannelName = "";
+	wxString latitudeChannelName = "";
+
+	int latitudeDatalogId = 0;
+	int longitudeDatalogId = 0;
+
 	for (size_t i = 0; i < selectionSetCount; i++){
+
 		DatalogChannelSelection &sel = (*selectionSet)[i];
 		int datalogId = sel.datalogId;
 
 		DatalogChannelTypes channelTypes;
 		m_datalogStore.GetChannelTypes(channelTypes);
 
-		wxString longitudeChannelName = "";
-		wxString latitudeChannelName = "";
+		DatalogChannel channel;
 
-		wxArrayString &channelNames = sel.channelNames;
-		size_t selectedChannelsCount = channelNames.Count();
-		for (size_t ci = 0; ci < selectedChannelsCount; ci++){
-			wxString channelName = channelNames[ci];
-			DatalogChannel channel;
-			m_datalogStore.GetChannel(datalogId,channelName,channel);
-			DatalogChannelType &ct = channelTypes[channel.typeId];
-			if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()) longitudeChannelName = channelName;
-			if (ct == DatalogChannelSystemTypes::GetLatitudeChannelType()) latitudeChannelName = channelName;
+		m_datalogStore.GetChannel(datalogId, sel.channelName, channel);
+
+		DatalogChannelType &ct = channelTypes[channel.typeId];
+		if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()){
+			longitudeChannelName = sel.channelName;
+			longitudeDatalogId = sel.datalogId;
 		}
-
-		if (longitudeChannelName.Len() > 0 && latitudeChannelName.Len() >= 0){
-
-			GPSPane *gpsPane = new GPSPane(this, -1);
-
-			gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
-			gpsPane->CreateGPSView(datalogId,latitudeChannelName,longitudeChannelName);
-			wxString name = wxString::Format("GPS_%lu", (unsigned long)m_channelViews.Count());
-			wxString caption = wxString::Format("GPS %d", datalogId);
-
-			_frameManager.AddPane(gpsPane,
-					wxAuiPaneInfo().
-					BestSize(400,400).
-					MinSize(200,200).
-					Name(name).
-					Caption(caption).
-					Bottom().
-					Layer(1).
-					Position(2).
-					Show(true));
-
-			_frameManager.Update();
-			m_channelViews.Add(gpsPane);
-			m_datalogPlayer.AddView(gpsPane);
+		if (ct == DatalogChannelSystemTypes::GetLatitudeChannelType()){
+			latitudeChannelName = sel.channelName;
+			latitudeDatalogId = sel.datalogId;
 		}
-		else{
-			wxMessageDialog dlg(this,"Please Select the Channels containing the GPS Latitude and Longitude information", "Error", wxOK);
-			dlg.ShowModal();
-		}
+	}
+
+	if (	longitudeChannelName.Len() > 0 &&
+			latitudeChannelName.Len() >= 0 &&
+			longitudeDatalogId == latitudeDatalogId &&
+			longitudeDatalogId > 0){
+
+		int datalogId = longitudeDatalogId; //pick one...
+		GPSPane *gpsPane = new GPSPane(this, -1);
+
+		DatalogInfo datalogInfo;
+		m_datalogStore.ReadDatalogInfo(datalogId, datalogInfo);
+		gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+		ViewChannel latitudeChannel(latitudeDatalogId, latitudeChannelName);
+		ViewChannel longitudeChannel(longitudeDatalogId, longitudeChannelName);
+		gpsPane->CreateGPSView(latitudeChannel, longitudeChannel);
+		wxString name = wxString::Format("GPS_%lu", (unsigned long)m_channelViews.Count());
+		wxString caption = wxString::Format("%s - GPS", datalogInfo.name.ToAscii());
+
+		_frameManager.AddPane(gpsPane,
+				wxAuiPaneInfo().
+				BestSize(400,400).
+				MinSize(200,200).
+				Name(name).
+				Caption(caption).
+				Bottom().
+				Layer(1).
+				Position(2).
+				Show(true));
+
+		_frameManager.Update();
+		m_channelViews.Add(gpsPane);
+		m_datalogPlayer.AddView(gpsPane);
+	}
+	else{
+		wxMessageDialog dlg(this,"Please Select the Channels containing the GPS Latitude and Longitude information", "Error", wxOK);
+		dlg.ShowModal();
 	}
 }
 
@@ -903,11 +913,11 @@ void MainFrame::OnUpdateActivity(wxCommandEvent &event){
 }
 
 void MainFrame::OnPlayFwdDatalog(wxCommandEvent &event){
-	m_datalogPlayer.PlayFwd(1);
+	m_datalogPlayer.PlayFwd();
 }
 
 void MainFrame::OnPlayRevDatalog(wxCommandEvent &event){
-	m_datalogPlayer.PlayRev(1);
+	m_datalogPlayer.PlayRev();
 }
 
 void MainFrame::OnPauseDatalog(wxCommandEvent &event){
@@ -931,10 +941,11 @@ void MainFrame::OnSeekRevDatalog(wxCommandEvent &event){
 }
 
 void MainFrame::OnRuntimeValueUpdated(wxString &name, float value){
-
-	for (size_t i = 0; i < m_channelViews.Count(); i++){
+//TODO re-enable me when runtime is working
+/*	for (size_t i = 0; i < m_channelViews.Count(); i++){
 		m_channelViews[i]->UpdateValue(name, 0, value);
 	}
+	*/
 }
 
 void MainFrame::OnSaveAsConfig(wxCommandEvent& event){

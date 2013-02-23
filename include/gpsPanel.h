@@ -28,14 +28,14 @@ public:
 	void InitComponents();
 	GPSPoint ProjectPoint(double latitude, double longitude);
 
-	void CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName);
+	void CreateGPSView(ViewChannel &latitudeChannel, ViewChannel &longitudeChannel);
 	void ClearGPSPoints();
 	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
 
 	void SetChartParams(ChartParams params);
-	void SetBufferSize(wxArrayString &channels, size_t size);
+	void SetBufferSize(ViewChannels &channels, size_t size);
 
-	void UpdateValue(wxString &name, size_t index, double value);
+	void UpdateValue(ViewChannel &channel, size_t index, double value);
 
 private:
 	void AddGPSPoint(double latitude, double longitude);
@@ -48,9 +48,8 @@ private:
 	DatalogStoreRows 	m_channelData;
 	size_t				m_dataOffset;
 
-	int					m_datalogId;
-	wxString			m_longitudeChannelName;
-	wxString 			m_latitudeChannelName;
+	ViewChannel			m_longitudeChannel;
+	ViewChannel			m_latitudeChannel;
 	double				m_currentLatitude;
 	double 				m_currentLongitude;
 

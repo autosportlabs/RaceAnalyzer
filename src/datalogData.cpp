@@ -11,6 +11,8 @@
 WX_DEFINE_OBJARRAY(DatalogStoreRows);
 WX_DEFINE_OBJARRAY(DatalogChannels);
 WX_DEFINE_OBJARRAY(DatalogChannelTypes);
+WX_DEFINE_OBJARRAY(ViewChannels);
+WX_DEFINE_OBJARRAY(DatalogSnapshots);
 
 DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, int precision) :
 	name(newName), unitsLabel(newUnitsLabel), smoothingLevel(newSmoothingLevel), minValue(newMinValue), maxValue(newMaxValue), precision(precision)

@@ -8,9 +8,32 @@
 #include "wx/wxprec.h"
 #include <limits>
 #include <wx/dynarray.h>
+#include "datalogStore.h"
 
 #ifndef DATALOGDATA_H_
 #define DATALOGDATA_H_
+
+class ViewChannel{
+public:
+	ViewChannel();
+	ViewChannel(int datalogId, wxString &channelName);
+	bool operator==(const ViewChannel &rhs);
+	wxString ToString();
+	int datalogId;
+	wxString channelName;
+};
+
+WX_DECLARE_OBJARRAY(ViewChannel, ViewChannels);
+
+class DatalogInfo{
+public:
+	DatalogInfo();
+	DatalogInfo(int timeOffset, int maxSampleRate, const wxString &name, const wxString &notes);
+	int timeOffset;
+	int maxSampleRate;
+	wxString name;
+	wxString notes;
+};
 
 class DatalogValue{
 public:
@@ -28,7 +51,7 @@ public:
 	DatastoreRow() : timePoint(0)
 	{}
 
-	DatastoreRow(int tp, RowValues v) : timePoint(tp),values(v)
+	DatastoreRow(int tp, RowValues v) : timePoint(tp), values(v)
 	{}
 	~DatastoreRow(){ }
 
@@ -36,8 +59,7 @@ public:
 	RowValues values;
 };
 
-WX_DECLARE_OBJARRAY(DatastoreRow,DatalogStoreRows);
-
+WX_DECLARE_OBJARRAY(DatastoreRow, DatalogStoreRows);
 
 
 class DatalogChannelType{
@@ -79,6 +101,16 @@ public:
 
 WX_DECLARE_OBJARRAY(DatalogChannel,DatalogChannels);
 WX_DECLARE_OBJARRAY(DatalogChannelType, DatalogChannelTypes);
+
+class DatalogSnapshot{
+public:
+	int					datalogId;
+	DatalogInfo 		datalogInfo;
+	DatalogStoreRows 	rows;
+	DatalogChannels 	channels;
+};
+
+WX_DECLARE_OBJARRAY(DatalogSnapshot, DatalogSnapshots);
 
 class DatalogChannelUtil{
 

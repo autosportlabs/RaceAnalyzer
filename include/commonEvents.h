@@ -6,11 +6,11 @@
 class DatalogChannelSelection {
 
 public:
-	DatalogChannelSelection(int newDatalogId, wxArrayString newChannelNames) : datalogId(newDatalogId), channelNames(newChannelNames)
+	DatalogChannelSelection(int newDatalogId, wxString newChannelName) : datalogId(newDatalogId), channelName(newChannelName)
 	{}
 
 	int datalogId;
-	wxArrayString channelNames;
+	wxString channelName;
 };
 
 

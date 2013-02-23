@@ -437,7 +437,6 @@ void MapDatalogChannelsPage::AddExistingChannels(DatalogHeaders &headers, Datalo
 			remainingHeaders.Add(header);
 		}
 	}
-
 }
 
 
@@ -452,9 +451,6 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 		choices.Add(channelTypes[i].name);
 	}
 
-	wxGridCellChoiceEditor *channelTypeEditor = new wxGridCellChoiceEditor(choices);
-
-	wxGridCellBoolEditor *boolTypeEditor = new wxGridCellBoolEditor();
 
 	m_channelMapGrid->ClearGrid();
 	int existingGridRows = m_channelMapGrid->GetRows();
@@ -466,7 +462,7 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 	for (size_t i = 0; i < channelsCount; i++){
 		DatalogChannel &channel = channels[i];
 
-		m_channelMapGrid->SetCellEditor(i,0,boolTypeEditor);
+		m_channelMapGrid->SetCellEditor(i,0,new wxGridCellBoolEditor);
 		m_channelMapGrid->SetCellRenderer(i,0,new wxGridCellBoolRenderer);
 		m_channelMapGrid->SetCellValue(i,0,"1");
 
@@ -478,7 +474,7 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 		if (typeId >=0){
 			DatalogChannelType &channelType = channelTypes[typeId];
 			m_channelMapGrid->SetCellValue(i,2,channelType.name);
-			m_channelMapGrid->SetCellEditor(i,2,channelTypeEditor);
+			m_channelMapGrid->SetCellEditor(i,2,new wxGridCellChoiceEditor(choices));
 
 			m_channelMapGrid->SetCellValue(i,3,channelType.unitsLabel);
 			m_channelMapGrid->SetReadOnly(i,3,true);
@@ -514,7 +510,7 @@ END_EVENT_TABLE()
 DatalogImporterPage::DatalogImporterPage(wxWizard *parent, ImportWizardParams *params) :
 	wxWizardPageSimple(parent), m_params(params), m_importing(false){
 
-    wxFlexGridSizer *mainSizer = new wxFlexGridSizer(3,1,3,3);
+    wxFlexGridSizer *mainSizer = new wxFlexGridSizer(4,1,3,3);
     mainSizer->AddGrowableCol(0);
     mainSizer->AddGrowableRow(0);
     mainSizer->AddGrowableRow(2);

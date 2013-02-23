@@ -7,6 +7,7 @@
 #include "wx/wxprec.h"
 #include <wx/dynarray.h>
 #include "datalogStore.h"
+#include "datalogData.h"
 #include "appOptions.h"
 #include "appPrefs.h"
 #include "commonEvents.h"
@@ -43,13 +44,14 @@ public:
 	AppOptions					*appOptions;
 };
 
+
 class ViewDataHistory {
 
 public:
 
-	ViewDataHistory(wxString channelName, ChartValues values): channelName(channelName), values(values) {}
+	ViewDataHistory(ViewChannel channel, ChartValues values): channel(channel), values(values) {}
 
-	wxString channelName;
+	ViewChannel channel;
 	ChartValues values;
 };
 
@@ -57,14 +59,16 @@ WX_DECLARE_OBJARRAY(ViewDataHistory, ViewDataHistoryArray);
 
 class HistoricalView{
 public:
-	virtual void SetBufferSize(wxArrayString &channels, size_t size) = 0;
+	virtual void SetBufferSize(ViewChannels &channels, size_t size) = 0;
 	virtual void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex) = 0;
 };
+
+
 
 class RaceAnalyzerChannelView{
 
 public:
-	virtual void UpdateValue(wxString &channelName, size_t index, double value) = 0;
+	virtual void UpdateValue(ViewChannel &channelName, size_t index, double value) = 0;
 	virtual void SetChartParams(ChartParams params) = 0;
 };
 
@@ -74,10 +78,10 @@ class RequestDatalogRangeParams {
 public:
 
 	RequestDatalogRangeParams(): view(NULL), fromIndex(0), toIndex(0){}
-	RequestDatalogRangeParams(HistoricalView *view, wxArrayString channelNames, size_t fromIndex, size_t toIndex): view(view), channelNames(channelNames), fromIndex(fromIndex), toIndex(toIndex){}
+	RequestDatalogRangeParams(HistoricalView *view, ViewChannels channels, size_t fromIndex, size_t toIndex): view(view), channels(channels), fromIndex(fromIndex), toIndex(toIndex){}
 
 	HistoricalView *view;
-	wxArrayString channelNames;
+	ViewChannels channels;
 	size_t fromIndex;
 	size_t toIndex;
 };

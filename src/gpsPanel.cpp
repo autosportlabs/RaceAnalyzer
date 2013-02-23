@@ -34,14 +34,13 @@ GPSPane::GPSPane(wxWindow *parent,
 
 GPSPane::~GPSPane(){}
 
-void GPSPane::CreateGPSView(int datalogId, wxString &latitudeChannelName, wxString &longitudeChannelName){
-	m_datalogId = datalogId;
-	m_latitudeChannelName = latitudeChannelName;
-	m_longitudeChannelName = longitudeChannelName;
+void GPSPane::CreateGPSView(ViewChannel &latitudeChannel, ViewChannel &longitudeChannel){
+	m_latitudeChannel = latitudeChannel;
+	m_longitudeChannel = longitudeChannel;
 	ClearGPSPoints();
 }
 
-void GPSPane::SetBufferSize(wxArrayString &channels, size_t size){
+void GPSPane::SetBufferSize(ViewChannels &channels, size_t size){
 
 	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
 	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, channels, 0, size - 1);
@@ -56,10 +55,10 @@ void GPSPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIn
 
 	for (size_t i = 0; i < historyArray.Count(); i++){
 		ViewDataHistory &history = historyArray[i];
-		if (history.channelName == m_latitudeChannelName){
+		if (history.channel == m_latitudeChannel){
 			latitudeValues = &history.values;
 		}
-		else if(history.channelName == m_longitudeChannelName){
+		else if(history.channel == m_longitudeChannel){
 			longitudeValues = &history.values;
 		}
 	}
@@ -126,11 +125,11 @@ void GPSPane::SetChartParams(ChartParams params){
 }
 
 
-void GPSPane::UpdateValue(wxString &name, size_t index, double value){
-	if (name == m_latitudeChannelName){
+void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
+	if (channel == m_latitudeChannel){
 		m_currentLatitude = value;
 	}
-	if (name == m_longitudeChannelName){
+	if (channel == m_longitudeChannel){
 		m_currentLongitude = value;
 	}
 	m_gpsView->SetMarker(ProjectPoint(m_currentLatitude, m_currentLongitude));
