@@ -94,11 +94,11 @@ wxThread::ExitCode ImporterThread::Entry(){
 		store->ImportDatalogChannelMap(newId, importChannelIds);
 		resultEvent.SetInt(1);
 	}
-	catch(DatastoreException e){
+	catch(DatastoreException &e){
 		resultEvent.SetInt(0);
 		resultEvent.SetString(e.GetMessage());
 	}
-	catch(FileAccessException e){
+	catch(FileAccessException &e){
 		resultEvent.SetInt(0);
 		resultEvent.SetString(e.GetMessage());
 	}

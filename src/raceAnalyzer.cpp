@@ -1002,7 +1002,7 @@ void MainFrame::LoadConfigurationFile(const wxString fileName){
 		UpdateConfigFileStatus();
 		SetStatusMessage("RaceCapture Configuration Loaded");
 	}
-	catch( FileAccessException e ){
+	catch( FileAccessException &e ){
 		wxMessageDialog dlg(this, wxString::Format("Failed to load RaceCapture Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error loading", wxOK | wxICON_HAND);
 		dlg.ShowModal();
 		return;
@@ -1021,7 +1021,7 @@ void MainFrame::SaveCurrentConfig(){
 			m_configModified = false;
 			SetStatusMessage("Configuration Saved");
 		}
-		catch (FileAccessException e){
+		catch (FileAccessException &e){
 			wxMessageDialog dlg(this, wxString::Format("Failed to save Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
 			dlg.ShowModal();
 			return;
@@ -1054,7 +1054,7 @@ void MainFrame::SaveAsCurrentConfig(){
 				SetStatusMessage("RaceCapture Configuration Saved");
 				_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
 			}
-			catch (FileAccessException e){
+			catch (FileAccessException &e){
 				wxMessageDialog dlg(this, wxString::Format("Failed to save RaceCapture Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
 				dlg.ShowModal();
 				return;
