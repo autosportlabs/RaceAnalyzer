@@ -389,7 +389,7 @@ void RaceAnalyzerComm::readRuntime(RuntimeValues *values){
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("sample in %f",dur.GetMilliseconds().ToDouble());
 	}
-	catch(CommException e){
+	catch(CommException &e){
 
 	}
 
@@ -511,7 +511,7 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 		wxLogMessage("get config in %f",dur.GetMilliseconds().ToDouble());
 		callback->ReadConfigComplete(true,"");
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		callback->ReadConfigComplete(false, e.GetErrorMessage());
 	}
 	CloseSerialPort();
@@ -653,7 +653,7 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 		wxLogMessage("write config in %f",dur.GetMilliseconds().ToDouble());
 		callback->WriteConfigComplete(true,"");
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		callback->WriteConfigComplete(false, e.GetErrorMessage());
 	}
 	CloseSerialPort();
@@ -671,7 +671,7 @@ void RaceAnalyzerComm::flashCurrentConfig(){
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("flash config in %f",dur.GetMilliseconds().ToDouble());
 	}
-	catch(CommException e){
+	catch(CommException &e){
 		wxLogMessage("Error during flash: " + e.GetErrorMessage());
 	}
 	CloseSerialPort();
