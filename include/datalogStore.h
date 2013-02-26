@@ -20,8 +20,11 @@
 class DatalogImportProgressListener {
 
 public:
-
 	virtual void UpdateProgress(int completePercent) = 0;
+
+protected:
+	~DatalogImportProgressListener(){}
+
 };
 
 class DatastoreException : public RuntimeException{

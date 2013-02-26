@@ -8,11 +8,13 @@
 
 #include "commonEvents.h"
 
-class RaceAnalyzerCommCallback : public ProgresssReceiver{
+class RaceAnalyzerCommCallback : public ProgressReceiver{
 public:
 	virtual void ReadConfigComplete(bool success, wxString msg) = 0;
 	virtual void WriteConfigComplete(bool success, wxString msg) = 0;
 	virtual void FlashConfigComplete(bool success, wxString msg) = 0;
+
+	virtual ~RaceAnalyzerCommCallback(){}
 };
 
 class RaceAnalyzerComm {
