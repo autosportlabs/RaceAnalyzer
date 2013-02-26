@@ -1000,10 +1000,10 @@ void MainFrame::LoadConfigurationFile(const wxString fileName){
 		NotifyConfigChanged();
 		SyncControls();
 		UpdateConfigFileStatus();
-		SetStatusMessage("Ignition Configuration Loaded");
+		SetStatusMessage("RaceCapture Configuration Loaded");
 	}
 	catch( FileAccessException e ){
-		wxMessageDialog dlg(this, wxString::Format("Failed to load Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error loading", wxOK | wxICON_HAND);
+		wxMessageDialog dlg(this, wxString::Format("Failed to load RaceCapture Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error loading", wxOK | wxICON_HAND);
 		dlg.ShowModal();
 		return;
 	}
@@ -1051,11 +1051,11 @@ void MainFrame::SaveAsCurrentConfig(){
 				writer.WriteConfigData(m_currentConfig);
 				m_currentConfigFileName = new wxString(fileName);
 				m_configModified = false;
-				SetStatusMessage("Ignition Configuration Saved");
+				SetStatusMessage("RaceCapture Configuration Saved");
 				_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
 			}
 			catch (FileAccessException e){
-				wxMessageDialog dlg(this, wxString::Format("Failed to save Ignition Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
+				wxMessageDialog dlg(this, wxString::Format("Failed to save RaceCapture Configuration:\n\n%s", e.GetMessage().ToAscii()), "Error saving", wxOK | wxICON_HAND);
 				dlg.ShowModal();
 				return;
 			}
