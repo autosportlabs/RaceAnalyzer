@@ -167,19 +167,19 @@ void RaceAnalyzerComm::SetSerialPort(int port){
 	}
 }
 
-int RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
+void RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 	comPort->drainInput();
 }
 
 wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, int timeout){
 
+	wxString response;
+
 	try{
 		wxLogMessage("Send Cmd (%d): '%s'",buffer.Len(), buffer.ToAscii());
-		wxString response;
 		size_t bufferSize = 8192;
 		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,timeout,true);
 		wxLogMessage("Cmd Response: %s", response.ToAscii());
-		return response;
 	}
 	catch(SerialException &e){
 		throw CommException(e.GetErrorStatus(), e.GetErrorDetail());
@@ -187,6 +187,7 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, i
 	catch(...){
 		throw CommException(-1, "Unknown exception while sending command");
 	}
+	return response;
 }
 
 int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
