@@ -17,7 +17,10 @@ wxString ImportWizardParams::GetDefaultDatalogName(){
 	return "Datalog " + wxDateTime::Now().FormatDate();
 }
 
-ImporterThread::ImporterThread() : wxThread()
+ImporterThread::ImporterThread() :
+		m_params(0),
+		m_owner(0),
+		wxThread()
 { }
 
 void ImporterThread::SetParams(ImportWizardParams *params, wxWindow *owner){
@@ -508,7 +511,10 @@ END_EVENT_TABLE()
 
 
 DatalogImporterPage::DatalogImporterPage(wxWizard *parent, ImportWizardParams *params) :
-	wxWizardPageSimple(parent), m_params(params), m_importing(false){
+		wxWizardPageSimple(parent),
+		m_params(params),
+		m_importing(false),
+		m_importerThread(0){
 
     wxFlexGridSizer *mainSizer = new wxFlexGridSizer(4,1,3,3);
     mainSizer->AddGrowableCol(0);

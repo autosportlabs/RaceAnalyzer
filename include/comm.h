@@ -80,6 +80,7 @@ class AsyncRaceAnalyzerComm : public wxThread{
 
 public:
 
+	static const int ACTION_NONE = -1;
 	static const int ACTION_READ_CONFIG = 0;
 	static const int ACTION_WRITE_CONFIG = 1;
 	static const int ACTION_FLASH_CONFIG = 2;

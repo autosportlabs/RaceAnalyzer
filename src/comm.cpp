@@ -703,7 +703,11 @@ wxString RaceAnalyzerComm::AppendChannelConfig(wxString &cmd, ChannelConfig &cha
 }
 
 AsyncRaceAnalyzerComm::AsyncRaceAnalyzerComm(RaceAnalyzerComm *comm, RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback) :
-		m_comm(comm), m_config(config), m_callback(callback){
+		m_comm(comm),
+		m_config(config),
+		m_callback(callback),
+		m_action(ACTION_NONE)
+{
 	wxThread::Create();
 }
 
