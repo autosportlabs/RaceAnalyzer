@@ -158,7 +158,7 @@ void DatalogFileSelectPage::OnBrowse(wxCommandEvent &evt){
 
 	ImportWizardParams *params = m_params;
 	AppPrefs *prefs = params->appPrefs;
-	wxFileDialog fileDialog(this, "Import Datalog", prefs->GetLastConfigFileDirectory(), "", LOGGING_FILE_FILTER, wxFD_OPEN);
+	wxFileDialog fileDialog(this, "Import Datalog", prefs->GetLastDatalogDirectory(), "", LOGGING_FILE_FILTER, wxFD_OPEN);
 
 	int result = fileDialog.ShowModal();
 	if (wxID_OK != result) return;

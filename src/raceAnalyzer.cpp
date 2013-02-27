@@ -530,7 +530,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 
 
-	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxString defaultDir = _appPrefs.GetLastRaceEventDirectory();
 	wxString defaultFile = "";
 	wxFileDialog fileDialog(this, "Open Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
@@ -547,7 +547,7 @@ void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 			dlg.ShowModal();
 			return;
 		}
-		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
+		_appPrefs.SetLastRaceEventDirectory(fileDialog.GetDirectory());
 	}
 }
 
