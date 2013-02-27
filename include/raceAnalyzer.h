@@ -113,7 +113,7 @@ class MainFrame : public wxFrame, public RuntimeListener
   	void OnConfigChanged(wxCommandEvent &event);
   	void OnFileExit(wxCommandEvent &event);
   	void OnExit(wxCloseEvent& WXUNUSED(event));
-  	void RaceEventLoaded();
+  	void RaceEventUpdated();
   	void OnNewRaceEvent(wxCommandEvent &event);
   	void OnOpenRaceEvent(wxCommandEvent &event);
 
