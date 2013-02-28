@@ -516,7 +516,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 				NewRaceEvent(fileName);
 			}
 
-			RaceEventLoaded();
+			RaceEventUpdated();
 		}
 		catch(DatastoreException &e){
 			wxMessageDialog dlg(this, wxString::Format("Failed to Create Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Creating Race Event", wxOK | wxICON_HAND);
@@ -530,7 +530,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 
 
-	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
+	wxString defaultDir = _appPrefs.GetLastRaceEventDirectory();
 	wxString defaultFile = "";
 	wxFileDialog fileDialog(this, "Open Race Event", defaultDir, defaultFile, OPEN_RACE_EVENT_FILTER, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
@@ -540,14 +540,14 @@ void MainFrame::OnOpenRaceEvent(wxCommandEvent& event){
 		try{
 			const wxString fileName = fileDialog.GetPath();
 			OpenRaceEvent(fileName);
-			RaceEventLoaded();
+			RaceEventUpdated();
 		}
 		catch(DatastoreException &e){
 			wxMessageDialog dlg(this, wxString::Format("Failed to open Race Event:\n\n%s", e.GetMessage().ToAscii()), "Error Opening", wxOK | wxICON_HAND);
 			dlg.ShowModal();
 			return;
 		}
-		_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
+		_appPrefs.SetLastRaceEventDirectory(fileDialog.GetDirectory());
 	}
 }
 
@@ -568,7 +568,6 @@ void MainFrame::CloseRaceEvent(){
 void MainFrame::OpenRaceEvent(wxString fileName){
 
 	m_datalogStore.Open(fileName);
-	UpdateAnalyzerView();
 }
 
 void MainFrame::OnImportDatalog(wxCommandEvent& event){
@@ -604,8 +603,7 @@ void MainFrame::OnImportDatalog(wxCommandEvent& event){
 
 
 void MainFrame::OnImportWizardFinished(wxWizardEvent &event){
-	UpdateAnalyzerView();
-	m_datalogPlayer.DatalogSessionsUpdated();
+	RaceEventUpdated();
 }
 
 void MainFrame::UpdateAnalyzerView(){
@@ -652,7 +650,9 @@ void MainFrame::UpdateAnalysis(){
 }
 
 
-void MainFrame::RaceEventLoaded(){
+void MainFrame::RaceEventUpdated(){
+	UpdateAnalyzerView();
+	m_datalogPlayer.DatalogSessionsUpdated();
 	UpdateCommControls();
 	NotifyConfigChanged();
 	SyncControls();

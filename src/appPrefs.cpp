@@ -3,23 +3,22 @@
 #include "wx/config.h"
 #include "wx/stdpaths.h"
 
-AppPrefs::AppPrefs()
-{
-}
+AppPrefs::AppPrefs() : m_activePerspective(0){}
 
 
 void AppPrefs::SaveAppPrefs(){
 	wxConfig config(RACE_ANALYZER_APP_NAME);
 
-	config.Write(CONFIG_KEY_LAST_CONFIG_DIRECTORY,_lastConfigFileDirectory);
-	config.Write(CONFIG_KEY_LAST_DATALOG_DIRECTORY, _lastDatalogDirectory);
+	config.Write(CONFIG_KEY_LAST_RACEEVENT_DIRECTORY, m_lastRaceEventDirectory);
+	config.Write(CONFIG_KEY_LAST_CONFIG_DIRECTORY,m_lastConfigFileDirectory);
+	config.Write(CONFIG_KEY_LAST_DATALOG_DIRECTORY, m_lastDatalogDirectory);
 
-	int count = _perspectives.Count();
+	int count = m_perspectives.Count();
 	config.Write(CONFIG_KEY_PERSPECTIVE_COUNT, count);
-	config.Write(CONFIG_KEY_ACTIVE_PERSPECTIVE, _activePerspective);
+	config.Write(CONFIG_KEY_ACTIVE_PERSPECTIVE, m_activePerspective);
 	for (int i = 0; i < count; i++){
-		config.Write(wxString::Format("%s%d",CONFIG_KEY_PERSPECTIVE,i), _perspectives[i]);
-		config.Write(wxString::Format("%s%d",CONFIG_KEY_PERSPECTIVE_NAME,i), _perspectiveNames[i]);
+		config.Write(wxString::Format("%s%d",CONFIG_KEY_PERSPECTIVE,i), m_perspectives[i]);
+		config.Write(wxString::Format("%s%d",CONFIG_KEY_PERSPECTIVE_NAME,i), m_perspectiveNames[i]);
 	}
 }
 
@@ -28,17 +27,18 @@ void AppPrefs::LoadAppPrefs(){
 
 	wxStandardPaths standardPaths;
 
-	_lastConfigFileDirectory = config.Read(CONFIG_KEY_LAST_CONFIG_DIRECTORY, standardPaths.GetUserConfigDir());
-	_lastDatalogDirectory = config.Read(CONFIG_KEY_LAST_DATALOG_DIRECTORY, standardPaths.GetUserConfigDir());
+	m_lastConfigFileDirectory = config.Read(CONFIG_KEY_LAST_CONFIG_DIRECTORY, standardPaths.GetUserConfigDir());
+	m_lastDatalogDirectory = config.Read(CONFIG_KEY_LAST_DATALOG_DIRECTORY, standardPaths.GetUserConfigDir());
+	m_lastRaceEventDirectory = config.Read(CONFIG_KEY_LAST_RACEEVENT_DIRECTORY, standardPaths.GetUserConfigDir());
 
 	int count;
 	config.Read(CONFIG_KEY_PERSPECTIVE_COUNT, &count,0);
-	config.Read(CONFIG_KEY_ACTIVE_PERSPECTIVE, &_activePerspective,0);
+	config.Read(CONFIG_KEY_ACTIVE_PERSPECTIVE, &m_activePerspective,0);
 	//if we can't load all perspectives correctly we fail-back to defaults
 	for (int i = 0; i < count; i++){
 		wxString perspectiveConfig;
 		if (config.Read(wxString::Format("%s%d",CONFIG_KEY_PERSPECTIVE,i), &perspectiveConfig)){
-			_perspectives.Add(perspectiveConfig);
+			m_perspectives.Add(perspectiveConfig);
 		}
 		else{
 			ResetDefaults();
@@ -46,7 +46,7 @@ void AppPrefs::LoadAppPrefs(){
 		}
 		wxString perspectiveName;
 		if (config.Read(wxString::Format("%s%d", CONFIG_KEY_PERSPECTIVE_NAME,i), &perspectiveName)){
-			_perspectiveNames.Add(perspectiveName);
+			m_perspectiveNames.Add(perspectiveName);
 		}
 		else{
 			ResetDefaults();
@@ -56,39 +56,47 @@ void AppPrefs::LoadAppPrefs(){
 }
 
 void AppPrefs::ResetDefaults(){
-	_perspectives.Empty();
-	_activePerspective = 0;
+	m_perspectives.Empty();
+	m_activePerspective = 0;
 	SaveAppPrefs();
 }
 
 wxArrayString & AppPrefs::GetPerspectives(){
-	return _perspectives;
+	return m_perspectives;
 }
 
 wxArrayString & AppPrefs::GetPerspectiveNames(){
-	return _perspectiveNames;
+	return m_perspectiveNames;
 }
 
 int & AppPrefs::GetActivePerspective(){
-	return _activePerspective;
+	return m_activePerspective;
 }
 
 void AppPrefs::SetActivePerspective(int activePerspective){
-	_activePerspective = activePerspective;
+	m_activePerspective = activePerspective;
 }
 
 void AppPrefs::SetLastConfigFileDirectory(wxString lastConfigFileDirectory){
-	_lastConfigFileDirectory = lastConfigFileDirectory;
+	m_lastConfigFileDirectory = lastConfigFileDirectory;
+}
+
+wxString AppPrefs::GetLastRaceEventDirectory(){
+	return m_lastRaceEventDirectory;
+}
+
+void AppPrefs::SetLastRaceEventDirectory(wxString lastRaceEventDirectory){
+	m_lastRaceEventDirectory = lastRaceEventDirectory;
 }
 
 wxString AppPrefs::GetLastConfigFileDirectory(){
-	return _lastConfigFileDirectory;
+	return m_lastConfigFileDirectory;
 }
 
 void AppPrefs::SetLastDatalogDirectory(wxString lastDatalogDirectory){
-	_lastDatalogDirectory = lastDatalogDirectory;
+	m_lastDatalogDirectory = lastDatalogDirectory;
 }
 
 wxString AppPrefs::GetLastDatalogDirectory(){
-	return _lastDatalogDirectory;
+	return m_lastDatalogDirectory;
 }
