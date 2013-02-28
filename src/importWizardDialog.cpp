@@ -18,8 +18,8 @@ wxString ImportWizardParams::GetDefaultDatalogName(){
 }
 
 ImporterThread::ImporterThread() :
-		m_params(0),
-		m_owner(0),
+		m_params(NULL),
+		m_owner(NULL),
 		wxThread()
 { }
 
@@ -514,7 +514,7 @@ DatalogImporterPage::DatalogImporterPage(wxWizard *parent, ImportWizardParams *p
 		wxWizardPageSimple(parent),
 		m_params(params),
 		m_importing(false),
-		m_importerThread(0){
+		m_importerThread(NULL){
 
     wxFlexGridSizer *mainSizer = new wxFlexGridSizer(4,1,3,3);
     mainSizer->AddGrowableCol(0);

@@ -2,8 +2,8 @@
 
 BaseConfigPanel::BaseConfigPanel() :
 		wxPanel(),
-		m_configParams(0),
-		m_comm(0)
+		m_configParams(NULL),
+		m_comm(NULL)
 {
 }
 
@@ -21,7 +21,7 @@ BaseConfigPanel::BaseConfigPanel(wxWindow *parent,
 								style,
 								name),
 						m_configParams(config),
-						m_comm(0)
+						m_comm(NULL)
 {
 }
 

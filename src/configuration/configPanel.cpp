@@ -15,15 +15,14 @@ ConfigPanel::ConfigPanel(
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
-			const wxString &name
-			)
-			: m_configParams(params),
-			  wxPanel(	parent,
+			const wxString &name ) :
+			wxPanel(	parent,
 						id,
 						pos,
 						size,
 						style,
-						name)
+						name),
+			m_configParams(params)
 {
 	InitComponents();
 }
