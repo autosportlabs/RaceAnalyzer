@@ -19,8 +19,11 @@
 #define DATALOG_FILE_COMMENT "#"
 #define IMPORT_PROGRESS_COARSENESS 100
 
+DatalogHeader::DatalogHeader() : channelName(""), units(""), sampleRate(0){}
 
-DatalogHeader::DatalogHeader(wxString rawHeader) : sampleRate(0) {
+DatalogHeader::DatalogHeader(wxString &channelName, wxString &units, int sampleRate) : channelName(channelName), units(units), sampleRate(sampleRate){}
+
+bool DatalogHeader::ParseRawHeader(wxString &rawHeader, DatalogHeader &header) {
 
 	wxStringTokenizer tk(rawHeader, "|", wxTOKEN_RET_EMPTY);
 	int index = 0;
@@ -30,31 +33,41 @@ DatalogHeader::DatalogHeader(wxString rawHeader) : sampleRate(0) {
 			{
 				wxString channelName = tk.GetNextToken();
 				StringUtil::StripQuotes(channelName);
-				this->channelName = channelName;
+				header.channelName = channelName;
 				break;
 			}
 			case 1:
 			{
 				wxString units = tk.GetNextToken();
 				StringUtil::StripQuotes(units);
-				this->units = units;
+				header.units = units;
 				break;
 			}
 			case 2:
 			{
 				long sampleRate;
 				if (tk.GetNextToken().ToLong(&sampleRate,10)){
-					this->sampleRate = sampleRate;
+					header.sampleRate = sampleRate;
 				}
 				break;
 			}
 		}
 		index++;
 	}
+	return index >=3;
 }
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(DatalogHeaders);
+
+int DatalogHeaderUtil::FindMaxSampleRate(DatalogHeaders &datalogHeaders){
+	int sampleRate = sample_disabled;
+	for (int i = 0; i < datalogHeaders.Count(); i++){
+		int testSampleRate = datalogHeaders[i].sampleRate;
+		if (testSampleRate > sampleRate) sampleRate = testSampleRate;
+	}
+	return sampleRate;
+}
 
 DatalogInfo::DatalogInfo() : timeOffset(0), maxSampleRate(sample_disabled), name(""), notes(""){}
 DatalogInfo::DatalogInfo(int timeOffset, int maxSampleRate, const wxString &name, const wxString &notes) :
@@ -208,8 +221,8 @@ void DatalogStore::GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file){
 	ExtractValues(rawHeaders, line);
 
 	for (int i = 0; i < rawHeaders.Count(); i++){
-		DatalogHeader header(rawHeaders[i]);
-		headers.Add(header);
+		DatalogHeader header;
+		if (DatalogHeader::ParseRawHeader(rawHeaders[i], header)) headers.Add(header);
 	}
 }
 
@@ -258,14 +271,6 @@ void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds
 	sqlite3_finalize(stmt);
 }
 
-int DatalogStore::FindMaxSampleRate(DatalogHeaders &datalogHeaders){
-	int sampleRate = sample_disabled;
-	for (int i = 0; i < datalogHeaders.Count(); i++){
-		int testSampleRate = datalogHeaders[i].sampleRate;
-		if (testSampleRate > sampleRate) sampleRate = testSampleRate;
-	}
-	return sampleRate;
-}
 
 int DatalogStore::InsertDatalogInfo(const DatalogInfo &info){
 
@@ -342,7 +347,7 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 	}
 
 	int timeOffset = 0;
-	int maxSampleRate = FindMaxSampleRate(headers);
+	int maxSampleRate = DatalogHeaderUtil::FindMaxSampleRate(headers);
 
 	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
 

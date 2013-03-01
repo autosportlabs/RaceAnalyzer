@@ -35,10 +35,11 @@ private:
 	int m_errorCode;
 };
 
-
 class DatalogHeader{
 public:
-	DatalogHeader(wxString rawHeader);
+	DatalogHeader();
+	DatalogHeader(wxString &channelName, wxString &units, int sampleRate);
+	static bool ParseRawHeader(wxString &rawHeader, DatalogHeader &header);
 	wxString channelName;
 	wxString units;
 	int sampleRate;
@@ -46,6 +47,11 @@ public:
 
 
 WX_DECLARE_OBJARRAY(DatalogHeader, DatalogHeaders);
+
+class DatalogHeaderUtil{
+public:
+	static int FindMaxSampleRate(DatalogHeaders &datalogHeaders);
+};
 
 class DatalogStore {
 
@@ -60,7 +66,6 @@ public:
 	void CreateNew(wxString filePath);
 	wxString GetFileName();
 	bool IsOpen();
-	int FindMaxSampleRate(DatalogHeaders &datalogHeaders);
 	void ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener = NULL);
 
 	size_t CountFileLines(wxFFile &file);

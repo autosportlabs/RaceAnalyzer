@@ -136,7 +136,6 @@ DatalogFileSelectPage::DatalogFileSelectPage(wxWizard *parent, ImportWizardParam
 	m_helpText = new wxStaticText(this,ID_IMPORT_WIZ_DATALOG_FILE_HELP_TEXT,"");
 	wxFont f= m_helpText->GetFont();
 	f.SetStyle(wxFONTSTYLE_ITALIC);
-	f.SetNoAntiAliasing(false);
 	m_helpText->SetFont(f);
 	pathSizer->Add(m_helpText,1,wxEXPAND);
 	pathSizer->AddSpacer(10);
@@ -149,8 +148,7 @@ DatalogFileSelectPage::DatalogFileSelectPage(wxWizard *parent, ImportWizardParam
 
     mainSizer->Add( pathSizer, 1, wxALL | wxEXPAND, 1 );
 
-    SetSizer(mainSizer);
-    mainSizer->Fit(this);
+    SetSizerAndFit(mainSizer);
     UpdateUIState();
 }
 
@@ -305,25 +303,36 @@ MapDatalogChannelsPage::MapDatalogChannelsPage(wxWizard *parent,ImportWizardPara
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxFlexGridSizer *innerSizer = new wxFlexGridSizer(1,3,3);
-    innerSizer->AddGrowableCol(0);
+    wxFlexGridSizer *innerSizer = new wxFlexGridSizer(2, 1, 10, 10);
+	innerSizer->AddGrowableCol(0);
+	innerSizer->AddGrowableRow(0);
 
     m_channelMapGrid = new wxGrid(this,ID_IMPORT_WIZ_CHANNEL_MAP_GRID);
-    m_channelMapGrid->CreateGrid(0,6);
+    m_channelMapGrid->EnableScrolling(false, true);
+    m_channelMapGrid->CreateGrid(0,7);
 
     m_channelMapGrid->SetColLabelValue(0,"Select");
     m_channelMapGrid->SetColLabelValue(1,"Channel");
-    m_channelMapGrid->SetColLabelValue(2,"Type");
-    m_channelMapGrid->SetColLabelValue(3,"Units");
-    m_channelMapGrid->SetColLabelValue(4,"Min");
-    m_channelMapGrid->SetColLabelValue(5,"Max");
+    m_channelMapGrid->SetColLabelValue(2,"Sample Rate");
+    m_channelMapGrid->SetColLabelValue(3,"Type");
+    m_channelMapGrid->SetColLabelValue(4,"Units");
+    m_channelMapGrid->SetColLabelValue(5,"Min");
+    m_channelMapGrid->SetColLabelValue(6,"Max");
 
-    innerSizer->Add(m_channelMapGrid,1,wxEXPAND);
+    innerSizer->Add(m_channelMapGrid, 1, wxEXPAND);
+
+    m_infoMessage = new wxStaticText(this, wxID_ANY,"");
+    wxFont font = m_infoMessage->GetFont();
+    font.SetWeight(wxFONTWEIGHT_BOLD);
+    m_infoMessage->SetFont(font);
+
+    innerSizer->Add(m_infoMessage);
+
 
     mainSizer->Add(innerSizer,1,wxEXPAND);
 
-    SetSizer(mainSizer);
-    mainSizer->Fit(this);
+    SetSizerAndFit(mainSizer);
+//    mainSizer->Fit(this);
 }
 
 
@@ -341,7 +350,7 @@ void MapDatalogChannelsPage::OnWizardPageChanging(wxWizardEvent &event){
 	size_t count = m_channelMapGrid->GetRows();
 	for (size_t i = 0; i < count; i++){
 
-		wxString channelType = m_channelMapGrid->GetCellValue(i,2);
+		wxString channelType = m_channelMapGrid->GetCellValue(i,3);
 
 		DatalogChannel &channel = channels[i];
 		int typeId = DatalogChannelUtil::FindChannelTypeIdByName(channelTypes,channelType);
@@ -404,7 +413,13 @@ void MapDatalogChannelsPage::PopulateChannels(){
 	for (size_t i = 0; i < unmatchedCount; i++){
 		channels.Add(DatalogChannel(unmatchedHeaders[i].channelName));
 	}
-
+	if (channels.Count() == 0){
+		m_infoMessage->Show(true);
+		m_infoMessage->SetLabel("No channels detected! Did you select a valid log file?");
+	}
+	else{
+		m_infoMessage->Show(false);
+	}
 }
 
 void MapDatalogChannelsPage::AddExistingChannels(DatalogHeaders &headers, DatalogHeaders &remainingHeaders,
@@ -431,6 +446,7 @@ void MapDatalogChannelsPage::AddExistingChannels(DatalogHeaders &headers, Datalo
 				channelTypes.Add(channelType);
 				channel.typeId = channelTypes.GetCount() - 1;
 			}
+			channel.sampleRate = header.sampleRate;
 			channels.Add(channel);
 		}
 		else{
@@ -462,41 +478,45 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 	for (size_t i = 0; i < channelsCount; i++){
 		DatalogChannel &channel = channels[i];
 
-		m_channelMapGrid->SetCellEditor(i,0,new wxGridCellBoolEditor);
-		m_channelMapGrid->SetCellRenderer(i,0,new wxGridCellBoolRenderer);
-		m_channelMapGrid->SetCellValue(i,0,"1");
+		m_channelMapGrid->SetCellEditor(i, 0, new wxGridCellBoolEditor);
+		m_channelMapGrid->SetCellRenderer(i, 0, new wxGridCellBoolRenderer);
+		m_channelMapGrid->SetCellValue(i, 0, "1");
 
-		m_channelMapGrid->SetCellValue(i,1,channel.name);
-		m_channelMapGrid->SetReadOnly(i,1,true);
+		m_channelMapGrid->SetCellValue(i, 1, channel.name);
+		m_channelMapGrid->SetReadOnly(i, 1, true);
 		m_channelMapGrid->SetCellBackgroundColour(i,1,DISABLED_BACKGROUND_COLOR);
+
+		m_channelMapGrid->SetCellValue(i, 2, wxString::Format("%d", channel.sampleRate));
+		m_channelMapGrid->SetReadOnly(i, 1, true);
 
 		int typeId = channel.typeId;
 		if (typeId >=0){
 			DatalogChannelType &channelType = channelTypes[typeId];
-			m_channelMapGrid->SetCellValue(i,2,channelType.name);
-			m_channelMapGrid->SetCellEditor(i,2,new wxGridCellChoiceEditor(choices));
+			m_channelMapGrid->SetCellValue(i,3,channelType.name);
+			m_channelMapGrid->SetCellEditor(i,3,new wxGridCellChoiceEditor(choices));
 
-			m_channelMapGrid->SetCellValue(i,3,channelType.unitsLabel);
-			m_channelMapGrid->SetReadOnly(i,3,true);
+			m_channelMapGrid->SetCellValue(i,4,channelType.unitsLabel);
+			m_channelMapGrid->SetReadOnly(i,4,true);
 			m_channelMapGrid->SetCellBackgroundColour(i,3,DISABLED_BACKGROUND_COLOR);
 
-			m_channelMapGrid->SetCellValue(i,4,wxString::Format("%.2f",channelType.minValue));
-			m_channelMapGrid->SetReadOnly(i,4,true);
+			m_channelMapGrid->SetCellValue(i,5,wxString::Format("%.2f",channelType.minValue));
+			m_channelMapGrid->SetReadOnly(i,5,true);
 			m_channelMapGrid->SetCellBackgroundColour(i,4,DISABLED_BACKGROUND_COLOR);
 
-			m_channelMapGrid->SetCellValue(i,5,wxString::Format("%.2f",channelType.maxValue));
-			m_channelMapGrid->SetReadOnly(i,5,true);
+			m_channelMapGrid->SetCellValue(i,6,wxString::Format("%.2f",channelType.maxValue));
+			m_channelMapGrid->SetReadOnly(i,6,true);
 			m_channelMapGrid->SetCellBackgroundColour(i,5,DISABLED_BACKGROUND_COLOR);
 		}
 	}
-	m_channelMapGrid->AutoSize();
+	m_channelMapGrid->Update();
+	m_channelMapGrid->AutoSizeColumns();
 }
 
 void MapDatalogChannelsPage::UpdateUIState(){
 
 
 	GetParent()->FindWindow(wxID_BACKWARD)->Enable(true);
-	GetParent()->FindWindow(wxID_FORWARD)->Enable(true);
+	GetParent()->FindWindow(wxID_FORWARD)->Enable(m_params->datalogChannels.Count() > 0);
 }
 
 BEGIN_EVENT_TABLE ( MapDatalogChannelsPage, wxWizardPageSimple )
@@ -632,6 +652,10 @@ ImportDatalogWizard::ImportDatalogWizard(wxFrame *frame, ImportWizardParams para
 	m_page1 = page1;
 
 	GetPageAreaSizer()->Add(m_page1);
+	GetPageAreaSizer()->Add(page2);
+	GetPageAreaSizer()->Add(page3);
+	GetPageAreaSizer()->Add(page4);
+
 
 }
 

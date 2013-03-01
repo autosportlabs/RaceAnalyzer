@@ -95,6 +95,7 @@ public:
 
 	wxString name;
 	int typeId;
+	int sampleRate;
 	wxString description;
 	bool enabled;
 };

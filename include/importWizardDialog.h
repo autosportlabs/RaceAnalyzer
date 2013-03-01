@@ -137,6 +137,7 @@ public:
 private:
 	ImportWizardParams 	*m_params;
 	wxGrid				*m_channelMapGrid;
+	wxStaticText		*m_infoMessage;
 };
 
 

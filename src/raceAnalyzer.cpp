@@ -509,7 +509,7 @@ void MainFrame::OnNewRaceEvent(wxCommandEvent &event){
 			if (wxFile::Exists(fileName)){
 				wxMessageDialog dlg(this, wxString::Format("Race Event file already exists. Open this Event?"),"Open Existing Race Event", wxYES_DEFAULT | wxYES_NO);
 				int result = dlg.ShowModal();
-				if (result == wxYES){
+				if (result == wxID_YES){
 					OpenRaceEvent(fileName);
 				}
 			}else{
@@ -572,33 +572,16 @@ void MainFrame::OpenRaceEvent(wxString fileName){
 
 void MainFrame::OnImportDatalog(wxCommandEvent& event){
 
-	ImportDatalogWizard *wiz = new ImportDatalogWizard(this,ImportWizardParams(&_appPrefs,&m_appOptions,&m_datalogStore));
-
-	wiz->ShowPage(wiz->GetFirstPage());
-	wiz->Show(true);
-
-/*	wxString defaultDir = _appPrefs.GetLastConfigFileDirectory();
-	wxFileDialog fileDialog(this, "Import Datalog", defaultDir, "", LOGGING_FILE_FILTER, wxOPEN);
-
-	int result = fileDialog.ShowModal();
-
-	if (wxID_OK != result) return;
-
-
-	try{
-		const wxString fileName = fileDialog.GetPath();
-		wxString name("Session");
-		wxString notes("Notes");
-		ImportDatalog(fileName, name, notes);
-		UpdateAnalyzerView();
+	if (!m_datalogStore.IsOpen()){
+		wxMessageDialog dlg(this, "No Race Event Loaded. Create a new one?", "Race Event", wxYES_NO | wxNO_DEFAULT);
+		if (wxID_YES == dlg.ShowModal() )	OnNewRaceEvent(event);
+		}
+	if (m_datalogStore.IsOpen()){
+		ImportDatalogWizard *wiz = new ImportDatalogWizard(this,ImportWizardParams(&_appPrefs,&m_appOptions,&m_datalogStore));
+		wiz->ShowPage(wiz->GetFirstPage());
+		wiz->Show(true);
 	}
-	catch(DatastoreException e){
-		wxMessageDialog dlg(this, wxString::Format("Failed to Import Datalog File:\n\n%s", e.GetMessage().ToAscii()), "Error Importing", wxOK | wxICON_HAND);
-		dlg.ShowModal();
-		return;
-	}
-	_appPrefs.SetLastConfigFileDirectory(fileDialog.GetDirectory());
-	*/
+
 }
 
 
