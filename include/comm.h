@@ -8,11 +8,13 @@
 
 #include "commonEvents.h"
 
-class RaceAnalyzerCommCallback : public ProgresssReceiver{
+class RaceAnalyzerCommCallback : public ProgressReceiver{
 public:
 	virtual void ReadConfigComplete(bool success, wxString msg) = 0;
 	virtual void WriteConfigComplete(bool success, wxString msg) = 0;
 	virtual void FlashConfigComplete(bool success, wxString msg) = 0;
+
+	virtual ~RaceAnalyzerCommCallback(){}
 };
 
 class RaceAnalyzerComm {
@@ -47,7 +49,7 @@ class RaceAnalyzerComm {
 		CComm* OpenSerialPort();
 		CComm* GetSerialPort();
 		void CheckThrowResult(wxString &result);
-		int FlushReceiveBuffer(CComm * comPort);
+		void FlushReceiveBuffer(CComm * comPort);
 		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
 		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
 		wxString SendCommand(CComm *comPort, const wxString &buffer, int timeout = DEFAULT_TIMEOUT);
@@ -78,6 +80,7 @@ class AsyncRaceAnalyzerComm : public wxThread{
 
 public:
 
+	static const int ACTION_NONE = -1;
 	static const int ACTION_READ_CONFIG = 0;
 	static const int ACTION_WRITE_CONFIG = 1;
 	static const int ACTION_FLASH_CONFIG = 2;

@@ -55,9 +55,11 @@ enum{
 		SEEK_REV_DATALOG
 };
 
-class ProgresssReceiver{
+class ProgressReceiver{
 public:
 	virtual void OnProgress(int pct) = 0;
+
+	virtual ~ProgressReceiver(){}
 };
 
 #endif /*EVENTS_H_*/
