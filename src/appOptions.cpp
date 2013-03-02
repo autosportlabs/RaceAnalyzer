@@ -187,7 +187,7 @@ void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
 	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
 	types.Add( DatalogChannelSystemTypes::GetLongitudeChannelType());
-	types.Add( DatalogChannelType("Speed", "KPH", 0, 0, 300.0, 0) );
+	types.Add( DatalogChannelType("Speed", "MPH", 0, 0, 300.0, 0) );
 	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0, 2) );
 	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0, 2) );
 	types.Add( DatalogChannelType("Temperature", "F", 0, 0, 300.0, 0) );
