@@ -210,7 +210,6 @@ void AppOptions::LoadStandardAccelChannels(DatalogChannels &channels){
 void AppOptions::LoadStandardGpsChannels(DatalogChannels &channels){
 	//GPS inputs
 	channels.Add( DatalogChannel("Time", 3, "GPS Time in UTC") );
-	channels.Add( DatalogChannel("Qual", 4, "GPS signal quality indicator") );
 	channels.Add( DatalogChannel("GpsSats", 4, "Number of Active Satellites") );
 	channels.Add( DatalogChannel("Latitude", 5, "GPS Latitude in Degrees") );
 	channels.Add( DatalogChannel("Longitude", 6,"GPS Longitude in Degrees") );

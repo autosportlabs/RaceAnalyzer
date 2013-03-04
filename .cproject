@@ -214,9 +214,9 @@
 									<listOptionValue builtIn="false" value="gdi32"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.96711125" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.9.4\msw-debug\lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gaugeWorks/MinGW-Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sqlite/MinGW-Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\wxWidgets-2.9.4\msw-release\lib&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.1528461527" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-mthreads -Wl,--subsystem,windows -mwindows" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.752342165" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

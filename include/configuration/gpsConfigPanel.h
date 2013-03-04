@@ -25,6 +25,8 @@ class GpsConfigPanel : public BaseChannelConfigPanel{
 					);
 
 		~GpsConfigPanel();
+		wxSizer * GetStartFinishContainer();
+		wxSizer * GetSplitTargetContainer();
 		wxPanel * GetTopInnerPanel();
 		wxPanel * GetBottomInnerPanel();
 		ChannelConfig * GetChannelConfig(int i);
@@ -42,12 +44,20 @@ class GpsConfigPanel : public BaseChannelConfigPanel{
 		wxTextCtrl * m_startFinishLongitudeTextCtrl;
 		wxTextCtrl * m_startFinishTargetRadius;
 
+		wxTextCtrl * m_splitLatitudeTextCtrl;
+		wxTextCtrl * m_splitLongitudeTextCtrl;
+		wxTextCtrl * m_splitTargetRadius;
+
 	private:
 		//event handlers
 		void OnGpsInstalledChanged(wxCommandEvent &event);
 		void OnStartFinishLatitudeChanged(wxCommandEvent &event);
 		void OnStartFinishLongitudeChanged(wxCommandEvent &event);
 		void OnStartFinishRadiusChanged(wxCommandEvent &event);
+
+		void OnSplitLatitudeChanged(wxCommandEvent &event);
+		void OnSplitLongitudeChanged(wxCommandEvent &event);
+		void OnSplitRadiusChanged(wxCommandEvent &event);
 
 		wxPanel * m_gpsOptionsPanel;
 

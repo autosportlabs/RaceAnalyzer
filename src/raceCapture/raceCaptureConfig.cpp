@@ -48,11 +48,10 @@ void RaceCaptureConfig::PopulateGpsConfig(Object &gpsRoot){
 	ChannelConfigFromJson(gpsConfig.longitudeCfg,gpsRoot["longitude"]);
 	ChannelConfigFromJson(gpsConfig.speedCfg,gpsRoot["speed"]);
 	ChannelConfigFromJson(gpsConfig.timeCfg,gpsRoot["time"]);
-	ChannelConfigFromJson(gpsConfig.qualityCfg,gpsRoot["quality"]);
 	ChannelConfigFromJson(gpsConfig.satellitesCfg,gpsRoot["satellites"]);
 	ChannelConfigFromJson(gpsConfig.lapCountCfg,gpsRoot["lapCount"]);
 	ChannelConfigFromJson(gpsConfig.lapTimeCfg,gpsRoot["lapTime"]);
-
+	ChannelConfigFromJson(gpsConfig.splitTimeCfg,gpsRoot["splitTime"]);
 }
 
 void RaceCaptureConfig::PopulateAnalogConfig(Array &analogRoot){
@@ -179,10 +178,10 @@ Object RaceCaptureConfig::GpsConfigToJson(){
 	cfg["longitude"] = ChannelConfigToJson(gpsConfig.longitudeCfg);
 	cfg["speed"] = ChannelConfigToJson(gpsConfig.speedCfg);
 	cfg["time"]  = ChannelConfigToJson(gpsConfig.timeCfg);
-	cfg["quality"] = ChannelConfigToJson(gpsConfig.qualityCfg);
 	cfg["satellites"] = ChannelConfigToJson(gpsConfig.satellitesCfg);
 	cfg["lapCount"] = ChannelConfigToJson(gpsConfig.lapCountCfg);
 	cfg["lapTime"] = ChannelConfigToJson(gpsConfig.lapTimeCfg);
+	cfg["splitTime"] = ChannelConfigToJson(gpsConfig.splitTimeCfg);
 	return cfg;
 }
 

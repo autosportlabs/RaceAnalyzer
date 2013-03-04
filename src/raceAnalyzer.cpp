@@ -84,7 +84,7 @@ enum{
 bool RaceAnalyzerApp::OnInit()
 {
 	// Create an instance of our frame, or window
-	_mainFrame = new MainFrame(RACEANALYZER_WINDOW_TITLE, wxPoint(1, 1), wxSize(300,300));
+	_mainFrame = new MainFrame(RACEANALYZER_WINDOW_TITLE, wxPoint(1, 1), wxSize(400,400));
 
 	wxIconBundle iconBundle;
 	iconBundle.AddIcon(wxIcon(mjlj_icon_xlarge_xpm));

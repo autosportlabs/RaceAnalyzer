@@ -79,8 +79,9 @@ void ChannelConfigPanel::InitComponents(bool showHeaders, ChannelConfigExtraFiel
 }
 
 void ChannelConfigPanel::OnLabelChanged(wxCommandEvent &event){
-	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_channelConfig->label = c->GetValue();
+	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
+	wxString value = c->GetValue();
+	if (NULL != c) m_channelConfig->label = value;
 }
 
 void ChannelConfigPanel::OnUnitsChanged(wxCommandEvent &event){

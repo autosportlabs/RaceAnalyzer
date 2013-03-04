@@ -477,7 +477,6 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			populateChannelConfig(gpsConfig.longitudeCfg,"long",rsp);
 			populateChannelConfig(gpsConfig.speedCfg,"vel",rsp);
 			populateChannelConfig(gpsConfig.timeCfg,"time",rsp);
-			populateChannelConfig(gpsConfig.qualityCfg,"qual",rsp);
 			populateChannelConfig(gpsConfig.satellitesCfg,"sats",rsp);
 			updateWriteConfigPct(++updateCount,callback);
 		}
@@ -487,9 +486,13 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			wxString rsp = SendCommand(serialPort,cmd);
 			populateChannelConfig(gpsConfig.lapCountCfg,"lapCount",rsp);
 			populateChannelConfig(gpsConfig.lapTimeCfg,"lapTime",rsp);
+			populateChannelConfig(gpsConfig.splitTimeCfg, "splitTime", rsp);
 			gpsConfig.startFinishLatitude = GetFloatParam(rsp,"startFinishLat");
 			gpsConfig.startFinishLongitude = GetFloatParam(rsp,"startFinishLong");
 			gpsConfig.startFinishRadius = GetFloatParam(rsp,"startFinishRadius");
+			gpsConfig.splitLatitude = GetFloatParam(rsp, "splitLat");
+			gpsConfig.splitLongitude = GetFloatParam(rsp, "splitLong");
+			gpsConfig.splitRadius = GetFloatParam(rsp, "splitRadius");
 			updateWriteConfigPct(++updateCount,callback);
 		}
 
@@ -617,7 +620,6 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 				cmd = AppendChannelConfig(cmd, cfg.longitudeCfg);
 				cmd = AppendChannelConfig(cmd, cfg.speedCfg);
 				cmd = AppendChannelConfig(cmd, cfg.timeCfg);
-				cmd = AppendChannelConfig(cmd, cfg.qualityCfg);
 				cmd = AppendChannelConfig(cmd, cfg.satellitesCfg);
 				wxString result = SendCommand(serialPort, cmd);
 				CheckThrowResult(result);
@@ -627,9 +629,13 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 				wxString cmd = "setStartFinishCfg";
 				cmd = AppendChannelConfig(cmd, cfg.lapCountCfg);
 				cmd = AppendChannelConfig(cmd, cfg.lapTimeCfg);
+				cmd = AppendChannelConfig(cmd, cfg.splitTimeCfg);
 				cmd = AppendFloatParam(cmd, cfg.startFinishLatitude);
 				cmd = AppendFloatParam(cmd, cfg.startFinishLongitude);
 				cmd = AppendFloatParam(cmd, cfg.startFinishRadius);
+				cmd = AppendFloatParam(cmd, cfg.splitLatitude);
+				cmd = AppendFloatParam(cmd, cfg.splitLongitude);
+				cmd = AppendFloatParam(cmd, cfg.splitRadius);
 				wxString result = SendCommand(serialPort, cmd);
 				CheckThrowResult(result);
 				updateWriteConfigPct(++updateCount,callback);

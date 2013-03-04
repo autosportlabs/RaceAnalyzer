@@ -188,9 +188,12 @@ public:
 	float startFinishLatitude;
 	float startFinishLongitude;
 	float startFinishRadius;
+	float splitLatitude;
+	float splitLongitude;
+	float splitRadius;
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
-	ChannelConfig qualityCfg;
+	ChannelConfig splitTimeCfg;
 	ChannelConfig satellitesCfg;
 	ChannelConfig latitudeCfg;
 	ChannelConfig longitudeCfg;
