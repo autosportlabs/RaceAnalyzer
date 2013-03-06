@@ -37,7 +37,7 @@ class RaceAnalyzerComm {
 
 	private:
 
-		static const int DEFAULT_TIMEOUT = 300;
+		static const int DEFAULT_TIMEOUT = 500;
 		wxLogStderr *_logger;
 		FILE *_logfile;
 
