@@ -10,7 +10,7 @@ GpsConfigPanel::GpsConfigPanel() : BaseChannelConfigPanel()
 }
 
 GpsConfigPanel::GpsConfigPanel(wxWindow *parent,
-		ConfigPanelParams *configParams,
+		ConfigPanelParams configParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -30,16 +30,16 @@ GpsConfigPanel::~GpsConfigPanel(){
 }
 
 void GpsConfigPanel::UpdatedExtendedFields(){
-	GpsConfig &gpsConfig = m_configParams->config->gpsConfig;
+	GpsConfig &gpsConfig = m_configParams.config->gpsConfig;
 
 	m_gpsInstalledCheckBox->SetValue(gpsConfig.gpsInstalled);
-	m_startFinishLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishLatitude));
-	m_startFinishLongitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishLongitude));
-	m_startFinishTargetRadius->SetValue(wxString::Format("%f",gpsConfig.startFinishRadius));
+	m_startFinishLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishTarget.latitude));
+	m_startFinishLongitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.startFinishTarget.longitude));
+	m_startFinishTargetRadius->SetValue(wxString::Format("%f",gpsConfig.startFinishTarget.targetRadius));
 
-	m_splitLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.splitLatitude));
-	m_splitLongitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.splitLongitude));
-	m_splitTargetRadius->SetValue(wxString::Format("%f",gpsConfig.splitRadius));
+	m_splitLatitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.splitTarget.latitude));
+	m_splitLongitudeTextCtrl->SetValue(wxString::Format("%f",gpsConfig.splitTarget.longitude));
+	m_splitTargetRadius->SetValue(wxString::Format("%f",gpsConfig.splitTarget.targetRadius));
 
 }
 
@@ -47,7 +47,7 @@ void GpsConfigPanel::UpdateExtendedChannelFields(int i){
 }
 
 ChannelConfig * GpsConfigPanel::GetChannelConfig(int i){
-	GpsConfig &cfg = m_configParams->config->gpsConfig;
+	GpsConfig &cfg = m_configParams.config->gpsConfig;
 	switch(i){
 		case 0:
 			return &(cfg.latitudeCfg);
@@ -205,43 +205,43 @@ wxPanel * GpsConfigPanel::GetBottomInnerPanel(){
 
 void GpsConfigPanel::OnGpsInstalledChanged(wxCommandEvent &event){
 	wxCheckBox *c = dynamic_cast<wxCheckBox*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.gpsInstalled = c->GetValue();
+	if (NULL != c) m_configParams.config->gpsConfig.gpsInstalled = c->GetValue();
 }
 
 void GpsConfigPanel::OnStartFinishLatitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.startFinishLatitude = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.startFinishTarget.latitude = atof(c->GetValue());
 }
 
 void GpsConfigPanel::OnStartFinishLongitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.startFinishLongitude = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.startFinishTarget.longitude = atof(c->GetValue());
 
 }
 
 void GpsConfigPanel::OnStartFinishRadiusChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.startFinishRadius = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.startFinishTarget.targetRadius = atof(c->GetValue());
 }
 
 void GpsConfigPanel::OnSplitLatitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.splitLatitude = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.splitTarget.latitude = atof(c->GetValue());
 }
 
 void GpsConfigPanel::OnSplitLongitudeChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.splitLongitude = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.splitTarget.longitude = atof(c->GetValue());
 
 }
 
 void GpsConfigPanel::OnSplitRadiusChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
-	if (NULL != c) m_configParams->config->gpsConfig.splitRadius = atof(c->GetValue());
+	if (NULL != c) m_configParams.config->gpsConfig.splitTarget.targetRadius = atof(c->GetValue());
 }
 
 DatalogChannels & GpsConfigPanel::GetStandardChannels(){
-	return m_configParams->appOptions->GetStandardGpsChannels();
+	return m_configParams.appOptions->GetStandardGpsChannels();
 }
 
 

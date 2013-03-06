@@ -20,7 +20,7 @@ class ScriptPanel : public BaseConfigPanel{
 	public:
 		ScriptPanel();
 		ScriptPanel(wxWindow *parent,
-					ConfigPanelParams *config,
+					ConfigPanelParams config,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
@@ -31,7 +31,6 @@ class ScriptPanel : public BaseConfigPanel{
 
 		~ScriptPanel();
 
-		void SetComm(RaceAnalyzerComm *comm);
 		void OnConfigUpdated();
 		void InitComponents();
 
@@ -48,8 +47,6 @@ class ScriptPanel : public BaseConfigPanel{
 
 
 		wxStyledTextCtrl *m_scriptCtrl;
-
-		RaceAnalyzerComm *m_comm;
 
 		static const int LUA_LEXER_ID = 15;
 		enum{

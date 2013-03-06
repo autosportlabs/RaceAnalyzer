@@ -16,7 +16,7 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 	public:
 		LoggerOutputConfigPanel();
 		LoggerOutputConfigPanel(wxWindow *parent,
-					ConfigPanelParams *configParams,
+					ConfigPanelParams configParams,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,

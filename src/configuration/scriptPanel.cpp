@@ -12,7 +12,7 @@ ScriptPanel::ScriptPanel() : BaseConfigPanel()
 }
 
 ScriptPanel::ScriptPanel(wxWindow *parent,
-			ConfigPanelParams *configParams,
+			ConfigPanelParams configParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -121,20 +121,16 @@ void ScriptPanel::InitComponents(){
 }
 
 void ScriptPanel::OnConfigUpdated(){
-	m_scriptCtrl->SetValue(m_configParams->config->luaScript);
+	m_scriptCtrl->SetValue(m_configParams.config->luaScript);
 }
 
 void ScriptPanel::InitOptions(void){
 
 }
 
-void ScriptPanel::SetComm(RaceAnalyzerComm *comm){
-	m_comm = comm;
-}
-
 void ScriptPanel::OnReadScript(wxCommandEvent &event){
 	try{
-		wxString script = m_comm->readScript();
+		wxString script = m_configParams.comm->readScript();
 		m_scriptCtrl->ClearAll();
 		m_scriptCtrl->SetValue(script);
 	}
@@ -147,7 +143,7 @@ void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 
 	try{
 		wxString script = m_scriptCtrl->GetValue();
-		m_comm->writeScript(script);
+		m_configParams.comm->writeScript(script);
 	}
 	catch(CommException &e){
 		wxLogMessage("Error writing script: %s",e.GetErrorMessage().ToAscii());
@@ -155,11 +151,11 @@ void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 }
 
 void ScriptPanel::OnRunScript(wxCommandEvent &event){
-	m_comm->reloadScript();
+	m_configParams.comm->reloadScript();
 }
 
 void ScriptPanel::OnScriptChanged(wxStyledTextEvent &event){
-	m_configParams->config->luaScript = m_scriptCtrl->GetValue();
+	m_configParams.config->luaScript = m_scriptCtrl->GetValue();
 }
 
 BEGIN_EVENT_TABLE ( ScriptPanel, wxPanel )

@@ -6,7 +6,7 @@ GpioPanel::GpioPanel() : BaseChannelConfigPanel()
 }
 
 GpioPanel::GpioPanel(wxWindow *parent,
-		ConfigPanelParams *config,
+		ConfigPanelParams config,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -29,7 +29,7 @@ GpioPanel::~GpioPanel(){
 }
 
 void GpioPanel::UpdateExtendedChannelFields(int i){
-	m_modeCombo[i]->SetSelection(m_configParams->config->gpioConfigs[i].mode);
+	m_modeCombo[i]->SetSelection(m_configParams.config->gpioConfigs[i].mode);
 }
 
 void GpioPanel::InitModeCombo(wxComboBox * modeCombo){
@@ -39,7 +39,7 @@ void GpioPanel::InitModeCombo(wxComboBox * modeCombo){
 }
 
 ChannelConfig * GpioPanel::GetChannelConfig(int i){
-	return &(m_configParams->config->gpioConfigs[i].channelConfig);
+	return &(m_configParams.config->gpioConfigs[i].channelConfig);
 }
 
 int GpioPanel::ChannelCount(){
@@ -47,7 +47,7 @@ int GpioPanel::ChannelCount(){
 }
 
 ChannelConfigExtraFields GpioPanel::CreateExtendedChannelFields(int i){
-	GpioConfig &cfg = (m_configParams->config->gpioConfigs[i]);
+	GpioConfig &cfg = (m_configParams.config->gpioConfigs[i]);
 	ChannelConfigExtraFields extraFields;
 	{
 		ChannelConfigExtraField f;
@@ -87,7 +87,7 @@ void GpioPanel::UpdatedExtendedFields()
 }
 
 DatalogChannels & GpioPanel::GetStandardChannels(){
-	return m_configParams->appOptions->GetStandardGpioChannels();
+	return m_configParams.appOptions->GetStandardGpioChannels();
 }
 
 void GpioPanel::OnModeChanged(wxCommandEvent &event){

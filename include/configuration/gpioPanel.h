@@ -16,7 +16,7 @@ class GpioPanel : public BaseChannelConfigPanel{
 	public:
 		GpioPanel();
 		GpioPanel(wxWindow *parent,
-					ConfigPanelParams *config,
+					ConfigPanelParams config,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,

@@ -38,118 +38,175 @@ void RaceCaptureConfig::ChannelConfigFromJson(ChannelConfig &channelConfig, cons
 	channelConfig.sampleRate = (sample_rate_t)((Number)channelConfigJson["sampleRate"]).Value();
 }
 
+void RaceCaptureConfig::GpsTargetFromJson(GpsTarget &target, const Object &gpsTargetJson){
+	((Number)gpsTargetJson["latitude"]).Value();
+	((Number)gpsTargetJson["longitude"]).Value();
+	((Number)gpsTargetJson["targetRadius"]).Value();
+}
+
+void RaceCaptureConfig::PopulateGpsTargets(GpsTarget &target, Object &gpsRoot){
+	try{
+		GpsTargetFromJson(target, gpsRoot["startFinishTarget"]);
+		GpsTargetFromJson(target, gpsRoot["splitTarget"]);
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing GpsTargets: %s", e.what());
+	}
+}
 
 void RaceCaptureConfig::PopulateGpsConfig(Object &gpsRoot){
-	gpsConfig.gpsInstalled = ((Number)gpsRoot["gpsInstalled"]).Value();
-	gpsConfig.startFinishLatitude = ((Number)gpsRoot["startFinishLatitude"]).Value();
-	gpsConfig.startFinishLongitude = ((Number)gpsRoot["startFinishLongitude"]).Value();
-	gpsConfig.startFinishRadius = ((Number)gpsRoot["startFinishRadius"]).Value();
-	ChannelConfigFromJson(gpsConfig.latitudeCfg,gpsRoot["latitude"]);
-	ChannelConfigFromJson(gpsConfig.longitudeCfg,gpsRoot["longitude"]);
-	ChannelConfigFromJson(gpsConfig.speedCfg,gpsRoot["speed"]);
-	ChannelConfigFromJson(gpsConfig.timeCfg,gpsRoot["time"]);
-	ChannelConfigFromJson(gpsConfig.satellitesCfg,gpsRoot["satellites"]);
-	ChannelConfigFromJson(gpsConfig.lapCountCfg,gpsRoot["lapCount"]);
-	ChannelConfigFromJson(gpsConfig.lapTimeCfg,gpsRoot["lapTime"]);
-	ChannelConfigFromJson(gpsConfig.splitTimeCfg,gpsRoot["splitTime"]);
+	try{
+		gpsConfig.gpsInstalled = ((Number)gpsRoot["gpsInstalled"]).Value();
+
+		PopulateGpsTargets(gpsConfig.startFinishTarget, gpsRoot);
+		PopulateGpsTargets(gpsConfig.splitTarget, gpsRoot);
+		ChannelConfigFromJson(gpsConfig.latitudeCfg,gpsRoot["latitude"]);
+		ChannelConfigFromJson(gpsConfig.longitudeCfg,gpsRoot["longitude"]);
+		ChannelConfigFromJson(gpsConfig.speedCfg,gpsRoot["speed"]);
+		ChannelConfigFromJson(gpsConfig.timeCfg,gpsRoot["time"]);
+		ChannelConfigFromJson(gpsConfig.satellitesCfg,gpsRoot["satellites"]);
+		ChannelConfigFromJson(gpsConfig.lapCountCfg,gpsRoot["lapCount"]);
+		ChannelConfigFromJson(gpsConfig.lapTimeCfg,gpsRoot["lapTime"]);
+		ChannelConfigFromJson(gpsConfig.splitTimeCfg,gpsRoot["splitTime"]);
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing GpsConfig: %s", e.what());
+	}
+
 }
 
 void RaceCaptureConfig::PopulateAnalogConfig(Array &analogRoot){
 
-	Array::const_iterator itAnalog(analogRoot.Begin());
-	int i=0;
-	for (; itAnalog != analogRoot.End(); ++itAnalog){
-		const Object &analog = *itAnalog;
-		AnalogConfig &analogConfig = analogConfigs[i++];
-		ChannelConfigFromJson(analogConfig.channelConfig,analog["channelConfig"]);
-		analogConfig.loggingPrecision = ((Number)analog["loggingPrecision"]);
-		analogConfig.linearScaling = ((Number)analog["linearScaling"]);
-		analogConfig.scalingMode = (scaling_mode_t)((int)((Number)analog["scalingMode"]));
+	try{
+		Array::const_iterator itAnalog(analogRoot.Begin());
+		int i=0;
+		for (; itAnalog != analogRoot.End(); ++itAnalog){
+			const Object &analog = *itAnalog;
+			AnalogConfig &analogConfig = analogConfigs[i++];
+			ChannelConfigFromJson(analogConfig.channelConfig,analog["channelConfig"]);
+			analogConfig.loggingPrecision = ((Number)analog["loggingPrecision"]);
+			analogConfig.linearScaling = ((Number)analog["linearScaling"]);
+			analogConfig.scalingMode = (scaling_mode_t)((int)((Number)analog["scalingMode"]));
 
-		Array scalingMapJson = analog["scalingMap"];
-		ScalingMap &scalingMap = analogConfig.scalingMap;
+			Array scalingMapJson = analog["scalingMap"];
+			ScalingMap &scalingMap = analogConfig.scalingMap;
 
-		Array::const_iterator itScalingMap(scalingMapJson.Begin());
+			Array::const_iterator itScalingMap(scalingMapJson.Begin());
 
-		int ii=0;
-		for (; itScalingMap != scalingMapJson.End();++itScalingMap){
-			const Object &scalingMapItem = *itScalingMap;
-			scalingMap.rawValues[ii] = ((Number)scalingMapItem["raw"]);
-			scalingMap.scaledValue[ii] = ((Number)scalingMapItem["scaled"]);
-			ii++;
+			int ii=0;
+			for (; itScalingMap != scalingMapJson.End();++itScalingMap){
+				const Object &scalingMapItem = *itScalingMap;
+				scalingMap.rawValues[ii] = ((Number)scalingMapItem["raw"]);
+				scalingMap.scaledValue[ii] = ((Number)scalingMapItem["scaled"]);
+				ii++;
+			}
 		}
 	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing AnalogConfig: %s", e.what());
+	}
+
 }
 
 void RaceCaptureConfig::PopulatePulseInputConfig(Array &pulseInputRoot){
-	Array::const_iterator itPulseInput(pulseInputRoot.Begin());
-	int i=0;
-	for (; itPulseInput != pulseInputRoot.End(); ++itPulseInput){
-		const Object &pulseInput = *itPulseInput;
-		TimerConfig &pulseInputConfig = timerConfigs[i++];
-		ChannelConfigFromJson(pulseInputConfig.channelConfig,pulseInput["channelConfig"]);
-		pulseInputConfig.loggingPrecision = ((Number)pulseInput["loggingPrecision"]);
-		pulseInputConfig.slowTimerEnabled = ((Number)pulseInput["slowTimer"]);
-		pulseInputConfig.mode = (timer_mode_t)((int)((Number)pulseInput["mode"]));
-		pulseInputConfig.pulsePerRev = ((Number)pulseInput["pulsePerRev"]);
-		pulseInputConfig.timerDivider = ((Number)pulseInput["timerDivider"]);
-		pulseInputConfig.scaling = ((Number)pulseInput["scaling"]);
+	try{
+		Array::const_iterator itPulseInput(pulseInputRoot.Begin());
+		int i=0;
+		for (; itPulseInput != pulseInputRoot.End(); ++itPulseInput){
+			const Object &pulseInput = *itPulseInput;
+			TimerConfig &pulseInputConfig = timerConfigs[i++];
+			ChannelConfigFromJson(pulseInputConfig.channelConfig,pulseInput["channelConfig"]);
+			pulseInputConfig.loggingPrecision = ((Number)pulseInput["loggingPrecision"]);
+			pulseInputConfig.slowTimerEnabled = ((Number)pulseInput["slowTimer"]);
+			pulseInputConfig.mode = (timer_mode_t)((int)((Number)pulseInput["mode"]));
+			pulseInputConfig.pulsePerRev = ((Number)pulseInput["pulsePerRev"]);
+			pulseInputConfig.timerDivider = ((Number)pulseInput["timerDivider"]);
+			pulseInputConfig.scaling = ((Number)pulseInput["scaling"]);
+		}
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing PulseInputConfig: %s", e.what());
 	}
 }
 
 void RaceCaptureConfig::PopulateAccelConfig(Array &accelRoot){
-	Array::const_iterator itAccel(accelRoot.Begin());
-	int i=0;
-	for (; itAccel!= accelRoot.End(); ++itAccel){
-		const Object &accel = *itAccel;
-		AccelConfig &accelConfig = accelConfigs[i++];
-		ChannelConfigFromJson(accelConfig.channelConfig,accel["channelConfig"]);
-		accelConfig.mode = (accel_mode_t)((int)((Number)accel["mode"]));
-		accelConfig.channel = (accel_channel_t)(int)((Number)accel["mapping"]);
-		accelConfig.zeroValue = (int)((Number)accel["zeroValue"]);
+	try{
+		Array::const_iterator itAccel(accelRoot.Begin());
+		int i=0;
+		for (; itAccel!= accelRoot.End(); ++itAccel){
+			const Object &accel = *itAccel;
+			AccelConfig &accelConfig = accelConfigs[i++];
+			ChannelConfigFromJson(accelConfig.channelConfig,accel["channelConfig"]);
+			accelConfig.mode = (accel_mode_t)((int)((Number)accel["mode"]));
+			accelConfig.channel = (accel_channel_t)(int)((Number)accel["mapping"]);
+			accelConfig.zeroValue = (int)((Number)accel["zeroValue"]);
+		}
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing AccelConfig: %s", e.what());
 	}
 }
 
 void RaceCaptureConfig::PopulatePulseOutputConfig(Array &pulseOutputRoot){
-	Array::const_iterator itPulseOutput(pulseOutputRoot.Begin());
-	int i=0;
-	for (; itPulseOutput != pulseOutputRoot.End(); ++itPulseOutput){
-		const Object &pulseOutput = *itPulseOutput;
-		PwmConfig &pulseOutputConfig = pwmConfigs[i++];
-		ChannelConfigFromJson(pulseOutputConfig.channelConfig, pulseOutput["channelConfig"]);
-		pulseOutputConfig.loggingPrecision = Number(pulseOutput["loggingPrecision"]);
-		pulseOutputConfig.outputMode =  (pwm_output_mode_t)(int)Number(pulseOutput["outputMode"]);
-		pulseOutputConfig.loggingMode = (pwm_logging_mode_t)(int)Number(pulseOutput["loggingMode"]);
-		pulseOutputConfig.startupDutyCycle = Number(pulseOutput["startupDutyCycle"]);
-		pulseOutputConfig.startupPeriod = Number(pulseOutput["startupPeriod"]);
-		pulseOutputConfig.voltageScaling = Number(pulseOutput["voltageScaling"]);
+	try{
+		Array::const_iterator itPulseOutput(pulseOutputRoot.Begin());
+		int i=0;
+		for (; itPulseOutput != pulseOutputRoot.End(); ++itPulseOutput){
+			const Object &pulseOutput = *itPulseOutput;
+			PwmConfig &pulseOutputConfig = pwmConfigs[i++];
+			ChannelConfigFromJson(pulseOutputConfig.channelConfig, pulseOutput["channelConfig"]);
+			pulseOutputConfig.loggingPrecision = Number(pulseOutput["loggingPrecision"]);
+			pulseOutputConfig.outputMode =  (pwm_output_mode_t)(int)Number(pulseOutput["outputMode"]);
+			pulseOutputConfig.loggingMode = (pwm_logging_mode_t)(int)Number(pulseOutput["loggingMode"]);
+			pulseOutputConfig.startupDutyCycle = Number(pulseOutput["startupDutyCycle"]);
+			pulseOutputConfig.startupPeriod = Number(pulseOutput["startupPeriod"]);
+			pulseOutputConfig.voltageScaling = Number(pulseOutput["voltageScaling"]);
+		}
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing PulseOutputConfig: %s", e.what());
 	}
 }
 
 void RaceCaptureConfig::PopulateGpioConfig(Array &gpioConfigRoot){
-	Array::const_iterator itGpio(gpioConfigRoot.Begin());
-	int i=0;
-	for (; itGpio != gpioConfigRoot.End(); ++itGpio){
-		const Object &gpio = *itGpio;
-		GpioConfig &gpioConfig = gpioConfigs[i++];
-		ChannelConfigFromJson(gpioConfig.channelConfig,gpio["channelConfig"]);
-		gpioConfig.mode = (gpio_mode_t)(int)Number(gpio["mode"]);
+	try{
+		Array::const_iterator itGpio(gpioConfigRoot.Begin());
+		int i=0;
+		for (; itGpio != gpioConfigRoot.End(); ++itGpio){
+			const Object &gpio = *itGpio;
+			GpioConfig &gpioConfig = gpioConfigs[i++];
+			ChannelConfigFromJson(gpioConfig.channelConfig,gpio["channelConfig"]);
+			gpioConfig.mode = (gpio_mode_t)(int)Number(gpio["mode"]);
+		}
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing GpioCOnfig: %s", e.what());
 	}
 }
 
 void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
-	loggerOutputConfig.loggingMode = (logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
-	loggerOutputConfig.telemetryMode = (telemetry_mode_t)(int)Number(outputConfig["telemetryMode"]);
-	loggerOutputConfig.p2pDestinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
-	loggerOutputConfig.p2pDestinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
+	try{
+		loggerOutputConfig.loggingMode = (logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
+		loggerOutputConfig.telemetryMode = (telemetry_mode_t)(int)Number(outputConfig["telemetryMode"]);
+		loggerOutputConfig.p2pDestinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
+		loggerOutputConfig.p2pDestinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing OutputConfig: %s", e.what());
+	}
 }
 
 void RaceCaptureConfig::PopulateAutomationConfig(Object &automationConfig){
-	luaScript = ((String)automationConfig["script"]).Value();
-
+	try{
+		luaScript = ((String)automationConfig["script"]).Value();
+	}
+	catch(json::Exception &e){
+		wxLogError("Error parsing AutomationConfig: %s", e.what());
+	}
 }
 
 void RaceCaptureConfig::FromJson(Object root){
+	try{
 	PopulateGpsConfig(root["gpsConfig"]);
 	PopulateAnalogConfig(root["analogConfigs"]);
 	PopulatePulseInputConfig(root["pulseInputConfigs"]);
@@ -158,6 +215,10 @@ void RaceCaptureConfig::FromJson(Object root){
 	PopulateGpioConfig(root["gpioConfigs"]);
 	PopulateOutputConfig(root["outputConfig"]);
 	PopulateAutomationConfig(root["automation"]);
+	}
+	catch(json::Exception &e){
+		wxLogError(wxString::Format("error parsing root of file: %s", e.what()));
+	}
 }
 
 Object RaceCaptureConfig::ChannelConfigToJson(ChannelConfig &channelConfig){
@@ -168,12 +229,19 @@ Object RaceCaptureConfig::ChannelConfigToJson(ChannelConfig &channelConfig){
 	return cfg;
 }
 
+Object RaceCaptureConfig::GpsTargetToJson(GpsTarget &gpsTarget){
+	Object cfg;
+	cfg["latitude"] = Number(gpsTarget.latitude);
+	cfg["longitude"] = Number(gpsTarget.longitude);
+	cfg["targetRadius"] = Number(gpsTarget.targetRadius);
+	return cfg;
+}
+
 Object RaceCaptureConfig::GpsConfigToJson(){
 	Object cfg;
 	cfg["gpsInstalled"] = Number(gpsConfig.gpsInstalled);
-	cfg["startFinishLatitude"] = Number(gpsConfig.startFinishLatitude);
-	cfg["startFinishLongitude"] = Number(gpsConfig.startFinishLongitude);
-	cfg["startFinishRadius"] = Number(gpsConfig.startFinishRadius);
+	cfg["startFinishTarget"] = GpsTargetToJson(gpsConfig.startFinishTarget);
+	cfg["splitTarget"] = GpsTargetToJson(gpsConfig.splitTarget);
 	cfg["latitude"] = ChannelConfigToJson(gpsConfig.latitudeCfg);
 	cfg["longitude"] = ChannelConfigToJson(gpsConfig.longitudeCfg);
 	cfg["speed"] = ChannelConfigToJson(gpsConfig.speedCfg);

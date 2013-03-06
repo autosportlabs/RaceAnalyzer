@@ -12,7 +12,7 @@ BaseChannelConfigPanel::BaseChannelConfigPanel() : BaseConfigPanel()
 }
 
 BaseChannelConfigPanel::BaseChannelConfigPanel(wxWindow *parent,
-			ConfigPanelParams *configParams,
+			ConfigPanelParams configParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,

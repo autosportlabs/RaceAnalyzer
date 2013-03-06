@@ -16,7 +16,7 @@ class AnalogPulseOutputPanel : public BaseChannelConfigPanel{
 	public:
 		AnalogPulseOutputPanel();
 		AnalogPulseOutputPanel(wxWindow *parent,
-					ConfigPanelParams *configParams,
+					ConfigPanelParams configParams,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,

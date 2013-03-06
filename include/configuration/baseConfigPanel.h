@@ -15,7 +15,7 @@ class BaseConfigPanel : public wxPanel{
 	public:
 		BaseConfigPanel();
 		BaseConfigPanel(wxWindow *parent,
-					ConfigPanelParams *config,
+					ConfigPanelParams config,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,
@@ -29,8 +29,7 @@ class BaseConfigPanel : public wxPanel{
 
 		//event handlers
 	protected:
-		ConfigPanelParams *m_configParams;
-		RaceAnalyzerComm *m_comm;
+		ConfigPanelParams m_configParams;
 
 	private:
 	DECLARE_EVENT_TABLE()

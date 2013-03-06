@@ -7,7 +7,7 @@ PulseInputPanel::PulseInputPanel() : BaseChannelConfigPanel()
 }
 
 PulseInputPanel::PulseInputPanel(wxWindow *parent,
-			ConfigPanelParams *configParams,
+			ConfigPanelParams configParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -33,12 +33,12 @@ PulseInputPanel::~PulseInputPanel(){
 void PulseInputPanel::UpdateExtendedChannelFields(int i){
 	wxTextCtrl *ctrl = FindTextCtrl(GetScalingFieldName(i));
 	if (NULL != ctrl){
-		ctrl->SetValue(wxString::Format("%d",m_configParams->config->timerConfigs[i].scaling));
+		ctrl->SetValue(wxString::Format("%d",m_configParams.config->timerConfigs[i].scaling));
 	}
 }
 
 ChannelConfig * PulseInputPanel::GetChannelConfig(int i){
-	return &(m_configParams->config->timerConfigs[i].channelConfig);
+	return &(m_configParams.config->timerConfigs[i].channelConfig);
 }
 
 int PulseInputPanel::ChannelCount(){
@@ -60,7 +60,7 @@ ChannelConfigExtraFields PulseInputPanel::CreateExtendedChannelFields(int i){
 	{
 		ChannelConfigExtraField f;
 		wxButton * but = new wxButton(this,wxID_ANY,"...");
-		but->SetClientData(&(m_configParams->config->timerConfigs[i]));
+		but->SetClientData(&(m_configParams.config->timerConfigs[i]));
 		but->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(PulseInputPanel::OnAdvancedSettings),NULL,this);
 		f.control = but;
 		f.header = "Advanced";
@@ -119,7 +119,7 @@ void PulseInputPanel::OnAdvancedSettings(wxCommandEvent &event){
 }
 
 DatalogChannels & PulseInputPanel::GetStandardChannels(){
-	return m_configParams->appOptions->GetStandardPulseInputChannels();
+	return m_configParams.appOptions->GetStandardPulseInputChannels();
 }
 
 

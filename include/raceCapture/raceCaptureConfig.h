@@ -182,15 +182,18 @@ public:
 	float voltageScaling;
 };
 
+class GpsTarget{
+public:
+	float latitude;
+	float longitude;
+	float targetRadius;
+};
+
 class GpsConfig{
 public:
 	bool gpsInstalled;
-	float startFinishLatitude;
-	float startFinishLongitude;
-	float startFinishRadius;
-	float splitLatitude;
-	float splitLongitude;
-	float splitRadius;
+	GpsTarget startFinishTarget;
+	GpsTarget splitTarget;
 	ChannelConfig lapCountCfg;
 	ChannelConfig lapTimeCfg;
 	ChannelConfig splitTimeCfg;
@@ -225,6 +228,7 @@ public:
 
 private:
 	Object ChannelConfigToJson(ChannelConfig &channelConfig);
+	Object GpsTargetToJson(GpsTarget &gpsTarget);
 	Object GpsConfigToJson();
 	Array AnalogConfigToJson();
 	Array PulseInputConfigToJson();
@@ -235,6 +239,8 @@ private:
 	Object ScriptToJson();
 
 	void ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson);
+	void GpsTargetFromJson(GpsTarget &target, const Object &gpsTargetJson);
+	void PopulateGpsTargets(GpsTarget &target, Object &gpsRoot);
 	void PopulateGpsConfig(Object &gpsRoot);
 	void PopulateAnalogConfig(Array &analogRoot);
 	void PopulatePulseInputConfig(Array &pulseInputRoot);

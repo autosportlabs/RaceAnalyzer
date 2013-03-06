@@ -487,12 +487,12 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			populateChannelConfig(gpsConfig.lapCountCfg,"lapCount",rsp);
 			populateChannelConfig(gpsConfig.lapTimeCfg,"lapTime",rsp);
 			populateChannelConfig(gpsConfig.splitTimeCfg, "splitTime", rsp);
-			gpsConfig.startFinishLatitude = GetFloatParam(rsp,"startFinishLat");
-			gpsConfig.startFinishLongitude = GetFloatParam(rsp,"startFinishLong");
-			gpsConfig.startFinishRadius = GetFloatParam(rsp,"startFinishRadius");
-			gpsConfig.splitLatitude = GetFloatParam(rsp, "splitLat");
-			gpsConfig.splitLongitude = GetFloatParam(rsp, "splitLong");
-			gpsConfig.splitRadius = GetFloatParam(rsp, "splitRadius");
+			gpsConfig.startFinishTarget.latitude = GetFloatParam(rsp,"startFinishLat");
+			gpsConfig.startFinishTarget.longitude = GetFloatParam(rsp,"startFinishLong");
+			gpsConfig.startFinishTarget.targetRadius = GetFloatParam(rsp,"startFinishRadius");
+			gpsConfig.splitTarget.latitude = GetFloatParam(rsp, "splitLat");
+			gpsConfig.splitTarget.longitude = GetFloatParam(rsp, "splitLong");
+			gpsConfig.splitTarget.targetRadius = GetFloatParam(rsp, "splitRadius");
 			updateWriteConfigPct(++updateCount,callback);
 		}
 
@@ -630,12 +630,12 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 				cmd = AppendChannelConfig(cmd, cfg.lapCountCfg);
 				cmd = AppendChannelConfig(cmd, cfg.lapTimeCfg);
 				cmd = AppendChannelConfig(cmd, cfg.splitTimeCfg);
-				cmd = AppendFloatParam(cmd, cfg.startFinishLatitude);
-				cmd = AppendFloatParam(cmd, cfg.startFinishLongitude);
-				cmd = AppendFloatParam(cmd, cfg.startFinishRadius);
-				cmd = AppendFloatParam(cmd, cfg.splitLatitude);
-				cmd = AppendFloatParam(cmd, cfg.splitLongitude);
-				cmd = AppendFloatParam(cmd, cfg.splitRadius);
+				cmd = AppendFloatParam(cmd, cfg.startFinishTarget.latitude);
+				cmd = AppendFloatParam(cmd, cfg.startFinishTarget.longitude);
+				cmd = AppendFloatParam(cmd, cfg.startFinishTarget.targetRadius);
+				cmd = AppendFloatParam(cmd, cfg.splitTarget.latitude);
+				cmd = AppendFloatParam(cmd, cfg.splitTarget.longitude);
+				cmd = AppendFloatParam(cmd, cfg.splitTarget.targetRadius);
 				wxString result = SendCommand(serialPort, cmd);
 				CheckThrowResult(result);
 				updateWriteConfigPct(++updateCount,callback);

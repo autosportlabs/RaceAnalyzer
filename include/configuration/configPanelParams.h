@@ -13,6 +13,7 @@
 
 class ConfigPanelParams {
 	public:
+		ConfigPanelParams() : comm(NULL), config(NULL), appOptions(NULL) {}
 		ConfigPanelParams(RaceAnalyzerComm *comm, RaceCaptureConfig *config, AppOptions *options):
 				comm(comm),config(config), appOptions(options){}
 		RaceAnalyzerComm *comm;

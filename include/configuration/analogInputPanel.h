@@ -18,7 +18,7 @@ class AnalogInputPanel :  public BaseChannelConfigPanel{
 	public:
 		AnalogInputPanel();
 		AnalogInputPanel(wxWindow *parent,
-					ConfigPanelParams *config,
+					ConfigPanelParams config,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,

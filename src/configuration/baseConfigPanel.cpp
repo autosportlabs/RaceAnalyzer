@@ -1,14 +1,11 @@
 #include "configuration/baseConfigPanel.h"
 
 BaseConfigPanel::BaseConfigPanel() :
-		wxPanel(),
-		m_configParams(NULL),
-		m_comm(NULL)
-{
-}
+		wxPanel()
+{}
 
 BaseConfigPanel::BaseConfigPanel(wxWindow *parent,
-								ConfigPanelParams *config,
+								ConfigPanelParams config,
 								wxWindowID id,
 								const wxPoint &pos,
 								const wxSize &size,
@@ -20,8 +17,7 @@ BaseConfigPanel::BaseConfigPanel(wxWindow *parent,
 								size,
 								style,
 								name),
-						m_configParams(config),
-						m_comm(NULL)
+						m_configParams(config)
 {
 }
 

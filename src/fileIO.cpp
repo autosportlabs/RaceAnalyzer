@@ -48,7 +48,12 @@ void RaceCaptureConfigFileReader::ReadConfiguration(RaceCaptureConfig &config){
 		errorMsg.Printf("Config file '%s' does not exist",fileName.ToAscii());
 		throw FileAccessException(errorMsg,fileName);
 	}
+
 	configFile.Open(fileName, wxFile::read);
+
+	if (configFile.Length() == 0){
+		throw FileAccessException("Could not read configuration file: the file is empty", fileName);
+	}
 
 	Object jsonConfig;
 
@@ -57,7 +62,12 @@ void RaceCaptureConfigFileReader::ReadConfiguration(RaceCaptureConfig &config){
 	while(configFile.Read(&byte,1)){
 		stream.put(byte);
 	}
-	Reader::Read(jsonConfig,stream);
-	config.FromJson(jsonConfig);
+	try{
+		Reader::Read(jsonConfig,stream);
+		config.FromJson(jsonConfig);
+	}
+	catch (json::Exception &e){
+		throw FileAccessException("Could not read configuration file ", fileName);
+	}
 	configFile.Close();
 }

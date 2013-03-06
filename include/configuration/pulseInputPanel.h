@@ -16,7 +16,7 @@ class PulseInputPanel : public BaseChannelConfigPanel{
 	public:
 		PulseInputPanel();
 		PulseInputPanel(wxWindow *parent,
-					ConfigPanelParams *configParams,
+					ConfigPanelParams configParams,
 					wxWindowID id = -1,
 					const wxPoint &pos = wxDefaultPosition,
 					const wxSize &size = wxDefaultSize,

@@ -40,27 +40,27 @@ void ConfigPanel::InitComponents(){
 
 	m_configNavigation = new wxTreebook(this,-1, wxDefaultPosition, wxSize(600,400),wxNB_LEFT);
 
-	m_analogInputPanel = new AnalogInputPanel(m_configNavigation, &m_configParams);
+	m_analogInputPanel = new AnalogInputPanel(m_configNavigation, m_configParams);
 	m_analogInputPanel->InitComponents();
 
-	m_timerInputPanel = new PulseInputPanel(m_configNavigation, &m_configParams);
+	m_timerInputPanel = new PulseInputPanel(m_configNavigation, m_configParams);
 	m_timerInputPanel->InitComponents();
 
-	m_accelInputPanel = new AccelInputPanel(m_configNavigation, &m_configParams);
+	m_accelInputPanel = new AccelInputPanel(m_configNavigation, m_configParams);
 	m_accelInputPanel->InitComponents();
 
-	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation, &m_configParams);
+	m_analogPulseOutPanel = new AnalogPulseOutputPanel(m_configNavigation, m_configParams);
 	m_analogPulseOutPanel->InitComponents();
 
-	m_gpioPanel = new GpioPanel(m_configNavigation, &m_configParams);
+	m_gpioPanel = new GpioPanel(m_configNavigation, m_configParams);
 	m_gpioPanel->InitComponents();
 
-	m_gpsPanel = new GpsConfigPanel(m_configNavigation, &m_configParams);
+	m_gpsPanel = new GpsConfigPanel(m_configNavigation, m_configParams);
 	m_gpsPanel->InitComponents();
 
-	m_scriptPanel = new ScriptPanel(m_configNavigation, &m_configParams);
+	m_scriptPanel = new ScriptPanel(m_configNavigation, m_configParams);
 
-	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, &m_configParams);
+	m_loggerOutputPanel = new LoggerOutputConfigPanel(m_configNavigation, m_configParams);
 	m_loggerOutputPanel->InitComponents();
 
 	m_configNavigation->AddPage(m_gpsPanel,"GPS");
