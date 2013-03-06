@@ -37,7 +37,7 @@ class RaceAnalyzerComm {
 
 	private:
 
-		static const int DEFAULT_TIMEOUT = 1000;
+		static const int DEFAULT_TIMEOUT = 300;
 		wxLogStderr *_logger;
 		FILE *_logfile;
 
@@ -52,7 +52,7 @@ class RaceAnalyzerComm {
 		void FlushReceiveBuffer(CComm * comPort);
 		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
 		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
-		wxString SendCommand(CComm *comPort, const wxString &buffer, int timeout = DEFAULT_TIMEOUT);
+		wxString SendCommand(CComm *comPort, const wxString &buffer, size_t timeout = DEFAULT_TIMEOUT);
 		void Unescape(wxString &data);
 		void Escape(wxString &data);
 		int GetIntParam(wxString &data, const wxString &name);

@@ -171,7 +171,7 @@ void RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 	comPort->drainInput();
 }
 
-wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, int timeout){
+wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, size_t timeout){
 
 	wxString response;
 

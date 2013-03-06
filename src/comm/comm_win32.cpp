@@ -306,20 +306,39 @@ size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 
 	wxLogMessage("Reading Line...");
 	memset( buf, 0, bufSize );
-    size_t tstart = GetTickCount();
     size_t totalRead = 0;
 	DWORD charsRead = 0;
-    while ( ( GetTickCount() - tstart ) < timeout && totalRead < bufSize ) {
-    	bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
-    	wxLogMessage("read result %d chars %d (%s)", result, charsRead, buf);
-    	if (!result){
-			int err = GetLastError();
-			wxLogMessage("Error reading result! %d", err);
-			throw SerialException(err, "error reading line from serial port");
-    	}
-    	if ('\r' == *(buf + totalRead)) break;
-    	totalRead += charsRead;
-    }
+	size_t attempts= 0;
+	bool isTimeout;
+	while (++attempts < 5){
+	    size_t tstart = GetTickCount();
+		size_t telapsed = 0;
+		isTimeout = false;
+		while (!isTimeout && totalRead < bufSize ) {
+			bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
+			//wxLogMessage("elapsed %d, timeout %d, read result %d chars %d (%s)", telapsed, timeout, result, charsRead, buf);
+			if (!result){
+				int err = GetLastError();
+				wxLogMessage("Error reading result! %d", err);
+				throw SerialException(err, "error reading line from serial port");
+			}
+			totalRead += charsRead;
+			if ('\r' == *(buf + totalRead - 1)) return totalRead;
+			telapsed = GetTickCount() - tstart;
+			isTimeout =  telapsed >= timeout;
+		}
+		if (isTimeout){
+			//this is a hack to work around periodic USB-COMM race conditions in the RaceCapture/Pro firmware
+			//it works by sending a character, which triggers an interrupt and alleviates the race condition
+			//when fixed in firmware, remove this retry mechanism
+			wxLogMessage("timeout. POKE!");
+			writeChar(' ');
+		}
+	}
+	if (isTimeout){
+		wxLogMessage(wxString::Format("Timed out reading line. Line so far: %s", buf));
+		throw ("Timed out reading line");
+	}
     return totalRead;
 }
 
@@ -342,13 +361,13 @@ size_t CComm::sendCommand(const char *cmd, char *rsp, size_t rspSize, size_t tim
 
 	//optionally absorb the command echo
 	if (absorbEcho){
-		readLine(rsp,rspSize,tstart + GetTickCount());
+		readLine(rsp,rspSize,timeout);
 		if (strncmp(rsp,cmd,cmdLen) != 0){
 			//throw an error if command doesn't match?
 		}
 	}
 	//read the response
-	return readLine(rsp,rspSize,tstart + GetTickCount());
+	return readLine(rsp,rspSize,timeout);
 }
 
 /////////////////////////////////////////////////////////////////////////////
