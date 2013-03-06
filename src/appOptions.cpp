@@ -299,7 +299,7 @@ void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes)
 
 	analogGaugeTypes["Raw"] = AnalogGaugeType(100, 50, 0);
 	analogGaugeTypes["GForce"] = AnalogGaugeType(0.5, 0.1,2);
-	analogGaugeTypes["Rotation"] = AnalogGaugeType(100.0, 50.0, 0);
+	analogGaugeTypes["Rotation"] = AnalogGaugeType(100.0, 50.0, 1);
 	analogGaugeTypes["Count"] = AnalogGaugeType(10.0, 5.0, 1);
 	analogGaugeTypes["Speed"] = AnalogGaugeType(20.0, 10.0, 0);
 	analogGaugeTypes["Volts"] = AnalogGaugeType(5.0, 1.0, 2);
