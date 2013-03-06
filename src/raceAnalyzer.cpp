@@ -17,7 +17,6 @@
 #include "runtime.xpm"
 #include "advancetable.xpm"
 #include "tuning.xpm"
-#include "mjlj_logo_small.xpm"
 #include "import.xpm"
 #include "runtime_1.xpm"
 #include "runtime_2.xpm"
@@ -39,10 +38,10 @@
 #include "wrench.xpm"
 #include "go_bottom.xpm"
 
-#include "mjlj_icon.xpm"
-#include "mjlj_icon_med.xpm"
-#include "mjlj_icon_large.xpm"
-#include "mjlj_icon_xlarge.xpm"
+#include "race_capture_icon_tiny.xpm"
+#include "race_capture_icon_small.xpm"
+#include "race_capture_icon_med.xpm"
+#include "race_capture_icon_large.xpm"
 
 
 
@@ -87,10 +86,10 @@ bool RaceAnalyzerApp::OnInit()
 	_mainFrame = new MainFrame(RACEANALYZER_WINDOW_TITLE, wxPoint(1, 1), wxSize(400,400));
 
 	wxIconBundle iconBundle;
-	iconBundle.AddIcon(wxIcon(mjlj_icon_xlarge_xpm));
-	iconBundle.AddIcon(wxIcon(mjlj_icon_large_xpm));
-	iconBundle.AddIcon(wxIcon(mjlj_icon_med_xpm));
-	iconBundle.AddIcon(wxIcon(mjlj_icon_xpm));
+	iconBundle.AddIcon(wxIcon(race_capture_icon_large_xpm));
+	iconBundle.AddIcon(wxIcon(race_capture_icon_med_xpm));
+	iconBundle.AddIcon(wxIcon(race_capture_icon_small_xpm));
+	iconBundle.AddIcon(wxIcon(race_capture_icon_tiny_xpm));
 	_mainFrame->SetIcons(iconBundle);
 
 	_mainFrame->Show(TRUE); // show the window
@@ -124,7 +123,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	_appPrefs.LoadAppPrefs();
 
 	InitializeFrame();
-	SetSize(wxSize(800,640));
+	SetSize(wxSize(800,700));
 	Center();
 
 	InitComms();
@@ -176,17 +175,6 @@ void MainFrame::LoadInitialConfig(){
 
 void MainFrame::ReadRaceCaptureConfig(){
 
-}
-
-void MainFrame::ShowSplashScreen(){
-
-	wxBitmap splashBitmap(mjlj_logo_small_xpm);
-
-	new wxSplashScreen(splashBitmap,
-      wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
-      4000, NULL, -1, wxDefaultPosition, wxDefaultSize,
-      wxSIMPLE_BORDER|wxSTAY_ON_TOP);
-	wxYield();
 }
 
 void MainFrame::InitializeFrame(){

@@ -197,6 +197,7 @@ void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 	types.Add( DatalogChannelType("Percent", "%", 0, 0, 100.0, 2) );
 	types.Add( DatalogChannelType("Digital", "Off/On", 0, 0, 1, 0) );
 	types.Add( DatalogChannelType("Time", "Seconds", 0, 0, 1000, 2));
+	types.Add( DatalogChannelType("Distance", "mm", 0, 0, 1000, 2));
 }
 
 void AppOptions::LoadStandardAccelChannels(DatalogChannels &channels){
@@ -216,11 +217,28 @@ void AppOptions::LoadStandardGpsChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("Speed", 7, "GPS Speed") );
 	channels.Add( DatalogChannel("LapCount",4, "Lap Count" ));
 	channels.Add( DatalogChannel("LapTime", 16, "Lap Time" ));
+	channels.Add( DatalogChannel("SplitTime", 16, "Split Time" ));
 }
 
 void AppOptions::LoadStandardAnalogChannels(DatalogChannels &channels){
 	//Analog inputs
+	channels.Add( DatalogChannel("FuelLevel", 9, "Fuel Level") );
+	channels.Add( DatalogChannel("Coolant", 10, "Engine Coolant Temperature") );
+	channels.Add( DatalogChannel("OilPress", 9, "Oil Pressure") );
+	channels.Add( DatalogChannel("OilTemp", 10, "Engine Oil Temperature") );
+	channels.Add( DatalogChannel("AFR", 0, "Air/Fuel Ratio") );
+	channels.Add( DatalogChannel("IAR", 10, "Inlet Air Temperature") );
+	channels.Add( DatalogChannel("MAP", 10, "Manifold Air Pressure") );
+	channels.Add( DatalogChannel("EGT", 10, "Exhaust Gas Temperature") );
+	channels.Add( DatalogChannel("TPS", 14, "Throttle Position") );
 	channels.Add( DatalogChannel("Battery", 8, "Battery Voltage") );
+	channels.Add( DatalogChannel("FuelPress", 9, "Fuel Pressure") );
+	channels.Add( DatalogChannel("Steering", 15, "Steering angle") );
+	channels.Add( DatalogChannel("Brake", 9, "Brake Pressure") );
+	channels.Add( DatalogChannel("LF_Height", 17, "Left Front suspension height") );
+	channels.Add( DatalogChannel("RF_Height", 17, "Right Front suspension height") );
+	channels.Add( DatalogChannel("LR_Height", 17, "Left Rear suspension height") );
+	channels.Add( DatalogChannel("RR_Height", 17, "Right Rear suspension height") );
 	channels.Add( DatalogChannel("Analog1", 8, "Analog Input 1") );
 	channels.Add( DatalogChannel("Analog2", 8, "Analog Input 2") );
 	channels.Add( DatalogChannel("Analog3", 8, "Analog Input 3") );
@@ -228,20 +246,17 @@ void AppOptions::LoadStandardAnalogChannels(DatalogChannels &channels){
 	channels.Add( DatalogChannel("Analog5", 8, "Analog Input 5") );
 	channels.Add( DatalogChannel("Analog6", 8, "Analog Input 6") );
 	channels.Add( DatalogChannel("Analog7", 8, "Analog Input 7") );
-	channels.Add( DatalogChannel("OilPressure", 9, "Oil Pressure") );
-	channels.Add( DatalogChannel("OilTemp", 10, "Engine Oil Temperature") );
-	channels.Add( DatalogChannel("CoolantTemp", 10, "Engine Coolant Temperature") );
 }
 
 void AppOptions::LoadStandardFrequencyChannels(DatalogChannels &channels){
 	//Frequency Inputs
+	channels.Add( DatalogChannel("RPM", 12, "Engine Speed in RPM") );
+	channels.Add( DatalogChannel("Wheel", 12, "Wheel Speed in RPM") );
+	channels.Add( DatalogChannel("Injector", 13, "Injector pulse width in Ms.") );
 	channels.Add( DatalogChannel("Freq1", 11, "Frequency Input 1") );
 	channels.Add( DatalogChannel("Freq2", 11, "Frequency Input 2") );
 	channels.Add( DatalogChannel("Freq3", 11, "Frequency Input 3") );
-	channels.Add( DatalogChannel("RPM", 12, "Engine Speed in RPM") );
-	channels.Add( DatalogChannel("WheelSpeed", 12, "Wheel Speed in RPM") );
-	channels.Add( DatalogChannel("PulseWidth", 13, "Signal Pulse width in Ms.") );
-	channels.Add( DatalogChannel("DutyCycle", 14, "Signal Duty Cycle in %") );
+
 }
 
 void AppOptions::LoadStandardPwmChannels(DatalogChannels &channels){
@@ -284,7 +299,7 @@ void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes)
 
 	analogGaugeTypes["Raw"] = AnalogGaugeType(100, 50, 0);
 	analogGaugeTypes["GForce"] = AnalogGaugeType(0.5, 0.1,2);
-	analogGaugeTypes["Rotation"] = AnalogGaugeType(2.0, 1.0, 2);
+	analogGaugeTypes["Rotation"] = AnalogGaugeType(100.0, 50.0, 0);
 	analogGaugeTypes["Count"] = AnalogGaugeType(10.0, 5.0, 1);
 	analogGaugeTypes["Speed"] = AnalogGaugeType(20.0, 10.0, 0);
 	analogGaugeTypes["Volts"] = AnalogGaugeType(5.0, 1.0, 2);

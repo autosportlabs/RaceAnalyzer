@@ -87,7 +87,6 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void CreateDefaultConfigPerspective();
 	void CreateDefaultRuntimePerspective();
 	void CreateDefaultScriptPerspective();
-	void ShowSplashScreen();
 	void SyncControls();
 	void LoadConfigurationFile(const wxString fileName);
 
