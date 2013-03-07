@@ -68,6 +68,9 @@ enum{
 	ID_IMPORT_DATALOG,
 
 	ID_ADD_LINE_CHART,
+	ID_ADD_ANALOG_GAUGE,
+	ID_ADD_DIGITAL_GAUGE,
+	ID_ADD_GPS_VIEW,
 
 	ID_NEW_CONFIG,
 	ID_OPEN_CONFIG,
@@ -303,9 +306,6 @@ void MainFrame::InitializeMenus(){
 	fileMenu->Append(wxID_EXIT, wxT("Exit"), wxT("Exit the program"));
 	menuBar->Append(fileMenu, wxT("File"));
 
-	wxMenu* editMenu = new wxMenu();
-	menuBar->Append(editMenu, wxT("Edit"));
-
 	wxMenu* toolsMenu = new wxMenu();
 	toolsMenu->Append(ID_OPTIONS, wxT("Configurator Options"));
 	menuBar->Append(toolsMenu, "Tools");
@@ -318,6 +318,10 @@ void MainFrame::InitializeMenus(){
 
 	wxMenu *chartsMenu = new wxMenu();
 	chartsMenu->Append(ID_ADD_LINE_CHART,wxT("Line Chart"));
+	chartsMenu->Append(ID_ADD_ANALOG_GAUGE, wxT("Analog Gauge"));
+	chartsMenu->Append(ID_ADD_DIGITAL_GAUGE, wxT("Digital Gauge"));
+	chartsMenu->Append(ID_ADD_GPS_VIEW, wxT("GPS View"));
+
 	menuBar->Append(chartsMenu, "Charts");
 
 	wxMenu* perspectiveMenu = new wxMenu();
@@ -373,7 +377,7 @@ void MainFrame::InitializeComponents(){
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
-	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright � 2004-2013 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
+	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright (c) 2008-2013 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
 	wxMessageDialog dlg(this,msg, "About", wxOK);
 	dlg.ShowModal();
 }
@@ -1077,6 +1081,9 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
 
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
+	EVT_MENU(ID_ADD_ANALOG_GAUGE, MainFrame::OnAddAnalogGauge)
+	EVT_MENU(ID_ADD_DIGITAL_GAUGE, MainFrame::OnAddDigitalGauge)
+	EVT_MENU(ID_ADD_GPS_VIEW, MainFrame::OnAddGPSView)
 
 	EVT_MENU(ID_NEW_CONFIG, MainFrame::OnNewConfig)
 	EVT_MENU(ID_OPEN_CONFIG, MainFrame::OnOpenConfig)

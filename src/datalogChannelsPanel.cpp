@@ -100,7 +100,7 @@ wxSizer * DatalogChannelsPanel::CreatePlaybackControls(void){
 	//initialize tool bar
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
 
-	toolBar->AddTool(ID_ADD_CHANNEL, "", list_add_xpm, wxT("Add Channel View"));
+	//toolBar->AddTool(ID_ADD_CHANNEL, "", list_add_xpm, wxT("Add Channel View"));
 
 	toolBar->AddTool(ID_SKIP_DATALOG_REV, "", media_skip_backward_xpm, 	"Skip datalog to beginning");
 	toolBar->AddTool(ID_SEEK_DATALOG_REV, "", media_seek_backward_xpm, 	"Seek datalog reverse");
