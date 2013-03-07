@@ -11,11 +11,14 @@
 #include "wx/wxprec.h"
 #include "wx/treelist.h"
 #include "wx/notebook.h"
+#include "wx/slider.h"
 #include "datalogStore.h"
 #include "commonEvents.h"
 #include "appOptions.h"
 #include "appPrefs.h"
 #include "raceCapture/raceCaptureConfig.h"
+#include "LCDWindow.h"
+#include "datalogPlayer.h"
 
 class ChannelNode : public wxClientData{
 public:
@@ -43,7 +46,7 @@ public:
 	DatalogStore *datalogStore;
 };
 
-class DatalogChannelsPanel : public wxPanel{
+class DatalogChannelsPanel : public wxPanel, public DatalogPlayerListener{
 
 	public:
 		DatalogChannelsPanel(DatalogChannelsParams params,
@@ -64,8 +67,15 @@ class DatalogChannelsPanel : public wxPanel{
 
 		~DatalogChannelsPanel();
 		//event handlers
+
+		//From DatalogPlayerListener
+		void OnDatalogTick(int datalogIndex, int tickDuration, size_t maxDatalogSize);
 	private:
 
+		wxControl * CreateTimeWidget(wxWindow *parent);
+		wxControl * CreateTimeScrollbar(wxWindow *parent);
+		wxSizer * CreatePlaybackControls(void);
+		void UpdateTimeSlider(double factor);
 		void InitComponents();
 		void InitOptions();
 		wxTreeListCtrl * CreateChannelsList(void);
@@ -76,6 +86,8 @@ class DatalogChannelsPanel : public wxPanel{
 		void OnNewGPSView(wxCommandEvent &event);
 		void OnAddChannelView(wxCommandEvent &event);
 		void DoGridContextMenu(wxTreeListEvent &event);
+		void OnTimeScrolled(wxScrollEvent &event);
+		void OnTimeScrollRelease(wxScrollEvent &event);
 		void OnPlayForward(wxCommandEvent &event);
 		void OnPlayReverse(wxCommandEvent &event);
 		void OnPause(wxCommandEvent &event);
@@ -92,7 +104,10 @@ class DatalogChannelsPanel : public wxPanel{
 		AppPrefs		*m_appPrefs;
 		RaceCaptureConfig *m_raceCaptureConfig;
 		wxMenu			*m_gridPopupMenu;
+		LCDDisplay		*m_timeDisplay;
+		wxSlider		*m_timeSlider;
 
+		bool			m_isScrolling;
 
 	DECLARE_EVENT_TABLE()
 };
@@ -112,6 +127,7 @@ enum{
 	ID_PLAY_DATALOG_FWD,
 	ID_SEEK_DATALOG_FWD,
 	ID_SKIP_DATALOG_FWD,
+	ID_TIME_SCROLLER,
 	ID_JUMP_BEGINNING_DATALOG,
 	ID_JUMP_END_DATALOG
 

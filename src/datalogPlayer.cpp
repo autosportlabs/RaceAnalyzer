@@ -7,8 +7,12 @@
 #include "datalogPlayer.h"
 #include "raceCapture/raceCaptureConfig.h"
 
-DatalogPlayer::DatalogPlayer() : m_shouldReloadSessions(false), m_offset(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL){
+DatalogPlayer::DatalogPlayer() : m_shouldReloadSessions(false), m_offset(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
 	m_shouldPlay = new wxSemaphore(0,1);
+}
+
+void DatalogPlayer::SetPlayerListener(DatalogPlayerListener *listener){
+	m_playerListener = listener;
 }
 
 DatalogPlayer::~DatalogPlayer(){
@@ -35,13 +39,20 @@ void DatalogPlayer::Pause(){
 	m_shouldPlay->TryWait();
 }
 
+void DatalogPlayer::SeekAbsPercent(double offset){
+	if (offset <= 0) offset = 0;
+	else if (offset >= 100) offset = 100;
+
+	m_offset = ((double)m_maxDatalogRowCount - 1) * offset / 100;
+	Tick(m_offset);
+}
+
 void DatalogPlayer::SkipFwd(){
 	m_offset = 0;
 	Tick(m_offset);
 }
 
 void DatalogPlayer::SkipRev(){
-
 	m_offset = m_maxDatalogRowCount -1;
 	Tick(m_offset);
 }
@@ -230,6 +241,11 @@ void DatalogPlayer::Tick(size_t index){
 			}
 		}
 	}
+	UpdateTimeListener(index);
+}
+
+void DatalogPlayer::UpdateTimeListener(size_t index){
+	if (m_playerListener != NULL) m_playerListener->OnDatalogTick(index, 1000 / m_maxSampleRate, m_maxDatalogRowCount);
 }
 
 

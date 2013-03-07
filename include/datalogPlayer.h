@@ -12,6 +12,13 @@
 #include "chartBase.h"
 #include "datalogData.h"
 
+class DatalogPlayerListener {
+
+public:
+	virtual void OnDatalogTick(int datalogIndex, int tickDuration, size_t maxDatalogSize) = 0;
+
+};
+
 class DatalogPlayer : public wxThread {
 
 public:
@@ -25,6 +32,7 @@ public:
 	void AddView(RaceAnalyzerChannelView *view);
 	void InitView(RaceAnalyzerChannelView *view, DatalogSnapshot &snapshot);
 	void Pause();
+	void SeekAbsPercent(double offset);
 	void SkipFwd();
 	void SkipRev();
 	void SeekFwd();
@@ -34,6 +42,7 @@ public:
 	int GetPlaybackMultiplier();
 	void UpdateDataHistory(HistoricalView *view, ViewChannels &channels, size_t fromIndex, size_t toIndex);
 	void DatalogSessionsUpdated(void);
+	void SetPlayerListener(DatalogPlayerListener *listener);
 
 	void Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views);
 	void * Entry();
@@ -41,6 +50,7 @@ public:
 private:
 	DatalogSnapshot * GetDatalogSnapshot(int datalogId);
 	void Tick(size_t offset);
+	void UpdateTimeListener(size_t index);
 
 	int m_shouldReloadSessions;
 	int m_offset;
@@ -48,12 +58,13 @@ private:
 	int m_maxSampleRate;
 	size_t m_maxDatalogRowCount;
 
-	wxArrayInt m_datalogIds;
 	DatalogStore *m_datalogStore;
-	DatalogSnapshots  m_datalogSnapshots;
 	RaceAnalyzerChannelViews * m_views;
 	wxSemaphore * m_shouldPlay;
+	DatalogPlayerListener * m_playerListener;
 
+	DatalogSnapshots  m_datalogSnapshots;
+	wxArrayInt m_datalogIds;
 
 };
 

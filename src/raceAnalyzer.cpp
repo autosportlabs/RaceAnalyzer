@@ -352,13 +352,13 @@ void MainFrame::InitializeMenus(){
 	wxBitmap bmpRuntime(runtime_7_xpm);
 	wxBitmap bmpImport(import_xpm);
 
-	toolBar->AddTool(wxID_NEW, bmpNew, wxT("Create new Race Event"));
-	toolBar->AddTool(wxID_OPEN, bmpOpen, wxT("Open a Race Event"));
-	toolBar->AddTool(ID_IMPORT_DATALOG,go_bottom_xpm,wxT("ImportDatalog"));
+	toolBar->AddTool(wxID_NEW, "", bmpNew, "Create new Race Event");
+	toolBar->AddTool(wxID_OPEN, "", bmpOpen, "Open a Race Event");
+	toolBar->AddTool(ID_IMPORT_DATALOG, "", go_bottom_xpm, "ImportDatalog");
 
 	toolBar->AddSeparator();
-	toolBar->AddTool(ID_CONFIG_MODE, wrench_xpm, wxT("Edit Configuration"));
-	toolBar->AddTool(ID_RUNTIME_MODE, analysis_runtime2_xpm, wxT("Analysis/Monitor Mode"));
+	toolBar->AddTool(ID_CONFIG_MODE, "", wrench_xpm, "Edit Configuration");
+	toolBar->AddTool(ID_RUNTIME_MODE, "", analysis_runtime2_xpm, "Analysis/Monitor Mode");
 
 	toolBar->AddSeparator();
 
@@ -374,6 +374,8 @@ void MainFrame::InitializeComponents(){
 			&m_appOptions,
 			&m_datalogStore),
 			this);
+
+	m_datalogPlayer.SetPlayerListener(m_channelsPanel);
 
 	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide());
 
@@ -911,6 +913,10 @@ void MainFrame::OnSeekRevDatalog(wxCommandEvent &event){
 	m_datalogPlayer.SeekRev();
 }
 
+void MainFrame::OnSeekAbsDatalog(wxCommandEvent &event){
+	m_datalogPlayer.SeekAbsPercent(((double)event.GetInt()) / 100); //.01 % resolution conveyed via int
+}
+
 void MainFrame::OnRuntimeValueUpdated(wxString &name, float value){
 //TODO re-enable me when runtime is working
 /*	for (size_t i = 0; i < m_channelViews.Count(); i++){
@@ -1076,6 +1082,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(PLAY_FWD_DATALOG, PLAY_FWD_DATALOG_EVENT, MainFrame::OnPlayFwdDatalog)
 	EVT_COMMAND(PLAY_REV_DATALOG, PLAY_REV_DATALOG_EVENT, MainFrame::OnPlayRevDatalog)
 	EVT_COMMAND(PAUSE_DATALOG, PAUSE_DATALOG_EVENT, MainFrame::OnPauseDatalog)
+	EVT_COMMAND(SEEK_ABS_DATALOG, SEEK_ABS_DATALOG_EVENT, MainFrame::OnSeekAbsDatalog)
 	EVT_COMMAND(JUMP_BEGINNING_DATALOG, JUMP_BEGINNING_DATALOG_EVENT, MainFrame::OnJumpBeginningDatalog)
 	EVT_COMMAND(JUMP_END_DATALOG, JUMP_END_DATALOG_EVENT, MainFrame::OnJumpEndDatalog)
 	EVT_COMMAND(SEEK_FWD_DATALOG, SEEK_FWD_DATALOG_EVENT, MainFrame::OnSeekFwdDatalog)

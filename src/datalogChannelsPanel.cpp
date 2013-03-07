@@ -51,6 +51,72 @@ DatalogChannelsPanel::~DatalogChannelsPanel(){
 
 }
 
+void DatalogChannelsPanel::UpdateTimeSlider(double factor){
+	double value = (double)m_timeSlider->GetMax() * factor;
+	m_timeSlider->SetValue(value);
+}
+
+void DatalogChannelsPanel::OnDatalogTick(int datalogIndex, int tickDuration, size_t maxDatalogSize){
+
+	size_t totalMilliseconds = datalogIndex * tickDuration;
+	size_t totalSeconds = totalMilliseconds / 1000;
+	size_t totalMinutes = totalSeconds / 60;
+	size_t totalHours = totalMinutes / 60;
+
+	size_t remainingMinutes = totalMinutes % 60;
+	size_t remainingSeconds = totalSeconds % 60;
+	size_t remainingMilliseconds = totalMilliseconds % 1000;
+
+	wxString value = wxString::Format("%02lu:%02lu:%02lu.%03lu", totalHours, remainingMinutes, remainingSeconds, remainingMilliseconds);
+	m_timeDisplay->SetValue(value);
+
+	UpdateTimeSlider((double)datalogIndex / (double)maxDatalogSize);
+}
+
+wxControl * DatalogChannelsPanel::CreateTimeWidget(wxWindow *parent){
+
+	m_timeDisplay = new LCDDisplay(parent);
+	m_timeDisplay->SetGrayColour(wxColor(10,51,56));
+	m_timeDisplay->SetLightColour(wxColor(57,232,255));
+	m_timeDisplay->SetNumberDigits(11);
+	m_timeDisplay->SetValue("00:00:00.000");
+	m_timeDisplay->SetMinSize(wxSize(200,40));
+	return m_timeDisplay;
+
+}
+
+wxControl * DatalogChannelsPanel::CreateTimeScrollbar(wxWindow *parent){
+
+	//0.01% resolution range on slider
+	m_timeSlider = new wxSlider(parent, ID_TIME_SCROLLER, 0, 0, 10000, wxDefaultPosition, wxDefaultSize, wxSL_TOP | wxSL_AUTOTICKS);
+	m_timeSlider->SetTickFreq(1000);
+	return m_timeSlider;
+}
+
+wxSizer * DatalogChannelsPanel::CreatePlaybackControls(void){
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,3,2,2);
+	sizer->AddGrowableCol(2);
+
+	//initialize tool bar
+	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
+
+	toolBar->AddTool(ID_ADD_CHANNEL, "", list_add_xpm, wxT("Add Channel View"));
+
+	toolBar->AddTool(ID_SKIP_DATALOG_REV, "", media_skip_backward_xpm, 	"Skip datalog to beginning");
+	toolBar->AddTool(ID_SEEK_DATALOG_REV, "", media_seek_backward_xpm, 	"Seek datalog reverse");
+	toolBar->AddTool(ID_PLAY_DATALOG_REV, "", media_play_backward_xpm, 	"Play datalog reverse");
+	toolBar->AddTool(ID_PAUSE_DATALOG,	  "", media_pause_xpm, 			"Pause datalog");
+	toolBar->AddTool(ID_PLAY_DATALOG_FWD, "", media_play_forward_xpm, 	"Play datalog forward");
+	toolBar->AddTool(ID_SEEK_DATALOG_FWD, "", media_seek_forward_xpm, 	"Seek datalog forward");
+	toolBar->AddTool(ID_SKIP_DATALOG_FWD, "", media_skip_forward_xpm, 	"Skip datalog to end");
+	toolBar->Realize();
+
+	sizer->Add(toolBar);
+	sizer->Add(CreateTimeWidget(this));
+	sizer->Add(CreateTimeScrollbar(this),1,wxEXPAND | wxALIGN_CENTER_VERTICAL);
+	return sizer;
+}
+
 void DatalogChannelsPanel::InitComponents(){
 
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(2,1,3,3);
@@ -58,22 +124,7 @@ void DatalogChannelsPanel::InitComponents(){
 	sizer->AddGrowableRow(1);
 
 
-	//initialize tool bar
-	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
-
-	toolBar->AddTool(ID_ADD_CHANNEL, list_add_xpm, wxT("Add Channel View"));
-
-	toolBar->AddTool(ID_SKIP_DATALOG_REV, media_skip_backward_xpm, 	"Skip datalog to beginning");
-	toolBar->AddTool(ID_SEEK_DATALOG_REV, media_seek_backward_xpm, 	"Seek datalog reverse");
-	toolBar->AddTool(ID_PLAY_DATALOG_REV, media_play_backward_xpm, 	"Play datalog reverse");
-	toolBar->AddTool(ID_PAUSE_DATALOG,	  media_pause_xpm, 			"Pause datalog");
-	toolBar->AddTool(ID_PLAY_DATALOG_FWD, media_play_forward_xpm, 	"Play datalog forward");
-	toolBar->AddTool(ID_SEEK_DATALOG_FWD, media_seek_forward_xpm, 	"Seek datalog forward");
-	toolBar->AddTool(ID_SKIP_DATALOG_FWD, media_skip_forward_xpm, 	"Skip datalog to end");
-
-	toolBar->Realize();
-	sizer->Add(toolBar,1,wxEXPAND);
-
+	sizer->Add(CreatePlaybackControls(),1,wxEXPAND);
 	m_channelsList = CreateChannelsList();
 
 	sizer->Add(m_channelsList, 1, wxEXPAND);
@@ -263,6 +314,17 @@ void DatalogChannelsPanel::DoGridContextMenu(wxTreeListEvent &event){
 	PopupMenu(m_gridPopupMenu);
 }
 
+void DatalogChannelsPanel::OnTimeScrolled(wxScrollEvent &event){
+	m_isScrolling = true;
+	wxCommandEvent evt( SEEK_ABS_DATALOG_EVENT, SEEK_ABS_DATALOG);
+	evt.SetInt(m_timeSlider->GetValue());
+	GetParent()->GetEventHandler()->AddPendingEvent(evt);
+}
+
+void DatalogChannelsPanel::OnTimeScrollRelease(wxScrollEvent &event){
+	m_isScrolling = false;
+}
+
 BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_NEW_LINE_CHART,DatalogChannelsPanel::OnNewLineChart)
 	EVT_MENU(ID_NEW_ANALOG_GAUGE, DatalogChannelsPanel::OnNewAnalogGauge)
@@ -277,6 +339,8 @@ BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_PLAY_DATALOG_FWD, DatalogChannelsPanel::OnPlayForward)
 	EVT_MENU(ID_SEEK_DATALOG_FWD, DatalogChannelsPanel::OnSeekForward)
 	EVT_MENU(ID_SKIP_DATALOG_FWD, DatalogChannelsPanel::OnSkipForward)
+	EVT_COMMAND_SCROLL(ID_TIME_SCROLLER, DatalogChannelsPanel::OnTimeScrolled)
+	EVT_COMMAND_SCROLL_THUMBRELEASE(ID_TIME_SCROLLER, DatalogChannelsPanel::OnTimeScrollRelease)
 
 	EVT_TREELIST_ITEM_CONTEXT_MENU(ID_DATALOG_CHANNELS_LIST, DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()
