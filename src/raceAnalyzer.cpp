@@ -617,6 +617,7 @@ void MainFrame::UpdateAnalysis(){
 void MainFrame::RaceEventUpdated(){
 	UpdateAnalyzerView();
 	m_datalogPlayer.DatalogSessionsUpdated();
+	m_datalogPlayer.RequeryAll();
 	UpdateCommControls();
 	NotifyConfigChanged();
 	SyncControls();
