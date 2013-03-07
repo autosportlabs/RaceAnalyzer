@@ -215,6 +215,12 @@ void DatalogChannelsPanel::DatalogSessionsUpdated(){
 	}
 }
 
+DatalogChannelSelectionSet * DatalogChannelsPanel::GetSelectedChannels(void){
+	DatalogChannelSelectionSet *selectionSet = new DatalogChannelSelectionSet();
+	PopulateSelectedChannels(selectionSet);
+	return selectionSet;
+}
+
 void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *selectionSet){
 
 	wxTreeListItems selections;

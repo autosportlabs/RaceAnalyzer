@@ -125,6 +125,7 @@ class MainFrame : public wxFrame, public RuntimeListener
 
 	void OnImportWizardFinished(wxWizardEvent &event);
 
+	void ShowNoChannelSelectedError(void);
 
 	void OnOpenConfig(wxCommandEvent &event);
 	void OnNewConfig(wxCommandEvent &event);

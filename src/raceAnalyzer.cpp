@@ -79,6 +79,11 @@ enum{
 
 };
 
+enum{
+		PERSPECTIVE_INDEX_CONFIG = 0,
+		PERSPECTIVE_INDEX_RUNTIME
+};
+
 bool RaceAnalyzerApp::OnInit()
 {
 	// Create an instance of our frame, or window
@@ -272,12 +277,12 @@ void MainFrame::SwitchToPerspective(int id){
 
 void MainFrame::OnConfigPerspective(wxCommandEvent& event){
 	SaveCurrentPerspective();
-	SwitchToPerspective(0);
+	SwitchToPerspective(PERSPECTIVE_INDEX_CONFIG);
 }
 
 void MainFrame::OnRuntimePerspective(wxCommandEvent& event){
 	SaveCurrentPerspective();
-	SwitchToPerspective(1);
+	SwitchToPerspective(PERSPECTIVE_INDEX_RUNTIME);
 }
 
 void MainFrame::InitializeMenus(){
@@ -831,29 +836,59 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 	}
 }
 
+void MainFrame::ShowNoChannelSelectedError(void){
+	wxMessageDialog dlg(this, "Please select one or more channels to display", "Channels", wxOK | wxICON_HAND);
+	dlg.ShowModal();
+	SwitchToPerspective(PERSPECTIVE_INDEX_RUNTIME);
+}
+
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
 
-	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
-	AddNewLineChart(addData);
-	delete addData;
+	DatalogChannelSelectionSet *addData = static_cast<DatalogChannelSelectionSet *>(event.GetClientData());
+	if (NULL == addData) addData = m_channelsPanel->GetSelectedChannels();
+	if (NULL != addData && addData->Count() > 0){
+		AddNewLineChart(addData);
+		delete addData;
+	}
+	else{
+		ShowNoChannelSelectedError();
+	}
 }
 
 void MainFrame::OnAddAnalogGauge(wxCommandEvent &event){
-	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
-	AddAnalogGauges(addData);
-	delete addData;
+	DatalogChannelSelectionSet *addData = static_cast<DatalogChannelSelectionSet *>(event.GetClientData());
+	if (NULL == addData) addData = m_channelsPanel->GetSelectedChannels();
+	if (NULL != addData && addData->Count() > 0){
+		AddAnalogGauges(addData);
+		delete addData;
+	}
+	else{
+		ShowNoChannelSelectedError();
+	}
 }
 
 void MainFrame::OnAddDigitalGauge(wxCommandEvent &event){
-	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
-	AddDigitalGauges(addData);
-	delete addData;
+	DatalogChannelSelectionSet *addData = static_cast<DatalogChannelSelectionSet *>(event.GetClientData());
+	if (NULL == addData) addData = m_channelsPanel->GetSelectedChannels();
+	if (NULL != addData && addData->Count() > 0){
+		AddDigitalGauges(addData);
+		delete addData;
+	}
+	else{
+		ShowNoChannelSelectedError();
+	}
 }
 
 void MainFrame::OnAddGPSView(wxCommandEvent &event){
-	DatalogChannelSelectionSet *addData = (DatalogChannelSelectionSet *)event.GetClientData();
-	AddGPSView(addData);
-	delete addData;
+	DatalogChannelSelectionSet *addData = static_cast<DatalogChannelSelectionSet *>(event.GetClientData());
+	if (NULL == addData) addData = m_channelsPanel->GetSelectedChannels();
+	if (NULL != addData && addData->Count() > 0){
+		AddGPSView(addData);
+		delete addData;
+	}
+	else{
+		ShowNoChannelSelectedError();
+	}
 }
 
 void MainFrame::OnUpdateStatus(wxCommandEvent &event){

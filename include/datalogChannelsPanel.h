@@ -61,7 +61,7 @@ class DatalogChannelsPanel : public wxPanel, public DatalogPlayerListener{
 		void DatalogSessionsUpdated();
 		void AddDatalogSession(int id);
 		void UpdateRuntimeValues();
-
+		DatalogChannelSelectionSet * GetSelectedChannels(void);
 		void SetMarkerOffset(size_t offset);
 		size_t GetMarkerOffset();
 
