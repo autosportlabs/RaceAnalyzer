@@ -48,7 +48,6 @@
 //wxAUI string definitions
 #define PANE_CONFIGURATION 		"config"
 #define PANE_RUNTIME			"runtime"
-#define PANE_SCRIPT				"script"
 
 #define CAPTION_CHANNELS 		"Channels"
 #define CAPTION_CONFIG			"Configuration"
@@ -199,10 +198,7 @@ void MainFrame::InitializeFrame(){
 	_frameManager.Update();
 
 	if (0 == _appPrefs.GetPerspectives().Count()){
-		CreateDefaultPerspectives();
-		int perspectiveCount = _appPrefs.GetPerspectives().Count();
-		_appPrefs.SetActivePerspective(perspectiveCount - 1);
-		SwitchToPerspective(0);
+		SetDefaultPerspectiveView();
 	}
 	else{
 		SwitchToPerspective(_appPrefs.GetActivePerspective());
@@ -212,11 +208,20 @@ void MainFrame::InitializeFrame(){
 }
 
 
+void MainFrame::SetDefaultPerspectiveView(void){
+	int perspectiveCount = _appPrefs.GetPerspectives().Count();
+	if (perspectiveCount == 0){
+		CreateDefaultPerspectives();
+		_appPrefs.SetActivePerspective(0);
+		SwitchToPerspective(0);
+	}
+}
+
 void MainFrame::CreateDefaultPerspectives(){
 
+	_appPrefs.GetPerspectives().Clear();
 	CreateDefaultConfigPerspective();
 	CreateDefaultRuntimePerspective();
-	CreateDefaultScriptPerspective();
 	_appPrefs.SaveAppPrefs();
 }
 
@@ -224,7 +229,6 @@ void MainFrame::CreateDefaultConfigPerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(true);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
-	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
 
 	wxString perspective = _frameManager.SavePerspective();
@@ -233,24 +237,10 @@ void MainFrame::CreateDefaultConfigPerspective(){
 	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_CONFIG);
 }
 
-void MainFrame::CreateDefaultScriptPerspective(){
-
-	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
-	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(true);
-	_frameManager.Update();
-
-	wxString perspective = _frameManager.SavePerspective();
-
-	_appPrefs.GetPerspectives().Add(perspective);
-	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_SCRIPT);
-}
-
 void MainFrame::CreateDefaultRuntimePerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
 	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(true);
-	_frameManager.GetPane(wxT(PANE_SCRIPT)).Show(false);
 	_frameManager.Update();
 
 	wxString perspective = _frameManager.SavePerspective();
@@ -259,6 +249,10 @@ void MainFrame::CreateDefaultRuntimePerspective(){
 	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_RUNTIME);
 }
 
+void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
+	CreateDefaultPerspectives();
+	SetDefaultPerspectiveView();
+}
 
 void MainFrame::SaveCurrentPerspective(){
 
@@ -284,11 +278,6 @@ void MainFrame::OnConfigPerspective(wxCommandEvent& event){
 void MainFrame::OnRuntimePerspective(wxCommandEvent& event){
 	SaveCurrentPerspective();
 	SwitchToPerspective(1);
-}
-
-void MainFrame::OnScriptPerspective(wxCommandEvent &event){
-	SaveCurrentPerspective();
-	SwitchToPerspective(2);
 }
 
 void MainFrame::InitializeMenus(){
@@ -368,25 +357,18 @@ void MainFrame::InitializeMenus(){
 
 void MainFrame::InitializeComponents(){
 
-	m_channelsPanel = new DatalogChannelsPanel(DatalogChannelsParams(
-			&m_currentConfig,
-			&_appPrefs,
-			&m_appOptions,
-			&m_datalogStore),
-			this);
-
+	m_channelsPanel = new DatalogChannelsPanel(DatalogChannelsParams(&m_currentConfig, &_appPrefs, &m_appOptions, &m_datalogStore),	this);
 	m_datalogPlayer.SetPlayerListener(m_channelsPanel);
-
-	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide());
+	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide().CloseButton(false));
 
 	m_configPanel = new ConfigPanel(this, ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig, &m_appOptions));
-	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide());
+	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide().CloseButton(false));
 }
 
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
-	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright � 2004-2012 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
+	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright � 2004-2013 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
 	wxMessageDialog dlg(this,msg, "About", wxOK);
 	dlg.ShowModal();
 }
@@ -648,9 +630,6 @@ void MainFrame::UpdateConfigFileStatus(){
 	SetTitle(title);
 }
 
-void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
-	CreateDefaultPerspectives();
-}
 
 void MainFrame::OnFileExit(wxCommandEvent &event){
 	TerminateApp();
@@ -933,7 +912,6 @@ void MainFrame::OnSaveConfig(wxCommandEvent& event){
 	SaveCurrentConfig();
 }
 
-
 void MainFrame::OnNewConfig(wxCommandEvent &event){
 
 	if (m_configModified){
@@ -1058,7 +1036,6 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
 	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
-	EVT_MENU( ID_SCRIPT_MODE, MainFrame::OnScriptPerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
 
@@ -1070,6 +1047,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_MENU(ID_OPEN_CONFIG, MainFrame::OnOpenConfig)
 	EVT_MENU(ID_SAVE_CONFIG, MainFrame::OnSaveConfig)
 	EVT_MENU(ID_SAVE_CONFIG_AS, MainFrame::OnSaveAsConfig)
+	EVT_MENU(ID_RESTORE_DEFAULT_VIEWS, MainFrame::OnRestoreDefaultView)
 
 	EVT_COMMAND(ADD_NEW_LINE_CHART, ADD_NEW_LINE_CHART_EVENT, MainFrame::OnAddLineChart)
 	EVT_COMMAND(ADD_NEW_ANALOG_GAUGE, ADD_NEW_ANALOG_GAUGE_EVENT, MainFrame::OnAddAnalogGauge)

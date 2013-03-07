@@ -40,7 +40,6 @@
 #define PERSPECTIVE_CONFIG	"Configuration"
 #define PERSPECTIVE_RUNTIME	"Runtime"
 #define PERSPECTIVE_ANALYZE	"Analysis"
-#define PERSPECTIVE_SCRIPT	"Scripting"
 #define MAX_PERSPECTIVES	20
 
 
@@ -83,10 +82,10 @@ class MainFrame : public wxFrame, public RuntimeListener
 	bool QueryFileOverwrite();
 	void SwitchToPerspective(int id);
 	void SaveCurrentPerspective();
+	void SetDefaultPerspectiveView(void);
 	void CreateDefaultPerspectives();
 	void CreateDefaultConfigPerspective();
 	void CreateDefaultRuntimePerspective();
-	void CreateDefaultScriptPerspective();
 	void SyncControls();
 	void LoadConfigurationFile(const wxString fileName);
 
@@ -122,7 +121,6 @@ class MainFrame : public wxFrame, public RuntimeListener
     void OnConfigPerspective(wxCommandEvent &event);
     void OnRuntimePerspective(wxCommandEvent &event);
     void OnAnalyzePerspective(wxCommandEvent &event);
-    void OnScriptPerspective(wxCommandEvent &event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
 
 	void OnImportWizardFinished(wxWizardEvent &event);
