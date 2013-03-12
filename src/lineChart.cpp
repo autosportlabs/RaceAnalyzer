@@ -7,13 +7,15 @@
 #include "lineChart.h"
 #include "logging.h"
 
-#define UNITS_LABEL_SPACING 	2
-#define GRID_SIZE 				20
-#define DEFAULT_ZOOM 			100
-#define MIN_ZOOM				25
-#define DEFAULT_OFFSET_SECONDS	0
-#define DEFAULT_MIN_VALUE		0
-#define DEFAULT_MAX_VALUE		100
+#define UNITS_LABEL_SPACING 		2
+#define GRID_SIZE 					20
+#define DEFAULT_ZOOM 				100
+#define MIN_ZOOM					25
+#define DEFAULT_OFFSET_SECONDS		0
+#define DEFAULT_MIN_VALUE			0
+#define DEFAULT_MAX_VALUE			100
+#define CURRENT_VALUES_TOP_OFFSET 	5
+#define CURRENT_VALUES_RIGHT_OFFSET	5
 
 BEGIN_EVENT_TABLE( LineChart, wxWindow )
 	EVT_PAINT( LineChart::OnPaint )
@@ -22,6 +24,7 @@ BEGIN_EVENT_TABLE( LineChart, wxWindow )
 	EVT_ENTER_WINDOW(LineChart::OnMouseEnter)
 	EVT_LEAVE_WINDOW(LineChart::OnMouseExit)
     EVT_ERASE_BACKGROUND(LineChart::OnEraseBackground)
+    EVT_LEFT_DCLICK(LineChart::OnMouseDoubleClick)
 END_EVENT_TABLE()
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
@@ -98,8 +101,18 @@ void Series::SetValueAt(size_t index, double value){
 }
 
 LineChart::LineChart(): wxWindow(),
+	m_viewOffsetFactor(0),
+	m_markerIndex(0),
 	_zoomPercentage(DEFAULT_ZOOM),
-	_showScale(true)
+	_currentWidth(0),
+	_currentHeight(0),
+	_memBitmap(NULL),
+	_backgroundColor(*wxBLACK),
+	m_showScale(true),
+	m_showData(false),
+	m_mouseX(0),
+	m_mouseY(0),
+	m_leftEdge(0)
 {}
 
 LineChart::LineChart(		wxWindow *parent,
@@ -108,11 +121,17 @@ LineChart::LineChart(		wxWindow *parent,
 							const wxSize &size)
 							: wxWindow(parent, id, pos, size),
 								m_viewOffsetFactor(0),
+								m_markerIndex(0),
 								_zoomPercentage(DEFAULT_ZOOM),
-								_showScale(true),
-								m_showData(false)
-
-
+								_currentWidth(0),
+								_currentHeight(0),
+								_memBitmap(NULL),
+								_backgroundColor(*wxBLACK),
+								m_showScale(true),
+								m_showData(false),
+								m_mouseX(0),
+								m_mouseY(0),
+								m_leftEdge(0)
 {
 	if (parent){
 		SetBackgroundColour(parent->GetBackgroundColour());
@@ -123,11 +142,17 @@ LineChart::LineChart(		wxWindow *parent,
 	_currentWidth = size.GetWidth();
 	_currentHeight = size.GetHeight();
 	_memBitmap = new wxBitmap(_currentWidth, _currentHeight);
+	m_leftEdge = 0;
 }
 
 
 LineChart::~LineChart(){
 	delete (_memBitmap);
+}
+
+void LineChart::OnMouseDoubleClick(wxMouseEvent &event){
+	m_showScale = !m_showScale;
+	Refresh();
 }
 
 void LineChart::OnMouseEnter(wxMouseEvent &event){
@@ -149,6 +174,10 @@ void LineChart::OnMouseExit(wxMouseEvent &event){
 
 	m_showData = false;
 	Refresh();
+}
+
+int LineChart::GetChartWidth(){
+	return GetSize().GetWidth() - m_leftEdge;
 }
 
 void LineChart::SetViewOffsetFactor(double offset){
@@ -175,17 +204,25 @@ void LineChart::SetZoom(int zoomPercentage){
 }
 
 void LineChart::ShowScale(bool showScale){
-	_showScale = showScale;
+	m_showScale = showScale;
 }
 
 bool LineChart::GetShowScale(){
-	return _showScale;
+	return m_showScale;
 }
 
 void LineChart::OnSize(wxSizeEvent &event){
 	Refresh();
 }
 
+size_t LineChart::GetMaxSeriesBufferSize(){
+	size_t maxSize = 0;
+	for (SeriesMap::iterator it = m_seriesMap.begin(); it != m_seriesMap.end(); ++it){
+		size_t size = it->second->GetBufferSize();
+		if (size > maxSize) maxSize = size;
+	}
+	return maxSize;
+}
 
 void LineChart::OnPaint(wxPaintEvent &event){
 
@@ -213,12 +250,17 @@ void LineChart::OnPaint(wxPaintEvent &event){
 	dc.Clear();
 	DrawGrid(dc);
 
-	if (_showScale) DrawScale(dc);
+	if (m_showScale){
+		m_leftEdge = DrawScale(dc);
+	}
+	else{
+		m_leftEdge = 0;
+	}
 
 	double lastValue = 0;
 	for (SeriesMap::iterator it = m_seriesMap.begin(); it != m_seriesMap.end(); ++it){
 
-		float currentX = (float)0;
+		float currentX = (float)m_leftEdge;
 		int lastX = (int)currentX;
 		int lastY;
 
@@ -234,7 +276,6 @@ void LineChart::OnPaint(wxPaintEvent &event){
 
 			double loggedValue = (*values)[0];
 
-
 			double percentageOfMax = (loggedValue - minValue) / (maxValue - minValue);
 			lastY = h - (int)(((double)h) * percentageOfMax);
 
@@ -245,6 +286,7 @@ void LineChart::OnPaint(wxPaintEvent &event){
 					wxPen pen = dc.GetPen();
 					dc.SetPen(*wxThePenList->FindOrCreatePen(*wxLIGHT_GREY, 1, wxSOLID));
 					dc.DrawLine(currentX, 0, currentX, _currentHeight);
+					DrawCurrentValues(dc, i, currentX, CURRENT_VALUES_TOP_OFFSET);
 					dc.SetPen(pen);
 				}
 
@@ -269,7 +311,7 @@ void LineChart::OnPaint(wxPaintEvent &event){
 			}
 		}
 	}
-	if (m_showData) DrawCurrentValues(dc);
+	if (m_showData) DrawMouseoverMarker(dc);
 	//blit into the real DC
 	old_dc.Blit(0,0,_currentWidth,_currentHeight,&dc,0,0);
 
@@ -283,15 +325,95 @@ void LineChart::SetMarkerIndex(size_t index){
 	m_markerIndex = index;
 }
 
-void LineChart::DrawScale(wxMemoryDC &dc){
 
+int LineChart::DrawScale(wxMemoryDC &dc){
+	int leftOrientationEdge = 0;
+	int rightOrientationEdge = _currentWidth - 1;
+
+	int scaleOrientation = LineChart::ORIENTATION_LEFT;
+
+	wxFont labelFont = GetFont();
+
+
+	int tickLabelWidth = 0;
+	for (SeriesMap::iterator it = m_seriesMap.begin(); it != m_seriesMap.end(); ++it){
+
+		int maxLabelWidth = 0;
+		Series *series = it->second;
+		Range * range = m_rangeArray[series->GetRangeId()];
+
+
+		double minValue = range->GetMin();
+		double maxValue = range->GetMax();
+		double rangeSize = maxValue - minValue;
+		double stepInterval = (maxValue - minValue) / 10;
+		if (stepInterval == 0) stepInterval = 1;
+
+		dc.SetPen(*wxThePenList->FindOrCreatePen(series->GetColor(), 1, wxSOLID));
+
+		dc.SetTextForeground(series->GetColor());
+
+		bool labelOn = false;
+		int tickLabelHeight,tickDescent,tickExternalLeading;
+		dc.DrawLine(leftOrientationEdge, 0, leftOrientationEdge, _currentHeight);
+
+		for (double tick = minValue; tick <=maxValue; tick += stepInterval){
+
+			int y = _currentHeight - (double)_currentHeight * ((tick - minValue) / rangeSize);
+			int nextY = _currentHeight - (double)_currentHeight * ((tick + stepInterval - minValue) / rangeSize);
+
+			if (labelOn){
+				wxString numberFormat = "%." + wxString::Format("%df", range->GetPrecision());
+				wxString tickLabel = wxString::Format(numberFormat, tick);
+				dc.GetTextExtent(tickLabel, &tickLabelHeight, &tickLabelWidth, &tickDescent, &tickExternalLeading, &labelFont);
+				if (tickLabelHeight > maxLabelWidth) maxLabelWidth = tickLabelHeight;
+
+				if (tickLabelWidth < y - nextY ){
+					switch (scaleOrientation){
+						case LineChart::ORIENTATION_LEFT:
+						{
+							dc.DrawRotatedText(tickLabel, leftOrientationEdge, y, 0);
+							break;
+						}
+						case LineChart::ORIENTATION_RIGHT:
+						{
+							dc.DrawRotatedText(tickLabel, rightOrientationEdge, y, 0);
+							break;
+						}
+					}
+				}
+			}
+			labelOn = !labelOn;
+			dc.DrawLine(leftOrientationEdge, y, leftOrientationEdge + tickLabelWidth, y);
+		}
+
+		maxLabelWidth+=(tickLabelWidth / 2);
+		switch (scaleOrientation){
+			case LineChart::ORIENTATION_LEFT:
+			{
+				leftOrientationEdge += (maxLabelWidth);
+				break;
+			}
+			case LineChart::ORIENTATION_RIGHT:
+			{
+				rightOrientationEdge -= (maxLabelWidth);
+				break;
+			}
+		}
+	}
+	return leftOrientationEdge;
 }
 
-void LineChart::DrawCurrentValues(wxMemoryDC &dc){
+void LineChart::DrawMouseoverMarker(wxMemoryDC &dc){
 
 	dc.SetPen(*wxThePenList->FindOrCreatePen(*wxWHITE, 1, wxSOLID));
 	dc.DrawLine(m_mouseX, 0, m_mouseX, _currentHeight);
 
+	size_t dataIndex = (size_t)(((double)GetMaxSeriesBufferSize()) * m_viewOffsetFactor) + m_mouseX - m_leftEdge;
+	DrawCurrentValues(dc, dataIndex, m_mouseX, m_mouseY);
+}
+
+void LineChart::DrawCurrentValues(wxMemoryDC &dc, size_t dataIndex, int x, int y){
 	int currentOffset = 0;
 	wxFont labelFont = GetFont();
 	int labelWidth,labelHeight,descent,externalLeading;
@@ -299,15 +421,14 @@ void LineChart::DrawCurrentValues(wxMemoryDC &dc){
 	for (SeriesMap::iterator it = m_seriesMap.begin(); it != m_seriesMap.end(); ++it){
 
 		Series *series = it->second;
-		size_t dataIndex = (size_t)(((double)series->GetBufferSize()) * m_viewOffsetFactor) + m_mouseX;
 		double dataValue = series->GetValueAtOrNear(dataIndex);
-		wxString numberFormat = "%2." + wxString::Format("%df", series->GetPrecision());
+		wxString numberFormat = "% 2." + wxString::Format("%df", series->GetPrecision());
 		wxString valueString = (DatalogValue::NULL_VALUE == dataValue ? "---" : wxString::Format(numberFormat.ToAscii(), dataValue)) + " " + series->GetLabel();
 		dc.SetTextForeground(series->GetColor());
 		dc.GetTextExtent(valueString, &labelHeight, &labelWidth, &descent, &externalLeading, &labelFont);
 
+		dc.DrawRotatedText(valueString, x + CURRENT_VALUES_RIGHT_OFFSET, y + currentOffset,0);
 		currentOffset += labelWidth;
-		dc.DrawRotatedText(valueString, m_mouseX - labelHeight - 15, m_mouseY - currentOffset,0);
 	}
 }
 
