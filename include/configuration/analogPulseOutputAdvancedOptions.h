@@ -7,7 +7,7 @@
 #include "raceCapture/raceCaptureConfig.h"
 #include "controls/steppedSpinCtrl.h"
 
-#define ADVANCED_PULSE_INPUT_SETTINGS_TITLE "Advanced Pulse Input Settings"
+#define ADVANCED_PULSE_INPUT_SETTINGS_TITLE "Advanced Pulse Output Settings"
 
 class AnalogPulseOutputAdvancedDialog : public wxDialog
   {

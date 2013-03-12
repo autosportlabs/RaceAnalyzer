@@ -39,7 +39,6 @@ void AnalogGaugePane::CreateGauge(ViewChannel &channel){
 
 	m_angularMeter->SetRange(type.minValue, type.maxValue);
 	AppOptions *options = m_chartParams.appOptions;
-
 	AnalogGaugeTypes &gaugeTypes = options->GetAnalogGaugeTypes();
 
 	if (gaugeTypes.find(type.name) != gaugeTypes.end()){
@@ -50,6 +49,7 @@ void AnalogGaugePane::CreateGauge(ViewChannel &channel){
 		m_angularMeter->SetValueFont(gaugeType.valueFont);
 		m_angularMeter->SetValuePrecision(gaugeType.valuePrecision);
 		m_angularMeter->SetLabel(type.unitsLabel);
+		m_angularMeter->SetMajorTickTextColor(wxColor(0xFF,0xC7,0x00));
 	}
 }
 
