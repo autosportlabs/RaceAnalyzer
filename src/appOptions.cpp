@@ -11,7 +11,7 @@
 #define DEFAULT_DIGITAL_GAUGE_TYPE_COUNT		-1
 
 
-#define DEFAULT_CHART_COLORS					"0x00FF00,0xFF0000,0x0000FF,0xFFFF00,0x00FFFF,0xFFFFFF,0xFF00FF"
+#define DEFAULT_CHART_COLORS					"0x003AC1,0xFF5D00,0xFFC700,0x607DC1,0xFFAE7F,0xFFE37F,0x919FC1,0xFFD6BF,0xFFF1BF"
 #define CHART_COLOR_STRING_DELIMITER			","
 
 #define CONFIG_KEY_COM_PORT 					"COM_Port"
@@ -182,12 +182,12 @@ void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 
 	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
 	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
-	types.Add( DatalogChannelType("Rotation", "Deg/Sec", 5, -300.0, 300.0, 2) );
+	types.Add( DatalogChannelType("Rotation", "Deg/Sec", 5, -300.0, 300.0, 1) );
 	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0, 2) );
 	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
 	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
 	types.Add( DatalogChannelSystemTypes::GetLongitudeChannelType());
-	types.Add( DatalogChannelType("Speed", "MPH", 0, 0, 300.0, 0) );
+	types.Add( DatalogChannelType("Speed", "MPH", 0, 0, 240.0, 0) );
 	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0, 2) );
 	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0, 2) );
 	types.Add( DatalogChannelType("Temperature", "F", 0, 0, 300.0, 0) );

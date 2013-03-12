@@ -14,16 +14,16 @@ WX_DEFINE_OBJARRAY(DatalogChannelTypes);
 WX_DEFINE_OBJARRAY(ViewChannels);
 WX_DEFINE_OBJARRAY(DatalogSnapshots);
 
-DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, int precision) :
+DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, size_t precision) :
 	name(newName), unitsLabel(newUnitsLabel), smoothingLevel(newSmoothingLevel), minValue(newMinValue), maxValue(newMaxValue), precision(precision)
 { }
 
 DatalogChannel::DatalogChannel(wxString newName, int newTypeId, wxString newDescription, bool en) :
-	name(newName), typeId(newTypeId), description(newDescription), enabled(en)
+	name(newName), typeId(newTypeId), sampleRate(0), description(newDescription), enabled(en)
 { }
 
 DatalogChannel::DatalogChannel() :
-	name(""), typeId(UNDEFINED_TYPE), description(""), enabled(true)
+	name(""), typeId(UNDEFINED_TYPE), sampleRate(0), description(""), enabled(true)
 { }
 
 int DatalogChannelUtil::FindChannelIdByName(DatalogChannels &channels, wxString &name){

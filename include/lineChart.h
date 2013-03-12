@@ -16,19 +16,22 @@ class Range{
 
 public:
 
-	Range(double min, double max, wxString label) :
+	Range(double min, double max, size_t precision, wxString label) :
 		m_min(min),
 		m_max(max),
+		m_precision(precision),
 		m_label(label)
 	{ }
 
 	double GetMin(){ return m_min; }
 	double GetMax(){ return m_max; }
+	size_t GetPrecision(){ return m_precision; }
 	wxString & GetLabel(){ return m_label; }
 
 private:
 	double m_min;
 	double m_max;
+	size_t	m_precision;
 	wxString m_label;
 };
 
@@ -78,6 +81,11 @@ WX_DECLARE_STRING_HASH_MAP(Series*,SeriesMap);
 class LineChart : public wxWindow
 {
 	public:
+		enum SCALE_DISPLAY_ORIENTATION{
+			ORIENTATION_LEFT,
+			ORIENTATION_RIGHT
+		};
+
 		LineChart();
 		LineChart(wxWindow *parent,
 			wxWindowID id = -1,
@@ -92,6 +100,8 @@ class LineChart : public wxWindow
 		void SetChartHistorySize(unsigned int chartHistorySize);
 
 		void OnEraseBackground(wxEraseEvent& event);
+
+		int GetChartWidth();
 
 		void SetLogBufferSize(int size);
 		int GetLogBufferSize();
@@ -122,17 +132,21 @@ class LineChart : public wxWindow
 		void OnPaint( wxPaintEvent &event );
 		void OnSize( wxSizeEvent &event );
 		void OnMouseEnter(wxMouseEvent &event);
+		void OnMouseDoubleClick(wxMouseEvent &event);
 		void OnMouseExit(wxMouseEvent &event);
 		void OnMouseMove(wxMouseEvent &event);
 
 	private:
 
+		size_t GetMaxSeriesBufferSize();
 		void DrawGrid(wxMemoryDC &dc);
-		void DrawScale(wxMemoryDC &dc);
-		void DrawCurrentValues(wxMemoryDC &dc);
+		int DrawScale(wxMemoryDC &dc);
+		void DrawMouseoverMarker(wxMemoryDC &dc);
+		void DrawCurrentValues(wxMemoryDC &dc, size_t dataIndex, int x, int y);
 
 		SeriesMap			m_seriesMap;
 		RangeArray			m_rangeArray;
+
 		double				m_viewOffsetFactor;
 		size_t				m_markerIndex;
 
@@ -141,11 +155,12 @@ class LineChart : public wxWindow
 		int					_currentHeight;
 		wxBitmap 			*_memBitmap;
 		wxColor				_backgroundColor;
-		bool				_showScale;
+		bool				m_showScale;
 
 		bool				m_showData;
 		int					m_mouseX;
 		int					m_mouseY;
+		int					m_leftEdge;
 
 };
 #endif /* LINECHART_H_ */

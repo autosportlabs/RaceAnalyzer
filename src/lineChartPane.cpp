@@ -41,11 +41,11 @@ LineChartPane::~LineChartPane(){
 void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 
 	LineChart *lineChart = GetLineChart();
-
 	AppOptions *appOptions = m_chartParams.appOptions;
 	ChartColors &chartColors = appOptions->GetChartColors();
 	size_t maxColors = chartColors.Count();
 	size_t currentColor = 0;
+
 
 	lineChart->ClearAllSeries();
 
@@ -58,7 +58,7 @@ void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 
 		DatalogChannelType channelType = appOptions->GetChannelTypeForChannel(viewChannel);
 
-		Range *range = new Range(channelType.minValue,channelType.maxValue,channelType.unitsLabel);
+		Range *range = new Range(channelType.minValue, channelType.maxValue, channelType.precision, channelType.unitsLabel);
 		int newRangeId = lineChart->AddRange(range);
 
 		Series *series = new Series(0, newRangeId, 0, viewChannel.ToString(), chartColors[currentColor], channelType.precision);
@@ -66,7 +66,6 @@ void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 		lineChart->AddSeries(viewChannel.ToString(), series);
 	}
 }
-
 
 void LineChartPane::SetChartParams(ChartParams params){
 	m_chartParams = params;
@@ -108,7 +107,7 @@ void LineChartPane::UpdateValue(ViewChannel &channel, size_t index, double value
 	Series *series = m_lineChart->GetSeries(channel.ToString());
 	if (NULL != series){
 		m_lineChart->SetMarkerIndex(index);
-		int center = m_lineChart->GetSize().GetWidth() / 2;
+		int center = m_lineChart->GetChartWidth() / 2;
 		double adjustedIndex = (double)index - center;
 		adjustedIndex = adjustedIndex >= 0 ? adjustedIndex : 0;
 		size_t len = series->GetBufferSize();
@@ -136,6 +135,7 @@ void LineChartPane::InitComponents(){
 
 	m_lineChart = new LineChart(this);
 	m_lineChart->SetBackgroundColour(*wxBLACK);
+	m_lineChart->ShowScale(false);
 	m_scrollBar = new wxScrollBar(this,ID_LOGVIEWER_SCROLL);
 
 	m_scrollBar->SetScrollbar(0,SCROLLBAR_THUMBSIZE, SCROLLBAR_RANGE, SCROLLBAR_PAGESIZE,false);
