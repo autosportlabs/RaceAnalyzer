@@ -67,17 +67,17 @@ void LoggerOutputConfigPanel::InitComponents(){
 	{
 		wxStaticBoxSizer *telemetryModeSizer = new wxStaticBoxSizer(new wxStaticBox(this,-1,"Telemetry Mode"),wxVERTICAL);
 
-		telemetryModeSizer->Add(new wxStaticText(this,wxID_ANY,"Specify the telemetry module attached to RaceCapture/Pro"));
+		telemetryModeSizer->Add(new wxStaticText(this,wxID_ANY,"Specify the device attached to the connectivity expansion port on RaceCapture/Pro"));
 		telemetryModeSizer->AddSpacer(10);
 
 		wxFlexGridSizer* optionsSizer = new wxFlexGridSizer(1,2,6,6);
-		optionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Mode"),1,wxALIGN_LEFT);
+		optionsSizer->Add(new wxStaticText(this,wxID_ANY,"Connectivity"),1,wxALIGN_LEFT);
 
 		m_telemetryModeCombo = new wxComboBox(this,wxID_ANY,"",wxDefaultPosition,wxDefaultSize);
-		m_telemetryModeCombo->Append("Telemetry Disabled");
-		m_telemetryModeCombo->Append("Bluetooth");
-		m_telemetryModeCombo->Append("Cellular Module");
-		m_telemetryModeCombo->Append("Peer to Peer Mesh Network");
+		m_telemetryModeCombo->Append("No Device");
+		m_telemetryModeCombo->Append("Bluetooth adapter");
+		m_telemetryModeCombo->Append("Cellular telemetry");
+		m_telemetryModeCombo->Append("Peer to peer mesh network adapter");
 		m_telemetryModeCombo->Select(0);
 		optionsSizer->Add(m_telemetryModeCombo,0,wxALIGN_LEFT);
 		m_telemetryModeCombo->Connect(wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler(LoggerOutputConfigPanel::OnTelemetryModeChanged),NULL,this);

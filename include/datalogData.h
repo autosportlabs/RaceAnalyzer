@@ -66,7 +66,7 @@ class DatalogChannelType{
 
 public:
 	static const int DEFAULT_PRECISION = 2;
-	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, int precision);
+	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, size_t precision);
 	bool operator==(const DatalogChannelType &rh){
 		return (name == rh.name);
 	}
@@ -75,7 +75,7 @@ public:
 	int smoothingLevel;
 	double minValue;
 	double maxValue;
-	int precision;
+	size_t precision;
 };
 
 class DatalogChannelSystemTypes {
