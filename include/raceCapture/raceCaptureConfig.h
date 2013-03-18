@@ -70,6 +70,8 @@ public:
 	logging_mode_t loggingMode;
 	unsigned int p2pDestinationAddrHigh;
 	unsigned int p2pDestinationAddrLow;
+	wxString telemetryServer;
+	wxString telemetryDeviceId;
 };
 
 class ChannelConfig{

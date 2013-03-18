@@ -33,6 +33,9 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		void OnP2PAddressHighChanged(wxCommandEvent &event);
 		void OnP2PAddressLowChanged(wxCommandEvent &event);
 		void OnTelemetryModeChanged(wxCommandEvent &event);
+		void OnTelemetryServerChanged(wxCommandEvent &event);
+		void OnTelemetryDeviceIdChanged(wxCommandEvent &event);
+
 		void OnLoggingModeChanged(wxCommandEvent &event);
 
 		wxComboBox * m_sdLoggingModeCombo;
