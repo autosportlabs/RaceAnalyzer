@@ -1,0 +1,15 @@
+The latest instructions and downloads for RaceAnalyzer can be found here:
+http://autosportlabs.net/RaceCapturePro
+
+===1.1.5===
+Corrected read/write of telemetry server and device Id
+Included release notes (this file)
+
+===1.1.4===
+Updated colors on line chart
+added current values for line chart during playback
+Added experimental chart scales (doubleclick chart to show)
+
+===1.1.3===
+
+Initial release
