@@ -504,6 +504,8 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			outputConfig.telemetryMode = (telemetry_mode_t)GetIntParam(rsp,"telemetryMode");
 			outputConfig.p2pDestinationAddrHigh = GetIntParam(rsp,"p2pDestAddrHigh");
 			outputConfig.p2pDestinationAddrLow = GetIntParam(rsp,"p2pDestAddrLow");
+			outputConfig.telemetryServer = GetParam(rsp, "telemetryServerHost");
+			outputConfig.telemetryDeviceId = GetParam(rsp, "telemetryDeviceId");
 			updateWriteConfigPct(++updateCount,callback);
 		}
 
@@ -648,6 +650,9 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 			cmd = AppendIntParam(cmd, cfg.telemetryMode);
 			cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrHigh);
 			cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrLow);
+			cmd = AppendStringParam(cmd, cfg.telemetryServer);
+			cmd = AppendStringParam(cmd, cfg.telemetryDeviceId);
+
 			wxString result = SendCommand(serialPort, cmd);
 			CheckThrowResult(result);
 			updateWriteConfigPct(++updateCount,callback);

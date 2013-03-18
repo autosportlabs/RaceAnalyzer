@@ -34,6 +34,8 @@ void LoggerOutputConfigPanel::OnConfigUpdated(){
 	m_telemetryModeCombo->Select(cfg.telemetryMode);
 	m_p2pAddressHighTextCtrl->SetValue(wxString::Format("%u",cfg.p2pDestinationAddrHigh));
 	m_p2pAddressLowTextCtrl->SetValue(wxString::Format("%u",cfg.p2pDestinationAddrLow));
+	m_telemetryServerTextCtrl->SetValue(cfg.telemetryServer);
+	m_deviceIdTextCtrl->SetValue(cfg.telemetryDeviceId);
 }
 
 
@@ -105,12 +107,14 @@ void LoggerOutputConfigPanel::InitComponents(){
 		p2pOptionsSizer->Add(m_p2pAddressLowTextCtrl);
 
 		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Server"),1,wxALIGN_LEFT);
-		m_telemetryServerTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_ALPHANUMERIC));
+		m_telemetryServerTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
+		m_telemetryServerTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnTelemetryServerChanged),NULL,this);
 		p2pOptionsSizer->Add(m_telemetryServerTextCtrl, 1, wxEXPAND);
 		p2pOptionsSizer->AddStretchSpacer(1);
 
 		p2pOptionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Device Id"),1,wxALIGN_LEFT);
-		m_deviceIdTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_ALPHANUMERIC));
+		m_deviceIdTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
+		m_deviceIdTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnTelemetryDeviceIdChanged),NULL,this);
 		p2pOptionsSizer->Add(m_deviceIdTextCtrl, 1, wxEXPAND);
 		p2pOptionsSizer->AddStretchSpacer(1);
 
@@ -143,6 +147,23 @@ void LoggerOutputConfigPanel::OnTelemetryModeChanged(wxCommandEvent &event){
 		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
 		cfg.telemetryMode = (telemetry_mode_t)c->GetSelection();
 	}
+}
+
+void LoggerOutputConfigPanel::OnTelemetryServerChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) {
+		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
+		cfg.telemetryServer = c->GetValue();
+	}
+}
+
+void LoggerOutputConfigPanel::OnTelemetryDeviceIdChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) {
+		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
+		cfg.telemetryDeviceId = c->GetValue();
+	}
+
 }
 
 void LoggerOutputConfigPanel::OnLoggingModeChanged(wxCommandEvent &event){
