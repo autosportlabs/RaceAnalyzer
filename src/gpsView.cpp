@@ -65,32 +65,26 @@ void GPSView::OnPaint( wxPaintEvent& event )
 
 	dc.SetPen(*wxThePenList->FindOrCreatePen(*wxLIGHT_GREY, 1, wxSOLID));
 
-	double lastX,lastY = 0;
+	double lastX = 0;
+	double lastY = 0;
 	int pointCount = m_gpsPoints.size();
-
-	if (pointCount > 0){
-		GPSPoint p = m_gpsPoints[0];
-		lastX = SCALE(p.x, m_minX, m_maxX, _currentWidth);
-		lastY = SCALE(p.y, m_minY, m_maxY, _currentHeight);
-	}
-
 
     for (int i = 0; i < pointCount; i++){
 		GPSPoint p = m_gpsPoints[i];
-    	if (lastX == 0 && lastY == 0){
-    		lastX = p.x;
-    		lastY = p.y;
-    	}
-    	else{
-    		if (p.x != 0 && p.y != 0){
+		if (p.x != 0 && p.y != 0){
+			if (lastX == 0 && lastY == 0){
+				lastX = SCALE(p.x, m_minX, m_maxX, _currentWidth);
+				lastY = SCALE(p.y, m_minY, m_maxY, _currentHeight);
+			}
+			else{
 				double x = SCALE(p.x, m_minX, m_maxX, _currentWidth);
 				double y = SCALE(p.y, m_minY, m_maxY, _currentHeight);
 
 				dc.DrawLine(lastX, lastY, x, y);
 				lastX = x;
 				lastY = y;
-    		}
-    	}
+			}
+		}
     }
 
 
