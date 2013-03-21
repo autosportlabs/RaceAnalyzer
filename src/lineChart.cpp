@@ -257,6 +257,7 @@ void LineChart::OnPaint(wxPaintEvent &event){
 		m_leftEdge = 0;
 	}
 
+	size_t largestBufferSize = GetMaxSeriesBufferSize();
 	double lastValue = 0;
 	for (SeriesMap::iterator it = m_seriesMap.begin(); it != m_seriesMap.end(); ++it){
 
@@ -279,7 +280,7 @@ void LineChart::OnPaint(wxPaintEvent &event){
 			double percentageOfMax = (loggedValue - minValue) / (maxValue - minValue);
 			lastY = h - (int)(((double)h) * percentageOfMax);
 
-			size_t i = (size_t)(((double)bufSize) * m_viewOffsetFactor);
+			size_t i = (size_t)(((double)largestBufferSize) * m_viewOffsetFactor);
 
 			while (i < bufSize && currentX < _currentWidth ){
 				if (i == m_markerIndex){
@@ -333,6 +334,7 @@ int LineChart::DrawScale(wxMemoryDC &dc){
 	int scaleOrientation = LineChart::ORIENTATION_LEFT;
 
 	wxFont labelFont = GetFont();
+
 
 
 	int tickLabelWidth = 0;
