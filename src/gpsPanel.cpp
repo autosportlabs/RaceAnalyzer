@@ -85,6 +85,8 @@ void GPSPane::AddGPSPoint(double latitude, double longitude){
 
 GPSPoint GPSPane::ProjectPoint(double latitude, double longitude){
 
+	if (latitude == DatalogValue::NULL_VALUE && DatalogValue::NULL_VALUE) return GPSPoint();
+
 	double pi = 3.14159;
 	// convert lat/long to radians
 	latitude = pi * latitude / 180;
