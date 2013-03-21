@@ -1,6 +1,10 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.6===
+Fixed GPS rendering corruption when GPS data leads with null values
+Fixed Line chart rendering when comparing datalogs of different lengths
+
 ===1.1.5===
 Corrected read/write of telemetry server and device Id
 Included release notes (this file)
