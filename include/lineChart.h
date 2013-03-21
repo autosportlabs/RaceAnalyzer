@@ -105,6 +105,7 @@ class LineChart : public wxWindow
 
 		void SetLogBufferSize(int size);
 		int GetLogBufferSize();
+		size_t GetMaxSeriesBufferSize();
 
 		void SetZoom(int zoomPercentage);
 		int GetZoom();
@@ -138,7 +139,6 @@ class LineChart : public wxWindow
 
 	private:
 
-		size_t GetMaxSeriesBufferSize();
 		void DrawGrid(wxMemoryDC &dc);
 		int DrawScale(wxMemoryDC &dc);
 		void DrawMouseoverMarker(wxMemoryDC &dc);

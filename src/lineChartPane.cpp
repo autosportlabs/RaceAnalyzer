@@ -104,13 +104,14 @@ void LineChartPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t 
 }
 
 void LineChartPane::UpdateValue(ViewChannel &channel, size_t index, double value){
+
 	Series *series = m_lineChart->GetSeries(channel.ToString());
 	if (NULL != series){
+		size_t len = m_lineChart->GetMaxSeriesBufferSize();
 		m_lineChart->SetMarkerIndex(index);
 		int center = m_lineChart->GetChartWidth() / 2;
 		double adjustedIndex = (double)index - center;
 		adjustedIndex = adjustedIndex >= 0 ? adjustedIndex : 0;
-		size_t len = series->GetBufferSize();
 		double factor = adjustedIndex / (double)len;
 		double thumbPos = SCROLLBAR_RANGE * factor;
 		m_scrollBar->SetThumbPosition(thumbPos);
