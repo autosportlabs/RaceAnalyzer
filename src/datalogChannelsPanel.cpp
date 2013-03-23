@@ -138,8 +138,6 @@ void DatalogChannelsPanel::InitComponents(){
 	m_gridPopupMenu->Append(ID_NEW_ANALOG_GAUGE,"New Analog Gauge");
 	m_gridPopupMenu->Append(ID_NEW_DIGITAL_GAUGE, "New Digital Gauge");
 	m_gridPopupMenu->Append(ID_NEW_GPS_VIEW, "New GPS View");
-
-
 }
 
 wxTreeListCtrl * DatalogChannelsPanel::CreateChannelsList(void){

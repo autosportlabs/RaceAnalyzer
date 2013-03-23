@@ -2,10 +2,6 @@
 #include "configuration/loggerOutputConfigPanel.h"
 
 
-LoggerOutputConfigPanel::LoggerOutputConfigPanel() : BaseConfigPanel()
-{
-}
-
 LoggerOutputConfigPanel::LoggerOutputConfigPanel(wxWindow *parent,
 		ConfigPanelParams configParms,
 			wxWindowID id,

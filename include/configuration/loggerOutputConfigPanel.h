@@ -14,7 +14,6 @@
 class LoggerOutputConfigPanel :  public BaseConfigPanel{
 
 	public:
-		LoggerOutputConfigPanel();
 		LoggerOutputConfigPanel(wxWindow *parent,
 					ConfigPanelParams configParams,
 					wxWindowID id = -1,
