@@ -1,6 +1,14 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.7===
+Added ability to time-shift datalog sessions to allow synchronization during playback
+ * shift time by selecting the Time offset value in the channels list when in analysis mode
+Corrected labels on LineCharts
+LineChart colors cycling improvements
+Added telemetry settings for config file read/write
+Added improved Channels List widget
+
 ===1.1.6===
 Fixed GPS rendering corruption when GPS data leads with null values
 Fixed Line chart rendering when comparing datalogs of different lengths
