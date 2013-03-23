@@ -14,6 +14,14 @@ WX_DEFINE_OBJARRAY(DatalogChannelTypes);
 WX_DEFINE_OBJARRAY(ViewChannels);
 WX_DEFINE_OBJARRAY(DatalogSnapshots);
 
+DatastoreRow & DatalogSnapshot::GetRow(size_t index){
+	int adjustedIndex = index + offset;
+	int rowCount = rows.Count();
+	if (adjustedIndex < 0 ) adjustedIndex = 0;
+	else if (adjustedIndex >= rowCount) adjustedIndex = rowCount - 1;
+	return rows[adjustedIndex];
+}
+
 DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, size_t precision) :
 	name(newName), unitsLabel(newUnitsLabel), smoothingLevel(newSmoothingLevel), minValue(newMinValue), maxValue(newMaxValue), precision(precision)
 { }

@@ -147,6 +147,7 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void OnSeekFwdDatalog(wxCommandEvent &event);
 	void OnSeekRevDatalog(wxCommandEvent &event);
 	void OnSeekAbsDatalog(wxCommandEvent &event);
+	void OnTimeOffsetChanged(wxCommandEvent &event);
 
 	//RuntimeListener
 	void OnRuntimeValueUpdated(wxString &name, float value);

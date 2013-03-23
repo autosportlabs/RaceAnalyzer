@@ -10,12 +10,9 @@ static const char * VALUE_FORMAT[MAX_VALUE_PRECISION + 1] = {"%4.0f","%4.1f","%4
 
 
 #include "digitalGaugePane.h"
-DigitalGaugePane::DigitalGaugePane() : wxPanel()
-{
-	InitComponents();
-}
 
 DigitalGaugePane::DigitalGaugePane(wxWindow *parent,
+			ChartParams chartParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -27,7 +24,8 @@ DigitalGaugePane::DigitalGaugePane(wxWindow *parent,
 						pos,
 						size,
 						style,
-						name)
+						name),
+						m_chartParams(chartParams)
 {
 	m_valuePrecision = 0;
 	InitComponents();
@@ -53,10 +51,6 @@ void DigitalGaugePane::CreateGauge(ViewChannel &channel){
 		m_valuePrecision = gaugeType.valuePrecision;
 	}
 	m_channel = channel;
-}
-
-void DigitalGaugePane::SetChartParams(ChartParams params){
-	m_chartParams = params;
 }
 
 void DigitalGaugePane::UpdateValue(ViewChannel &channel, size_t index, double value){

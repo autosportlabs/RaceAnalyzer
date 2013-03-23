@@ -9,7 +9,7 @@
 #define DATALOGCHANNELSPANEL_H_
 
 #include "wx/wxprec.h"
-#include "wx/treelist.h"
+#include "controls/treelistctrl.h"
 #include "wx/notebook.h"
 #include "wx/slider.h"
 #include "datalogStore.h"
@@ -20,9 +20,9 @@
 #include "LCDWindow.h"
 #include "datalogPlayer.h"
 
-class ChannelNode : public wxClientData{
+class ChannelNode : public wxTreeItemData{
 public:
-	ChannelNode(int datalogId, wxString &channelName) : wxClientData(), datalogId(datalogId), channelName(channelName) {}
+	ChannelNode(int datalogId, wxString &channelName) : wxTreeItemData(), datalogId(datalogId), channelName(channelName) {}
 	int datalogId;
 	wxString channelName;
 };
@@ -85,9 +85,10 @@ class DatalogChannelsPanel : public wxPanel, public DatalogPlayerListener{
 		void OnNewDigitalGauge(wxCommandEvent &event);
 		void OnNewGPSView(wxCommandEvent &event);
 		void OnAddChannelView(wxCommandEvent &event);
-		void DoGridContextMenu(wxTreeListEvent &event);
+		void DoGridContextMenu(wxTreeEvent &event);
 		void OnTimeScrolled(wxScrollEvent &event);
 		void OnTimeScrollRelease(wxScrollEvent &event);
+		void OnOffsetChanged(wxTreeEvent &event);
 		void OnPlayForward(wxCommandEvent &event);
 		void OnPlayReverse(wxCommandEvent &event);
 		void OnPause(wxCommandEvent &event);

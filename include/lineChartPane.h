@@ -16,8 +16,8 @@
 class LineChartPane : public wxPanel, public RaceAnalyzerChannelView, public HistoricalView {
 
 public:
-	LineChartPane();
 	LineChartPane(wxWindow *parent,
+				ChartParams params,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
 				const wxSize &size = wxDefaultSize,
@@ -32,14 +32,16 @@ public:
 	void ConfigureChart(DatalogChannelSelectionSet *selectionSet);
 
 	//from RaceAnalyzerChannelView
-	void SetChartParams(ChartParams params);
-	void SetBufferSize(ViewChannels &channelNames, size_t size);
+	void SetBufferSize(ViewChannels &channelNames, size_t size, int offset);
 	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
 	void UpdateValue(ViewChannel &channel, size_t index, double value);
 	void ScrollLineChart(int thumbPosition);
-	void SetOffset(int offset);
+	void SetOffset(ViewChannels &channels, int offset);
 
 private:
+	ChartColors m_chartColors;
+	wxColor GetNextChartColor();
+	static size_t m_currentColorIndex;
 	wxScrollBar *m_scrollBar;
 	LineChart 	*m_lineChart;
 	ChartParams	m_chartParams;

@@ -7,24 +7,23 @@
 #include "gpsPanel.h"
 #include "logging.h"
 
-GPSPane::GPSPane() : wxPanel()
-{
-	InitComponents();
-}
 
 GPSPane::GPSPane(wxWindow *parent,
+			ChartParams chartParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
-			: wxPanel(	parent,
+			:
+			  wxPanel(	parent,
 						id,
 						pos,
 						size,
 						style,
 						name),
+			m_chartParams(chartParams),
 			m_currentLatitude(0),
 			m_currentLongitude(0)
 
@@ -40,7 +39,7 @@ void GPSPane::CreateGPSView(ViewChannel &latitudeChannel, ViewChannel &longitude
 	ClearGPSPoints();
 }
 
-void GPSPane::SetBufferSize(ViewChannels &channels, size_t size){
+void GPSPane::SetBufferSize(ViewChannels &channels, size_t size, int offset){
 
 	wxCommandEvent addEvent(REQUEST_DATALOG_DATA_EVENT, ID_REQUEST_DATALOG_DATA);
 	RequestDatalogRangeParams *params = new RequestDatalogRangeParams(this, channels, 0, size - 1);
@@ -122,10 +121,6 @@ void GPSPane::InitComponents(){
 	this->SetSizer(sizer);
 }
 
-void GPSPane::SetChartParams(ChartParams params){
-	m_chartParams = params;
-}
-
 
 void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
 	if (channel == m_latitudeChannel){
@@ -135,6 +130,10 @@ void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
 		m_currentLongitude = value;
 	}
 	m_gpsView->SetMarker(ProjectPoint(m_currentLatitude, m_currentLongitude));
+}
+
+void GPSPane::SetOffset(ViewChannels &channels, int offset){
+
 }
 
 BEGIN_EVENT_TABLE ( GPSPane , wxPanel )

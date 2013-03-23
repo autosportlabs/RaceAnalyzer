@@ -105,10 +105,15 @@ WX_DECLARE_OBJARRAY(DatalogChannelType, DatalogChannelTypes);
 
 class DatalogSnapshot{
 public:
+	DatalogSnapshot() : datalogId(0), offset(0){}
+
 	int					datalogId;
+	int					offset;
 	DatalogInfo 		datalogInfo;
 	DatalogStoreRows 	rows;
 	DatalogChannels 	channels;
+
+	DatastoreRow & GetRow(size_t index);
 };
 
 WX_DECLARE_OBJARRAY(DatalogSnapshot, DatalogSnapshots);

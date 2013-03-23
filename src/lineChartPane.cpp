@@ -11,13 +11,11 @@
 #define	SCROLLBAR_THUMBSIZE 100
 #define SCROLLBAR_PAGESIZE 100
 
+size_t LineChartPane::m_currentColorIndex = 0;
 
-LineChartPane::LineChartPane() : wxPanel()
-{
-	InitComponents();
-}
 
 LineChartPane::LineChartPane(wxWindow *parent,
+			ChartParams params,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
@@ -29,7 +27,8 @@ LineChartPane::LineChartPane(wxWindow *parent,
 						pos,
 						size,
 						style,
-						name)
+						name),
+			 m_chartParams(params)
 {
 	InitComponents();
 }
@@ -38,14 +37,14 @@ LineChartPane::~LineChartPane(){
 
 }
 
+wxColor LineChartPane::GetNextChartColor(){
+	m_currentColorIndex =  m_currentColorIndex < m_chartColors.Count() - 1 ? m_currentColorIndex + 1 : 0;
+	return m_chartColors[m_currentColorIndex];
+}
+
 void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 
 	LineChart *lineChart = GetLineChart();
-	AppOptions *appOptions = m_chartParams.appOptions;
-	ChartColors &chartColors = appOptions->GetChartColors();
-	size_t maxColors = chartColors.Count();
-	size_t currentColor = 0;
-
 
 	lineChart->ClearAllSeries();
 
@@ -56,30 +55,27 @@ void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 		wxString channelName = sel.channelName;
 		ViewChannel viewChannel(sel.datalogId, sel.channelName);
 
-		DatalogChannelType channelType = appOptions->GetChannelTypeForChannel(viewChannel);
+		DatalogChannelType channelType = m_chartParams.appOptions->GetChannelTypeForChannel(viewChannel);
 
 		Range *range = new Range(channelType.minValue, channelType.maxValue, channelType.precision, channelType.unitsLabel);
 		int newRangeId = lineChart->AddRange(range);
 
-		Series *series = new Series(0, newRangeId, 0, viewChannel.ToString(), chartColors[currentColor], channelType.precision);
-		currentColor =  currentColor < maxColors - 1 ? currentColor + 1 : 0;
+		Series *series = new Series(0, newRangeId, 0, viewChannel.ToString(), GetNextChartColor(), channelType.precision);
 		lineChart->AddSeries(viewChannel.ToString(), series);
 	}
 }
 
-void LineChartPane::SetChartParams(ChartParams params){
-	m_chartParams = params;
-}
-
-void LineChartPane::SetBufferSize(ViewChannels &channels, size_t size){
+void LineChartPane::SetBufferSize(ViewChannels &channels, size_t size, int offset){
 
 	ViewChannels enabledChannels;
-	for (int i = 0; i < channels.Count(); i++){
+	for (size_t i = 0; i < channels.Count(); i++){
 		ViewChannel &channel = channels[i];
 		Series *series = m_lineChart->GetSeries(channel.ToString());
+		wxLogMessage("set buffersize %d", offset);
 		if (NULL != series){
 			enabledChannels.Add(channel);
 			series->SetBufferSize(size);
+			series->SetOffset(offset);
 		}
 	}
 
@@ -124,8 +120,15 @@ void LineChartPane::ScrollLineChart(int thumbPosition){
 	m_lineChart->SetViewOffsetFactor(pct);
 }
 
-void LineChartPane::SetOffset(int offset){
-
+void LineChartPane::SetOffset(ViewChannels &channels, int offset){
+	for (size_t i = 0; i < channels.Count(); i++){
+		ViewChannel &channel = channels[i];
+		Series *series = m_lineChart->GetSeries(channel.ToString());
+		if (NULL != series){
+			series->SetOffset(offset);
+		}
+	}
+	m_lineChart->Refresh();
 }
 
 void LineChartPane::InitComponents(){
@@ -145,6 +148,7 @@ void LineChartPane::InitComponents(){
 	sizer->Add(m_scrollBar,1,wxEXPAND);
 	this->SetSizer(sizer);
 
+	m_chartColors = m_chartParams.appOptions->GetChartColors();
 }
 
 LineChart * LineChartPane::GetLineChart(){

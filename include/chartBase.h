@@ -59,8 +59,9 @@ WX_DECLARE_OBJARRAY(ViewDataHistory, ViewDataHistoryArray);
 
 class HistoricalView{
 public:
-	virtual void SetBufferSize(ViewChannels &channels, size_t size) = 0;
+	virtual void SetBufferSize(ViewChannels &channels, size_t size, int offset) = 0;
 	virtual void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex) = 0;
+	virtual void SetOffset(ViewChannels &channels, int offset) = 0;
 };
 
 
@@ -69,7 +70,6 @@ class RaceAnalyzerChannelView{
 
 public:
 	virtual void UpdateValue(ViewChannel &channelName, size_t index, double value) = 0;
-	virtual void SetChartParams(ChartParams params) = 0;
 };
 
 WX_DECLARE_OBJARRAY(RaceAnalyzerChannelView *,RaceAnalyzerChannelViews);

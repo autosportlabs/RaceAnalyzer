@@ -656,6 +656,7 @@ void MainFrame::TerminateApp(){
 	m_appTerminated = true;
 	//Cancel exit if there are unsaved changes and the user opts to not save
 
+	m_datalogPlayer.StopPlayback();
 	CloseRaceEvent();
 	SaveCurrentPerspective();
 	_appPrefs.SaveAppPrefs();
@@ -676,8 +677,7 @@ wxString MainFrame::GetMultipleSelectionLabel(DatalogChannelSelectionSet *select
 
 void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 
-	LineChartPane *logViewer = new LineChartPane(this, -1);
-	logViewer->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+	LineChartPane *logViewer = new LineChartPane(this, ChartParams(&_appPrefs,&m_appOptions));
 	logViewer->ConfigureChart(selectionSet);
 
 	m_channelViews.Add(logViewer);
@@ -711,8 +711,7 @@ void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
 
 		wxString channelName = sel.channelName;
 
-		AnalogGaugePane *gaugePane = new AnalogGaugePane(this, -1);
-		gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+		AnalogGaugePane *gaugePane = new AnalogGaugePane(this, ChartParams(&_appPrefs,&m_appOptions));
 		ViewChannel viewChannel(datalogId, channelName);
 
 		gaugePane->CreateGauge(viewChannel);
@@ -748,8 +747,7 @@ void MainFrame::AddDigitalGauges(DatalogChannelSelectionSet *selectionSet){
 
 		wxString channelName = sel.channelName;
 
-		DigitalGaugePane *gaugePane = new DigitalGaugePane(this, -1);
-		gaugePane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
+		DigitalGaugePane *gaugePane = new DigitalGaugePane(this, ChartParams(&_appPrefs,&m_appOptions));
 
 		ViewChannel viewChannel(datalogId, channelName);
 		gaugePane->CreateGauge(viewChannel);
@@ -809,11 +807,10 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 			longitudeDatalogId > 0){
 
 		int datalogId = longitudeDatalogId; //pick one...
-		GPSPane *gpsPane = new GPSPane(this, -1);
+		GPSPane *gpsPane = new GPSPane(this, ChartParams(&_appPrefs,&m_appOptions));
 
 		DatalogInfo datalogInfo;
 		m_datalogStore.ReadDatalogInfo(datalogId, datalogInfo);
-		gpsPane->SetChartParams(ChartParams(&_appPrefs,&m_appOptions));
 		ViewChannel latitudeChannel(latitudeDatalogId, latitudeChannelName);
 		ViewChannel longitudeChannel(longitudeDatalogId, longitudeChannelName);
 		gpsPane->CreateGPSView(latitudeChannel, longitudeChannel);
@@ -930,6 +927,17 @@ void MainFrame::OnSeekFwdDatalog(wxCommandEvent &event){
 
 void MainFrame::OnSeekRevDatalog(wxCommandEvent &event){
 	m_datalogPlayer.SeekRev();
+}
+
+void MainFrame::OnTimeOffsetChanged(wxCommandEvent &event){
+	TimeOffsetChange *offsetChange = static_cast<TimeOffsetChange *>(event.GetClientData());
+	if (NULL != offsetChange){
+		m_datalogPlayer.AdjustOffset(offsetChange->datalogId, offsetChange->offset);
+		delete offsetChange;
+	}
+	else{
+		ShowNoChannelSelectedError();
+	}
 }
 
 void MainFrame::OnSeekAbsDatalog(wxCommandEvent &event){
@@ -1108,6 +1116,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(JUMP_END_DATALOG, JUMP_END_DATALOG_EVENT, MainFrame::OnJumpEndDatalog)
 	EVT_COMMAND(SEEK_FWD_DATALOG, SEEK_FWD_DATALOG_EVENT, MainFrame::OnSeekFwdDatalog)
 	EVT_COMMAND(SEEK_REV_DATALOG, SEEK_REV_DATALOG_EVENT, MainFrame::OnSeekRevDatalog)
+	EVT_COMMAND(TIME_OFFSET_CHANGED, TIME_OFFSET_CHANGED_EVENT, MainFrame::OnTimeOffsetChanged)
 
 	//this must always be last
 	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
