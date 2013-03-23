@@ -85,7 +85,7 @@ typedef void *wxTreeItemIdValue;
 //-----------------------------------------------------------------------------
 
 enum {
-    DEFAULT_COL_WIDTH = 100
+    DEFAULT_COL_WIDTH = 120
 };
 
 enum wxTreeListItemType

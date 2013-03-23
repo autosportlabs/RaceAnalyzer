@@ -188,6 +188,8 @@ void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
 	try{
 		loggerOutputConfig.loggingMode = (logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
 		loggerOutputConfig.telemetryMode = (telemetry_mode_t)(int)Number(outputConfig["telemetryMode"]);
+		loggerOutputConfig.telemetryServer = ((String)outputConfig["telemetryServer"]).Value();
+		loggerOutputConfig.telemetryDeviceId = ((String)outputConfig["telemetryDeviceId"]).Value();
 		loggerOutputConfig.p2pDestinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
 		loggerOutputConfig.p2pDestinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
 	}
@@ -340,6 +342,8 @@ Object RaceCaptureConfig::OutputConfigToJson(){
 	Object cfg;
 	cfg["sdLoggingMode"] = Number(loggerOutputConfig.loggingMode);
 	cfg["telemetryMode"] = Number(loggerOutputConfig.telemetryMode);
+	cfg["telemetryServer"] = String(loggerOutputConfig.telemetryServer.ToAscii());
+	cfg["telemetryDeviceId"] = String(loggerOutputConfig.telemetryDeviceId.ToAscii());
 	cfg["p2pDestAddrHigh"] = Number(loggerOutputConfig.p2pDestinationAddrHigh);
 	cfg["p2pDestAddrLow"] = Number(loggerOutputConfig.p2pDestinationAddrLow);
 	return cfg;

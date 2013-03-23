@@ -161,9 +161,8 @@ private:
 	wxGauge *m_progressGauge;
 	wxStaticText *m_progressMessage;
 	wxStaticText *m_statusMessage;
-	ImporterThread *m_importerThread;
 	bool	m_importing;
-
+	ImporterThread *m_importerThread;
 };
 
 class ImportDatalogWizard : public wxWizard{
