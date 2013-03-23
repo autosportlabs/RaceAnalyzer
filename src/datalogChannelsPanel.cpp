@@ -146,7 +146,7 @@ void DatalogChannelsPanel::InitComponents(){
 
 wxTreeListCtrl * DatalogChannelsPanel::CreateChannelsList(void){
 
-	wxTreeListCtrl *channelsList = new wxTreeListCtrl(this, ID_DATALOG_CHANNELS_LIST, wxDefaultPosition, wxDefaultSize, wxTR_ROW_LINES | wxTR_HAS_BUTTONS | wxTR_HAS_VARIABLE_ROW_HEIGHT | wxTR_FULL_ROW_HIGHLIGHT | wxTR_MULTIPLE | wxTR_EDIT_LABELS);
+	wxTreeListCtrl *channelsList = new wxTreeListCtrl(this, ID_DATALOG_CHANNELS_LIST, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT | wxTR_ROW_LINES | wxTR_HAS_BUTTONS | wxTR_HAS_VARIABLE_ROW_HEIGHT | wxTR_FULL_ROW_HIGHLIGHT | wxTR_MULTIPLE | wxTR_EDIT_LABELS);
 
 
 	channelsList->AddColumn("Max"); //, channelsList->WidthFor(MIN_MAX_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
