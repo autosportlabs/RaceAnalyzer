@@ -54,7 +54,7 @@ private:
 
 	void UpdateTimeListener(size_t index);
 
-	int m_shouldReloadSessions;
+	int m_sessionsStale;
 	int m_datalogIndex;
 	int m_multiplier;
 	int m_maxSampleRate;

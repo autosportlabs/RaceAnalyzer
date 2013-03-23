@@ -914,11 +914,11 @@ void MainFrame::OnPauseDatalog(wxCommandEvent &event){
 }
 
 void MainFrame::OnJumpBeginningDatalog(wxCommandEvent &event){
-	m_datalogPlayer.SkipFwd();
+	m_datalogPlayer.SkipRev();
 }
 
 void MainFrame::OnJumpEndDatalog(wxCommandEvent &event){
-	m_datalogPlayer.SkipRev();
+	m_datalogPlayer.SkipFwd();
 }
 
 void MainFrame::OnSeekFwdDatalog(wxCommandEvent &event){

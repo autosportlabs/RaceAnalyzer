@@ -7,7 +7,7 @@
 #include "datalogPlayer.h"
 #include "raceCapture/raceCaptureConfig.h"
 
-DatalogPlayer::DatalogPlayer() : m_shouldReloadSessions(false), m_datalogIndex(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
+DatalogPlayer::DatalogPlayer() : m_sessionsStale(false), m_datalogIndex(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
 	m_shouldPlay = new wxSemaphore(0,1);
 }
 
@@ -20,17 +20,17 @@ DatalogPlayer::~DatalogPlayer(){
 }
 
 void DatalogPlayer::DatalogSessionsUpdated(void){
-	m_shouldReloadSessions = true;
+	m_sessionsStale = true;
 }
 
 void DatalogPlayer::PlayFwd(void){
-	if (m_shouldReloadSessions) RequeryAll();
+	if (m_sessionsStale) RequeryAll();
 	SetPlaybackMultiplier(1);
 	m_shouldPlay->Post();
 }
 
 void DatalogPlayer::PlayRev(void){
-	if (m_shouldReloadSessions) RequeryAll();
+	if (m_sessionsStale) RequeryAll();
 	SetPlaybackMultiplier(-1);
 	m_shouldPlay->Post();
 }
@@ -47,13 +47,13 @@ void DatalogPlayer::SeekAbsPercent(double offset){
 	Tick(m_datalogIndex);
 }
 
-void DatalogPlayer::SkipFwd(){
+void DatalogPlayer::SkipRev(){
 	m_datalogIndex = 0;
 	Tick(m_datalogIndex);
 }
 
-void DatalogPlayer::SkipRev(){
-	m_datalogIndex = m_maxDatalogRowCount -1;
+void DatalogPlayer::SkipFwd(){
+	m_datalogIndex = m_maxDatalogRowCount - 1;
 	Tick(m_datalogIndex);
 }
 
@@ -137,6 +137,7 @@ void DatalogPlayer::RequeryAll(void){
 			}
 		}
 	}
+	m_sessionsStale = false;
 }
 
 void DatalogPlayer::Requery(int datalogId, DatalogSnapshots &rowsCollection){
@@ -167,7 +168,6 @@ void DatalogPlayer::Requery(int datalogId, DatalogSnapshots &rowsCollection){
 void DatalogPlayer::AddView(RaceAnalyzerChannelView *view){
 	for (size_t i = 0; i < m_datalogSnapshots.Count(); i++){
 		DatalogSnapshot &snapshot = m_datalogSnapshots[i];
-		wxLogMessage("snapshot offset %d %d", snapshot.datalogId, snapshot.offset);
 		InitView(view, snapshot);
 	}
 }
@@ -180,7 +180,6 @@ void DatalogPlayer::InitView(RaceAnalyzerChannelView *view, DatalogSnapshot &sna
 		ViewChannel channel(snapshot.datalogId, dlChannels[ii].name);
 		channels.Add(channel);
 	}
-	wxLogMessage("initview %d %d", snapshot.datalogId, snapshot.offset);
 	HistoricalView *hv = dynamic_cast<HistoricalView *>(view);
 	if (NULL != hv) hv->SetBufferSize(channels, snapshot.rows.Count(), snapshot.offset);
 
