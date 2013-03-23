@@ -14,10 +14,10 @@ public:
 class DatalogChannelSelection {
 
 public:
-	DatalogChannelSelection(int newDatalogId, wxString newChannelName) : datalogId(newDatalogId), channelName(newChannelName)
-	{}
-
+	DatalogChannelSelection(int datalogId, wxString sessionName, wxString channelName) : datalogId(datalogId), sessionName(sessionName), channelName(channelName){}
+	wxString ToString(){ return wxString::Format("%s-%s", sessionName.ToAscii(), channelName.ToAscii());}
 	int datalogId;
+	wxString sessionName;
 	wxString channelName;
 };
 

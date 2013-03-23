@@ -91,14 +91,14 @@ wxControl * DatalogChannelsPanel::CreateTimeWidget(wxWindow *parent){
 wxControl * DatalogChannelsPanel::CreateTimeScrollbar(wxWindow *parent){
 
 	//0.01% resolution range on slider
-	m_timeSlider = new wxSlider(parent, ID_TIME_SCROLLER, 0, 0, 10000, wxDefaultPosition, wxDefaultSize, wxSL_TOP | wxSL_AUTOTICKS);
+	m_timeSlider = new wxSlider(parent, ID_TIME_SCROLLER, 0, 0, 10000, wxDefaultPosition, wxDefaultSize);//, wxSL_TOP | wxSL_AUTOTICKS);
 	m_timeSlider->SetTickFreq(1000);
 	return m_timeSlider;
 }
 
 wxSizer * DatalogChannelsPanel::CreatePlaybackControls(void){
-	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,3,2,2);
-	sizer->AddGrowableCol(2);
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(2,1,2,2);
+	sizer->AddGrowableCol(0);
 
 	//initialize tool bar
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL | wxTB_FLAT | wxTB_NODIVIDER);
@@ -114,8 +114,12 @@ wxSizer * DatalogChannelsPanel::CreatePlaybackControls(void){
 	toolBar->AddTool(ID_SKIP_DATALOG_FWD, "", media_skip_forward_xpm, 	"Skip datalog to end");
 	toolBar->Realize();
 
-	sizer->Add(toolBar);
-	sizer->Add(CreateTimeWidget(this));
+	wxFlexGridSizer *innerSizer = new wxFlexGridSizer(1,3,2,2);
+
+	innerSizer->Add(toolBar);
+	innerSizer->Add(CreateTimeWidget(this));
+
+	sizer->Add(innerSizer, 1, wxEXPAND);
 	sizer->Add(CreateTimeScrollbar(this),1,wxEXPAND | wxALIGN_CENTER_VERTICAL);
 	return sizer;
 }
@@ -239,7 +243,10 @@ void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *
 		wxTreeItemData *data = m_channelsList->GetItemData(item);
 		ChannelNode *node = dynamic_cast<ChannelNode *>(data);
 		if (NULL != node){
-			DatalogChannelSelection sel(node->datalogId, node->channelName);
+			int datalogId = node->datalogId;
+			DatalogInfo datalogInfo;
+			m_datalogStore->ReadDatalogInfo(datalogId, datalogInfo);
+			DatalogChannelSelection sel(datalogId, datalogInfo.name, node->channelName);
 			selectionSet->Add(sel);
 		}
 	}

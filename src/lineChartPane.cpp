@@ -60,7 +60,7 @@ void LineChartPane::ConfigureChart(DatalogChannelSelectionSet *selectionSet){
 		Range *range = new Range(channelType.minValue, channelType.maxValue, channelType.precision, channelType.unitsLabel);
 		int newRangeId = lineChart->AddRange(range);
 
-		Series *series = new Series(0, newRangeId, 0, viewChannel.ToString(), GetNextChartColor(), channelType.precision);
+		Series *series = new Series(0, newRangeId, 0, sel.ToString(), GetNextChartColor(), channelType.precision);
 		lineChart->AddSeries(viewChannel.ToString(), series);
 	}
 }
@@ -71,7 +71,6 @@ void LineChartPane::SetBufferSize(ViewChannels &channels, size_t size, int offse
 	for (size_t i = 0; i < channels.Count(); i++){
 		ViewChannel &channel = channels[i];
 		Series *series = m_lineChart->GetSeries(channel.ToString());
-		wxLogMessage("set buffersize %d", offset);
 		if (NULL != series){
 			enabledChannels.Add(channel);
 			series->SetBufferSize(size);
