@@ -42,15 +42,13 @@ Series::Series(size_t bufferSize, int rangeId, size_t offset, wxString label, wx
 
 SeriesValues * Series::GetSeriesValues(){return &m_seriesValues;}
 
-size_t Series::GetBufferSize(){return m_seriesValues.Count();}
-
 int Series::GetRangeId(){ return m_rangeId; }
 
 void Series::SetRangeId(int seriesId){m_rangeId = seriesId; }
 
-size_t Series::GetOffset(){ return m_offset; }
+int Series::GetOffset(){ return m_offset; }
 
-void Series::SetOffset(size_t offset){ m_offset = offset; }
+void Series::SetOffset(int offset){ m_offset = offset; }
 
 wxString & Series::GetLabel(){ return m_label; }
 
@@ -76,6 +74,10 @@ void Series::SetBufferSize(size_t size){
 	}
 }
 
+size_t Series::GetBufferSize(){
+	return m_seriesValues.Count();
+}
+
 double Series::GetValueAtOrNear(size_t index){
 	double value = NULL_VALUE;
 	size_t lookDistance = 0;
@@ -87,12 +89,10 @@ double Series::GetValueAtOrNear(size_t index){
 }
 
 double Series::GetValueAt(size_t index){
-	if (index >= m_seriesValues.Count()){
-		return NULL_VALUE;
-	}
-	else{
-		return m_seriesValues[index];
-	}
+	int adjustedIndex = index + GetOffset();
+	if (adjustedIndex < 0 ) return NULL_VALUE;
+	else if (adjustedIndex >= m_seriesValues.Count()) return NULL_VALUE;
+	return m_seriesValues[adjustedIndex];
 }
 
 void Series::SetValueAt(size_t index, double value){
@@ -267,15 +267,14 @@ void LineChart::OnPaint(wxPaintEvent &event){
 
 		Series *series = it->second;
 		dc.SetPen(*wxThePenList->FindOrCreatePen(series->GetColor(), 1, wxSOLID));
-		SeriesValues *values = series->GetSeriesValues();
-		size_t bufSize = values->GetCount();
+		size_t bufSize = series->GetBufferSize();
 		Range *range = m_rangeArray[series->GetRangeId()];
 		if (bufSize > 0){
 
 			double minValue = range->GetMin();
 			double maxValue = range->GetMax();
 
-			double loggedValue = (*values)[0];
+			double loggedValue = series->GetValueAt(0);
 
 			double percentageOfMax = (loggedValue - minValue) / (maxValue - minValue);
 			lastY = h - (int)(((double)h) * percentageOfMax);
@@ -291,7 +290,7 @@ void LineChart::OnPaint(wxPaintEvent &event){
 					dc.SetPen(pen);
 				}
 
-				loggedValue = (*values)[i];
+				loggedValue = series->GetValueAt(i);
 
 				if (DatalogValue::NULL_VALUE == loggedValue){
 					loggedValue = lastValue;

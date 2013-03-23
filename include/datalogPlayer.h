@@ -37,6 +37,7 @@ public:
 	void SkipRev();
 	void SeekFwd();
 	void SeekRev();
+	void AdjustOffset(int datalogId, int offset);
 	void StopPlayback();
 	void SetPlaybackMultiplier(int multiplier);
 	int GetPlaybackMultiplier();
@@ -50,10 +51,11 @@ public:
 private:
 	DatalogSnapshot * GetDatalogSnapshot(int datalogId);
 	void Tick(size_t offset);
+
 	void UpdateTimeListener(size_t index);
 
 	int m_shouldReloadSessions;
-	int m_offset;
+	int m_datalogIndex;
 	int m_multiplier;
 	int m_maxSampleRate;
 	size_t m_maxDatalogRowCount;

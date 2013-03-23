@@ -6,24 +6,22 @@
  */
 
 #include "analogGaugePane.h"
-AnalogGaugePane::AnalogGaugePane() : wxPanel()
-{
-	InitComponents();
-}
 
 AnalogGaugePane::AnalogGaugePane(wxWindow *parent,
+			ChartParams chartParams,
 			wxWindowID id,
 			const wxPoint &pos,
 			const wxSize &size,
 			long style,
 			const wxString &name
 			)
-			: wxPanel(	parent,
+			:  wxPanel(	parent,
 						id,
 						pos,
 						size,
 						style,
-						name)
+						name),
+				m_chartParams(chartParams)
 {
 	InitComponents();
 }
@@ -51,10 +49,6 @@ void AnalogGaugePane::CreateGauge(ViewChannel &channel){
 		m_angularMeter->SetLabel(type.unitsLabel);
 		m_angularMeter->SetMajorTickTextColor(wxColor(0xFF,0xC7,0x00));
 	}
-}
-
-void AnalogGaugePane::SetChartParams(ChartParams params){
-	m_chartParams = params;
 }
 
 

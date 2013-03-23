@@ -16,8 +16,8 @@
 class DigitalGaugePane : public wxPanel, public RaceAnalyzerChannelView {
 
 public:
-	DigitalGaugePane();
 	DigitalGaugePane(wxWindow *parent,
+				ChartParams chartParams,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
 				const wxSize &size = wxDefaultSize,
@@ -30,13 +30,12 @@ public:
 	void CreateGauge(ViewChannel &channel);
 
 	//from RaceAnalyzerChannelView
-	void SetChartParams(ChartParams params);
 	void UpdateValue(ViewChannel &channel, size_t index, double value);
 
 private:
+	ChartParams			m_chartParams;
 	ViewChannel			m_channel;
 	LCDDisplay			*m_lcdDisplay;
-	ChartParams			m_chartParams;
 	unsigned int		m_valuePrecision;
 
 	DECLARE_EVENT_TABLE()

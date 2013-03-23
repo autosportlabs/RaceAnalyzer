@@ -19,9 +19,12 @@
 
 
 
-#define UNITS_WIDTH "XXXXXXXXXX"
-#define TYPE_WIDTH "XXXXXXXXXX"
-#define MIN_MAX_WIDTH "XXXXXXXXXXXX"
+#define UNITS_WIDTH 	"XXXXXXXXXX"
+#define TYPE_WIDTH 		"XXXXXXXXXX"
+#define MIN_MAX_WIDTH 	"XXXXXXXXXXXX"
+#define OFFSET_WIDTH 	"XXXXXX"
+#define PICK_RANGE_MIN INT_MIN
+#define PICK_RANGE_MAX INT_MAX
 
 
 DatalogChannelsPanel::DatalogChannelsPanel(DatalogChannelsParams params,
@@ -141,13 +144,16 @@ void DatalogChannelsPanel::InitComponents(){
 
 wxTreeListCtrl * DatalogChannelsPanel::CreateChannelsList(void){
 
-	wxTreeListCtrl *channelsList = new wxTreeListCtrl(this, ID_DATALOG_CHANNELS_LIST, wxDefaultPosition, wxDefaultSize, wxTL_MULTIPLE);
+	wxTreeListCtrl *channelsList = new wxTreeListCtrl(this, ID_DATALOG_CHANNELS_LIST, wxDefaultPosition, wxDefaultSize, wxTR_ROW_LINES | wxTR_HAS_BUTTONS | wxTR_HAS_VARIABLE_ROW_HEIGHT | wxTR_FULL_ROW_HIGHLIGHT | wxTR_MULTIPLE | wxTR_EDIT_LABELS);
 
-	channelsList->AppendColumn("Type", channelsList->WidthFor(TYPE_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
-	channelsList->AppendColumn("Units",channelsList->WidthFor(UNITS_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
-	channelsList->AppendColumn("Min", channelsList->WidthFor(MIN_MAX_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
-	channelsList->AppendColumn("Max", channelsList->WidthFor(MIN_MAX_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
 
+	channelsList->AddColumn("Max"); //, channelsList->WidthFor(MIN_MAX_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
+	channelsList->InsertColumn(0,"Min"); //, channelsList->WidthFor(MIN_MAX_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
+	channelsList->InsertColumn(0,"Units"); //,channelsList->WidthFor(UNITS_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
+	channelsList->InsertColumn(0,"Time Offset",DEFAULT_COL_WIDTH,wxALIGN_LEFT, -1, true, true ); //, channelsList->WidthFor(OFFSET_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
+	channelsList->InsertColumn(0,"Type"); //, channelsList->WidthFor(TYPE_WIDTH), wxALIGN_LEFT, wxCOL_RESIZABLE | wxCOL_SORTABLE);
+	channelsList->SetColumnPickType(1,wxTR_COLUMN_SPIN);
+	channelsList->SetColumnPickRange(1, PICK_RANGE_MIN, PICK_RANGE_MAX);
 	return channelsList;
 }
 
@@ -157,13 +163,15 @@ void DatalogChannelsPanel::InitOptions(){
 
 void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 
-	wxTreeListItem root = m_channelsList->GetRootItem();
+	wxTreeItemId root = m_channelsList->GetRootItem();
 
 	DatalogInfo datalogInfo;
 	m_datalogStore->ReadDatalogInfo(datalogId, datalogInfo);
 
-	wxTreeListItem session = m_channelsList->AppendItem(root, datalogInfo.name);
+	wxTreeItemId session = m_channelsList->AppendItem(root, datalogInfo.name);
 
+	m_channelsList->SetItemText(session, 1, wxString::Format("%d", datalogInfo.timeOffset));
+	m_channelsList->SetItemBold(session, true);
 	DatalogChannels channels;
 	m_datalogStore->GetChannels(datalogId, channels);
 
@@ -173,15 +181,16 @@ void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 	size_t channelsSize = channels.size();
 	for (size_t i = 0; i < channelsSize; i++){
 		DatalogChannel &channel = channels[i];
-		wxTreeListItem channelItem = m_channelsList->AppendItem(session, channel.name);
+		wxTreeItemId channelItem = m_channelsList->AppendItem(session, channel.name);
+		m_channelsList->SetItemData(session, new ChannelNode(datalogId, channel.name));
 		int typeId = channel.typeId;
 		if (typeId >=0){
 			DatalogChannelType &type = channelTypes[channel.typeId];
 
 			m_channelsList->SetItemData(channelItem, new ChannelNode(datalogId, channel.name));
-			m_channelsList->SetItemText(channelItem, 1, type.unitsLabel);
-			m_channelsList->SetItemText(channelItem, 2, wxString::Format("%.2f", type.minValue));
-			m_channelsList->SetItemText(channelItem, 3, wxString::Format("%.2f", type.maxValue));
+			m_channelsList->SetItemText(channelItem, 2, type.unitsLabel);
+			m_channelsList->SetItemText(channelItem, 3, wxString::Format("%.2f", type.minValue));
+			m_channelsList->SetItemText(channelItem, 4, wxString::Format("%.2f", type.maxValue));
 		}
 	}
 	UpdateRuntimeValues();
@@ -205,7 +214,8 @@ void DatalogChannelsPanel::UpdateRuntimeValues(){
 void DatalogChannelsPanel::DatalogSessionsUpdated(){
 
 	if (m_datalogStore->IsOpen()){
-		m_channelsList->DeleteAllItems();
+		m_channelsList->DeleteRoot();
+		m_channelsList->AddRoot("root");
 		wxArrayInt datalogIds;
 		m_datalogStore->ReadDatalogIds(datalogIds);
 
@@ -223,13 +233,12 @@ DatalogChannelSelectionSet * DatalogChannelsPanel::GetSelectedChannels(void){
 
 void DatalogChannelsPanel::PopulateSelectedChannels(DatalogChannelSelectionSet *selectionSet){
 
-	wxTreeListItems selections;
+	wxArrayTreeItemIds selections;
 	m_channelsList->GetSelections(selections);
 
-	for(wxTreeListItems::iterator it = selections.begin(); it != selections.end(); it++){
-		wxTreeListItem &item = *it;
-
-		wxClientData *data = m_channelsList->GetItemData(item);
+	for(wxArrayTreeItemIds::iterator it = selections.begin(); it != selections.end(); it++){
+		wxTreeItemId item = *it;
+		wxTreeItemData *data = m_channelsList->GetItemData(item);
 		ChannelNode *node = dynamic_cast<ChannelNode *>(data);
 		if (NULL != node){
 			DatalogChannelSelection sel(node->datalogId, node->channelName);
@@ -273,7 +282,6 @@ void DatalogChannelsPanel::OnNewGPSView(wxCommandEvent &event){
 	GetParent()->GetEventHandler()->AddPendingEvent(addEvent);
 }
 
-
 void DatalogChannelsPanel::OnAddChannelView(wxCommandEvent &event){
 
 	AddChannelWizard *wiz = new AddChannelWizard(GetParent(),AddChannelWizardParams(m_appPrefs,m_appOptions,m_datalogStore, m_raceCaptureConfig));
@@ -316,7 +324,7 @@ void DatalogChannelsPanel::OnSeekReverse(wxCommandEvent &event){
 	GetParent()->GetEventHandler()->AddPendingEvent(evt);
 }
 
-void DatalogChannelsPanel::DoGridContextMenu(wxTreeListEvent &event){
+void DatalogChannelsPanel::DoGridContextMenu(wxTreeEvent &event){
 	PopupMenu(m_gridPopupMenu);
 }
 
@@ -329,6 +337,21 @@ void DatalogChannelsPanel::OnTimeScrolled(wxScrollEvent &event){
 
 void DatalogChannelsPanel::OnTimeScrollRelease(wxScrollEvent &event){
 	m_isScrolling = false;
+}
+
+void DatalogChannelsPanel::OnOffsetChanged(wxTreeEvent &event){
+	wxTreeItemId item = event.GetItem();
+	long offset = 0;
+	if (m_channelsList->GetItemText(item,1).ToLong(&offset,10)){
+		wxTreeItemData *data = m_channelsList->GetItemData(item);
+		ChannelNode *node = dynamic_cast<ChannelNode *>(data);
+		if (NULL != node){
+			int datalogId = node->datalogId;
+			wxCommandEvent event( TIME_OFFSET_CHANGED_EVENT, TIME_OFFSET_CHANGED );
+			event.SetClientData(new TimeOffsetChange(datalogId, (int)offset));
+			GetParent()->GetEventHandler()->AddPendingEvent(event);
+		}
+	}
 }
 
 BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
@@ -347,6 +370,7 @@ BEGIN_EVENT_TABLE ( DatalogChannelsPanel, wxPanel )
 	EVT_MENU(ID_SKIP_DATALOG_FWD, DatalogChannelsPanel::OnSkipForward)
 	EVT_COMMAND_SCROLL(ID_TIME_SCROLLER, DatalogChannelsPanel::OnTimeScrolled)
 	EVT_COMMAND_SCROLL_THUMBRELEASE(ID_TIME_SCROLLER, DatalogChannelsPanel::OnTimeScrollRelease)
+	EVT_TREE_END_LABEL_EDIT(ID_DATALOG_CHANNELS_LIST, DatalogChannelsPanel::OnOffsetChanged)
 
-	EVT_TREELIST_ITEM_CONTEXT_MENU(ID_DATALOG_CHANNELS_LIST, DatalogChannelsPanel::DoGridContextMenu)
+	EVT_TREE_ITEM_RIGHT_CLICK(ID_DATALOG_CHANNELS_LIST, DatalogChannelsPanel::DoGridContextMenu)
 END_EVENT_TABLE()

@@ -7,7 +7,7 @@
 #include "datalogPlayer.h"
 #include "raceCapture/raceCaptureConfig.h"
 
-DatalogPlayer::DatalogPlayer() : m_shouldReloadSessions(false), m_offset(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
+DatalogPlayer::DatalogPlayer() : m_shouldReloadSessions(false), m_datalogIndex(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
 	m_shouldPlay = new wxSemaphore(0,1);
 }
 
@@ -43,18 +43,18 @@ void DatalogPlayer::SeekAbsPercent(double offset){
 	if (offset <= 0) offset = 0;
 	else if (offset >= 100) offset = 100;
 
-	m_offset = ((double)m_maxDatalogRowCount - 1) * offset / 100;
-	Tick(m_offset);
+	m_datalogIndex = ((double)m_maxDatalogRowCount - 1) * offset / 100;
+	Tick(m_datalogIndex);
 }
 
 void DatalogPlayer::SkipFwd(){
-	m_offset = 0;
-	Tick(m_offset);
+	m_datalogIndex = 0;
+	Tick(m_datalogIndex);
 }
 
 void DatalogPlayer::SkipRev(){
-	m_offset = m_maxDatalogRowCount -1;
-	Tick(m_offset);
+	m_datalogIndex = m_maxDatalogRowCount -1;
+	Tick(m_datalogIndex);
 }
 
 void DatalogPlayer::SeekFwd(){
@@ -96,20 +96,20 @@ void DatalogPlayer::StopPlayback(){
 void * DatalogPlayer::Entry(){
 	while (! TestDestroy()){
 		m_shouldPlay->Wait();
-		Tick(m_offset);
+		Tick(m_datalogIndex);
 		m_shouldPlay->Post();
 		wxThread::Sleep(1000 / m_maxSampleRate);
 
-		m_offset += m_multiplier;
+		m_datalogIndex += m_multiplier;
 
 		int ubound = m_maxDatalogRowCount - 1;
-		if (m_offset < 0 ){
+		if (m_datalogIndex < 0 ){
 			StopPlayback();
-			m_offset = 0;
+			m_datalogIndex = 0;
 		}
-		if (m_offset > ubound ){
+		if (m_datalogIndex > ubound ){
 			StopPlayback();
-			m_offset = ubound;
+			m_datalogIndex = ubound;
 		}
 	}
 	return NULL;
@@ -148,6 +148,7 @@ void DatalogPlayer::Requery(int datalogId, DatalogSnapshots &rowsCollection){
 	m_datalogStore->GetChannels(datalogId, snapshot.channels);
 	m_datalogStore->ReadDatalogInfo(datalogId, snapshot.datalogInfo);
 	snapshot.datalogId = datalogId;
+	snapshot.offset = 0;
 
 	DatalogChannels &channels = snapshot.channels;
 	wxArrayString channelNames;
@@ -166,6 +167,7 @@ void DatalogPlayer::Requery(int datalogId, DatalogSnapshots &rowsCollection){
 void DatalogPlayer::AddView(RaceAnalyzerChannelView *view){
 	for (size_t i = 0; i < m_datalogSnapshots.Count(); i++){
 		DatalogSnapshot &snapshot = m_datalogSnapshots[i];
+		wxLogMessage("snapshot offset %d %d", snapshot.datalogId, snapshot.offset);
 		InitView(view, snapshot);
 	}
 }
@@ -178,15 +180,15 @@ void DatalogPlayer::InitView(RaceAnalyzerChannelView *view, DatalogSnapshot &sna
 		ViewChannel channel(snapshot.datalogId, dlChannels[ii].name);
 		channels.Add(channel);
 	}
-
+	wxLogMessage("initview %d %d", snapshot.datalogId, snapshot.offset);
 	HistoricalView *hv = dynamic_cast<HistoricalView *>(view);
-	if (NULL != hv) hv->SetBufferSize(channels, snapshot.rows.Count());
+	if (NULL != hv) hv->SetBufferSize(channels, snapshot.rows.Count(), snapshot.offset);
 
 }
 
 DatalogSnapshot * DatalogPlayer::GetDatalogSnapshot(int datalogId){
 	DatalogSnapshot * snapshot = NULL;
-	for (int i = 0; i < m_datalogSnapshots.Count();i++){
+	for (size_t i = 0; i < m_datalogSnapshots.Count();i++){
 		DatalogSnapshot &testSnapshot = m_datalogSnapshots[i];
 		if (testSnapshot.datalogId == datalogId){
 			snapshot = &testSnapshot;
@@ -222,12 +224,31 @@ void DatalogPlayer::UpdateDataHistory(HistoricalView *view, ViewChannels &channe
 	if (NULL != view) view->UpdateValueRange(viewDataHistoryArray, fromIndex, toIndex);
 }
 
+void DatalogPlayer::AdjustOffset(int datalogId, int offset){
+
+	DatalogSnapshot *snapshot = GetDatalogSnapshot(datalogId);
+	if (NULL != snapshot){
+		snapshot->offset = offset;
+		ViewChannels channels;
+		DatalogChannels &dlChannels = snapshot->channels;
+		for (size_t i = 0; i < dlChannels.Count(); i++){
+			ViewChannel channel(datalogId, dlChannels[i].name);
+			channels.Add(channel);
+		}
+		for (size_t i = 0; i < m_views->Count(); i++){
+			HistoricalView *hv = dynamic_cast<HistoricalView *>((*m_views)[i]);
+			if (NULL != hv) hv->SetOffset(channels, offset);
+		}
+	}
+	Tick(m_datalogIndex);
+}
+
 void DatalogPlayer::Tick(size_t index){
 	for (size_t i = 0; i < m_datalogSnapshots.Count(); i++){
 		DatalogSnapshot &storeSnapshot = m_datalogSnapshots[i];
 		DatalogStoreRows &rows = storeSnapshot.rows;
 		if (index < rows.Count()){
-			DatastoreRow &row = rows[index];
+			DatastoreRow &row = storeSnapshot.GetRow(index);
 			RowValues &values = row.values;
 			size_t valuesCount = values.Count();
 			DatalogChannels &channels = storeSnapshot.channels;

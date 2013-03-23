@@ -3,6 +3,14 @@
 
 #include "wx/wxprec.h"
 
+class TimeOffsetChange{
+
+public:
+	TimeOffsetChange(int datalogId, int offset) : datalogId(datalogId), offset(offset){}
+	int datalogId;
+	int offset;
+};
+
 class DatalogChannelSelection {
 
 public:
@@ -34,6 +42,7 @@ DECLARE_EVENT_TYPE ( SEEK_REV_DATALOG_EVENT, -1 )
 DECLARE_EVENT_TYPE ( PAUSE_DATALOG_EVENT, -1 )
 DECLARE_EVENT_TYPE ( JUMP_BEGINNING_DATALOG_EVENT, -1 )
 DECLARE_EVENT_TYPE ( JUMP_END_DATALOG_EVENT, -1 )
+DECLARE_EVENT_TYPE ( TIME_OFFSET_CHANGED_EVENT, -1 )
 
 
 enum{
@@ -54,7 +63,8 @@ enum{
 		JUMP_BEGINNING_DATALOG,
 		JUMP_END_DATALOG,
 		SEEK_FWD_DATALOG,
-		SEEK_REV_DATALOG
+		SEEK_REV_DATALOG,
+		TIME_OFFSET_CHANGED
 };
 
 class ProgressReceiver{

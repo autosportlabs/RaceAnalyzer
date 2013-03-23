@@ -48,11 +48,10 @@ public:
 	const static double NULL_VALUE = -0xFFFFFFFFFFFFFFF;
 	const static size_t DEFAULT_LOOK_DISTANCE = 100;
 	SeriesValues * GetSeriesValues();
-	size_t GetBufferSize();
 	int GetRangeId();
 	void SetRangeId(int seriesId);
-	size_t GetOffset();
-	void SetOffset(size_t offset);
+	int GetOffset();
+	void SetOffset(int offset);
 	wxString & GetLabel();
 	void SetLabel(wxString label);
 	void SetColor(wxColor color);
@@ -60,6 +59,7 @@ public:
 	int GetPrecision();
 	void SetPrecision(int precision);
 
+	size_t GetBufferSize();
 	void SetBufferSize(size_t size);
 	double GetValueAtOrNear(size_t index);
 	double GetValueAt(size_t index);
@@ -68,7 +68,7 @@ public:
 private:
 
 	int m_rangeId;
-	size_t m_offset;
+	int m_offset;
 	wxString m_label;
 	wxColor m_color;
 	int m_precision;

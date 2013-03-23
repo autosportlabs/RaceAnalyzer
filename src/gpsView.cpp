@@ -92,7 +92,7 @@ void GPSView::OnPaint( wxPaintEvent& event )
     double markerX = SCALE(m_marker.x, m_minX, m_maxX, _currentWidth);
     double markerY = SCALE(m_marker.y, m_minY, m_maxY, _currentHeight);
 
-    dc.DrawCircle(wxPoint(markerX, markerY), 8);
+    dc.DrawCircle(wxPoint(markerX, markerY), 4);
 
 	//blit into the real DC
 	old_dc.Blit(0,0,_currentWidth,_currentHeight,&dc,0,0);

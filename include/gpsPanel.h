@@ -16,8 +16,8 @@
 class GPSPane : public wxPanel, public RaceAnalyzerChannelView, public HistoricalView {
 
 public:
-	GPSPane();
 	GPSPane(wxWindow *parent,
+				ChartParams chartParams,
 				wxWindowID id = -1,
 				const wxPoint &pos = wxDefaultPosition,
 				const wxSize &size = wxDefaultSize,
@@ -32,27 +32,27 @@ public:
 	void ClearGPSPoints();
 	void UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIndex, size_t toIndex);
 
-	void SetChartParams(ChartParams params);
-	void SetBufferSize(ViewChannels &channels, size_t size);
+	void SetBufferSize(ViewChannels &channels, size_t size, int offset);
 
 	void UpdateValue(ViewChannel &channel, size_t index, double value);
+	void SetOffset(ViewChannels &channels, int offset);
 
 private:
 	void AddGPSPoint(double latitude, double longitude);
 
+
 	static const size_t		LATITUDE_INDEX = 0;
 	static const size_t		LONGITUDE_INDEX = 1;
 
-	GPSView				*m_gpsView;
 	ChartParams			m_chartParams;
-	DatalogStoreRows 	m_channelData;
-	size_t				m_dataOffset;
-
-	ViewChannel			m_longitudeChannel;
-	ViewChannel			m_latitudeChannel;
 	double				m_currentLatitude;
 	double 				m_currentLongitude;
 
+	GPSView				*m_gpsView;
+	DatalogStoreRows 	m_channelData;
+
+	ViewChannel			m_longitudeChannel;
+	ViewChannel			m_latitudeChannel;
 	DECLARE_EVENT_TABLE()
 };
 
