@@ -152,11 +152,20 @@ void DatalogPlayer::Requery(int datalogId, DatalogSnapshots &rowsCollection){
 	snapshot.offset = 0;
 
 	DatalogChannels &channels = snapshot.channels;
-	wxArrayString channelNames;
-	for (size_t i = 0; i < snapshot.channels.Count(); i++){
-		channelNames.Add( channels[i].name );
+
+	wxArrayString &rowChannelNames = snapshot.rowChannelNames;
+	NameIndexMap &rowChannelColumns = snapshot.rowChannelColumns;
+
+	rowChannelNames.clear();
+	rowChannelColumns.clear();
+
+	int i=0;
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it, i++){
+		rowChannelNames.Add(it->second.name);
+		rowChannelColumns[it->second.name] = i;
 	}
-	m_datalogStore->ReadDatalog(snapshot.rows, datalogId, channelNames, 0);
+
+	m_datalogStore->ReadDatalog(snapshot.rows, datalogId, rowChannelNames, 0);
 
 	size_t rowCount = snapshot.rows.Count();
 	if (rowCount > m_maxDatalogRowCount) m_maxDatalogRowCount = rowCount;
@@ -176,8 +185,9 @@ void DatalogPlayer::InitView(RaceAnalyzerChannelView *view, DatalogSnapshot &sna
 
 	ViewChannels channels;
 	DatalogChannels &dlChannels = snapshot.channels;
-	for (size_t ii = 0; ii < dlChannels.Count(); ii++){
-		ViewChannel channel(snapshot.datalogId, dlChannels[ii].name);
+
+	for (DatalogChannels::iterator it = dlChannels.begin(); it != dlChannels.end(); ++it){
+		ViewChannel channel(snapshot.datalogId, it->second.name);
 		channels.Add(channel);
 	}
 	HistoricalView *hv = dynamic_cast<HistoricalView *>(view);
@@ -207,9 +217,11 @@ void DatalogPlayer::UpdateDataHistory(HistoricalView *view, ViewChannels &channe
 		ViewChannel &viewChannel = channels[viewIndex];
 		DatalogSnapshot * snapshot = GetDatalogSnapshot(viewChannel.datalogId);
 		if (NULL != snapshot){
-			DatalogChannels &channels = snapshot->channels;
-			int channelId = DatalogChannelUtil::FindChannelIdByName(channels, viewChannel.channelName);
-			if ( channelId >= 0){
+			NameIndexMap &rowChannelColumns = snapshot->rowChannelColumns;
+
+			NameIndexMap::iterator find = rowChannelColumns.find(viewChannel.channelName);
+			if (find != rowChannelColumns.end()){
+				int channelId = find->second;
 				for (size_t i = fromIndex; i < toIndex; i++){
 					DatastoreRow row = snapshot->rows[i - fromIndex];
 					double value = row.values[channelId];
@@ -229,9 +241,9 @@ void DatalogPlayer::AdjustOffset(int datalogId, int offset){
 	if (NULL != snapshot){
 		snapshot->offset = offset;
 		ViewChannels channels;
-		DatalogChannels &dlChannels = snapshot->channels;
-		for (size_t i = 0; i < dlChannels.Count(); i++){
-			ViewChannel channel(datalogId, dlChannels[i].name);
+		wxArrayString &rowChannelNames = snapshot->rowChannelNames;
+		for (size_t i = 0; i < rowChannelNames.Count(); i++){
+			ViewChannel channel(datalogId, rowChannelNames[i]);
 			channels.Add(channel);
 		}
 		for (size_t i = 0; i < m_views->Count(); i++){
@@ -250,10 +262,10 @@ void DatalogPlayer::Tick(size_t index){
 			DatastoreRow &row = storeSnapshot.GetRow(index);
 			RowValues &values = row.values;
 			size_t valuesCount = values.Count();
-			DatalogChannels &channels = storeSnapshot.channels;
+			wxArrayString &rowChannelColumns = storeSnapshot.rowChannelNames;
 			for (size_t i = 0; i < m_views->Count(); i++){
 				for (size_t ii = 0; ii < valuesCount; ii++){
-					wxString &channel = channels[ii].name;
+					wxString &channel = rowChannelColumns[ii];
 					double value = row.values[ii];
 					ViewChannel vc(storeSnapshot.datalogId, channel);
 					(*m_views)[i]->UpdateValue(vc, index, value);

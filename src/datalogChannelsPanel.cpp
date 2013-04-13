@@ -180,15 +180,16 @@ void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 	DatalogChannelTypes channelTypes;
 	m_datalogStore->GetChannelTypes(channelTypes);
 
-	size_t channelsSize = channels.size();
-	for (size_t i = 0; i < channelsSize; i++){
-		DatalogChannel &channel = channels[i];
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it){
+
+		DatalogChannel &channel = it->second;
 		wxTreeItemId channelItem = m_channelsList->AppendItem(session, channel.name);
 		m_channelsList->SetItemData(session, new ChannelNode(datalogId, channel.name));
-		int typeId = channel.typeId;
-		if (typeId >=0){
-			DatalogChannelType &type = channelTypes[channel.typeId];
 
+		DatalogChannelTypes::iterator it2 = channelTypes.find(channel.type);
+
+		if (it2 != channelTypes.end()){
+			DatalogChannelType &type = it2->second;
 			m_channelsList->SetItemData(channelItem, new ChannelNode(datalogId, channel.name));
 			m_channelsList->SetItemText(channelItem, 2, type.unitsLabel);
 			m_channelsList->SetItemText(channelItem, 3, wxString::Format("%.2f", type.minValue));

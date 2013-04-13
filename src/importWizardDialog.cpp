@@ -18,9 +18,9 @@ wxString ImportWizardParams::GetDefaultDatalogName(){
 }
 
 ImporterThread::ImporterThread() :
+		wxThread(),
 		m_params(NULL),
-		m_owner(NULL),
-		wxThread()
+		m_owner(NULL)
 { }
 
 void ImporterThread::SetParams(ImportWizardParams *params, wxWindow *owner){
@@ -47,36 +47,20 @@ wxThread::ExitCode ImporterThread::Entry(){
 		DatalogChannelTypes &importChannelTypes = m_params->datalogChannelTypes;
 
 		//blend channels together
-		size_t count = importChannels.Count();
-		for (size_t i = 0; i < count; i++){
+		for (DatalogChannels::iterator it = importChannels.begin(); it != importChannels.end(); ++it){
 
-			DatalogChannel importChannel = importChannels[i];
+			DatalogChannel &importChannel = it->second;
 
 			if (importChannel.enabled){
-				int existingId = DatalogChannelUtil::FindChannelIdByName(existingChannels, importChannel.name);
+				//need to add the channel?
+				if (existingChannels.find(importChannel.name) == existingChannels.end()){
 
-				if (existingId < 0){
-					//need to add the channel
-					int typeId = importChannel.typeId;
-
-					if (typeId >= 0){
-						DatalogChannelType importType = importChannelTypes[typeId];
-
-						int existingTypeId = DatalogChannelUtil::FindChannelTypeIdByName(existingChannelTypes, importType.name);
-
-						if (existingTypeId < 0){
-							existingChannelTypes.Add(importType);
-							importChannel.typeId = existingChannelTypes.Count() - 1;
-						}
-						else{
-							importChannel.typeId = existingTypeId;
-						}
+					wxString importChannelType = importChannel.type;
+					//need to add the channel Type?
+					if (existingChannelTypes.find(importChannelType) == existingChannelTypes.end()){
+						existingChannelTypes[importChannelType] = importChannelTypes[importChannelType];
 					}
-					existingChannels.Add(importChannel);
-					importChannelIds.Add(existingChannels.Count() - 1);
-				}
-				else{
-					importChannelIds.Add(existingId);
+					existingChannels[importChannel.name] = importChannel;
 				}
 			}
 		}
@@ -90,11 +74,9 @@ wxThread::ExitCode ImporterThread::Entry(){
 		store->ImportDatalog(m_params->datalogFilePath,
 				m_params->datalogName,
 				m_params->datalogDesc,
-				existingChannels,
-				existingChannelTypes,
+				importChannels,
+				importChannelTypes,
 				this);
-		int newId = store->GetTopDatalogId();
-		store->ImportDatalogChannelMap(newId, importChannelIds);
 		resultEvent.SetInt(1);
 	}
 	catch(DatastoreException &e){
@@ -168,8 +150,8 @@ void DatalogFileSelectPage::OnBrowse(wxCommandEvent &evt){
 	wxString filePath = fileDialog.GetPath();
 
 	if (GetDatalogFilePath() != filePath){
-		m_params->datalogChannels.Clear();
-		m_params->datalogChannelTypes.Clear();
+		m_params->datalogChannels.clear();
+		m_params->datalogChannelTypes.clear();
 	}
 	SetDatalogFilePath(filePath);
 
@@ -348,21 +330,17 @@ void MapDatalogChannelsPage::OnWizardPageChanged(wxWizardEvent &event){
 void MapDatalogChannelsPage::OnWizardPageChanging(wxWizardEvent &event){
 
 	DatalogChannels &channels = m_params->datalogChannels;
-	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
 
 	size_t count = m_channelMapGrid->GetRows();
 	for (size_t i = 0; i < count; i++){
-
 		wxString channelType = m_channelMapGrid->GetCellValue(i,3);
-
-		DatalogChannel &channel = channels[i];
-		int typeId = DatalogChannelUtil::FindChannelTypeIdByName(channelTypes,channelType);
-		if (typeId >= 0){
-			channel.typeId = typeId;
+		DatalogChannels::iterator it = channels.find(channelType);
+		if (it != channels.end()){
+			DatalogChannel &channel = it->second;
+			channel.type = channelType;
+			bool selected= m_channelMapGrid->GetCellValue(i,0) == "1";
+			channel.enabled = selected;
 		}
-
-		bool selected= m_channelMapGrid->GetCellValue(i,0) == "1";
-		channel.enabled = selected;
 	}
 }
 
@@ -372,7 +350,7 @@ void MapDatalogChannelsPage::PopulateChannels(){
 	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
 
 	//skip if we've already populated channels
-	if (channels.Count() > 0 && channelTypes.Count() > 0) return;
+	if (channels.size() > 0 && channelTypes.size() > 0) return;
 
 	DatalogStore *store = m_params->datalogStore;
 
@@ -412,11 +390,14 @@ void MapDatalogChannelsPage::PopulateChannels(){
 			standardChannels,
 			standardChannelTypes);
 
-	size_t unmatchedCount = unmatchedHeaders.Count();
-	for (size_t i = 0; i < unmatchedCount; i++){
-		channels.Add(DatalogChannel(unmatchedHeaders[i].channelName));
+	for (size_t i = 0; i < unmatchedHeaders.Count(); i++){
+		DatalogHeader &header = unmatchedHeaders[i];
+		DatalogChannel channel = m_params->appOptions->CreateGenericChannel(header.channelName, header.sampleRate);
+		channels[header.channelName] = channel;
+		channelTypes[channel.type] = standardChannelTypes[channel.type];
 	}
-	if (channels.Count() == 0){
+
+	if (channels.size() == 0){
 		m_infoMessage->Show(true);
 		m_infoMessage->SetLabel("No channels detected! Did you select a valid log file?");
 	}
@@ -435,22 +416,18 @@ void MapDatalogChannelsPage::AddExistingChannels(DatalogHeaders &headers, Datalo
 
 	for (size_t i = 0; i < count; i++){
 		DatalogHeader header = headers[i];
-		int id = DatalogChannelUtil::FindChannelIdByName(existingChannels,header.channelName);
-		if (id >= 0){
-			DatalogChannel channel = existingChannels[id];
-			DatalogChannelType channelType = existingChannelTypes[channel.typeId];
 
-			//did we previously add this channel type?
-			int previousTypeId = DatalogChannelUtil::FindChannelTypeIdByName(channelTypes,channelType.name);
-			if (previousTypeId >= 0){ //if so, re-use it for this new channel
-				channel.typeId = previousTypeId;
-			}
-			else{ //otherwise add it
-				channelTypes.Add(channelType);
-				channel.typeId = channelTypes.GetCount() - 1;
+		DatalogChannels::iterator it = existingChannels.find(header.channelName);
+		if (it != existingChannels.end()){
+			DatalogChannel &channel = it->second;
+			DatalogChannelType channelType = existingChannelTypes[channel.type];
+
+			DatalogChannelTypes::iterator it = channelTypes.find(channelType.name);
+			if (it == channelTypes.end()){
+				channelTypes[channelType.name] = channelType;
 			}
 			channel.sampleRate = header.sampleRate;
-			channels.Add(channel);
+			channels[channel.name] = channel;
 		}
 		else{
 			remainingHeaders.Add(header);
@@ -465,21 +442,20 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 	DatalogChannelTypes &channelTypes = m_params->datalogChannelTypes;
 
 	wxArrayString choices;
-	size_t channelTypesCount = channelTypes.Count();
-	for (size_t i = 0; i < channelTypesCount; i++){
-		choices.Add(channelTypes[i].name);
+	for (DatalogChannelTypes::iterator it = channelTypes.begin(); it != channelTypes.end(); ++it){
+		wxString &name = it->second.name;
+		choices.Add(name);
 	}
-
 
 	m_channelMapGrid->ClearGrid();
 	int existingGridRows = m_channelMapGrid->GetRows();
 	if (existingGridRows > 0) m_channelMapGrid->DeleteRows(0,existingGridRows);
 
-	size_t channelsCount = channels.Count();
-	m_channelMapGrid->InsertRows(0,channelsCount,true);
+	m_channelMapGrid->InsertRows(0,channels.size(),true);
 
-	for (size_t i = 0; i < channelsCount; i++){
-		DatalogChannel &channel = channels[i];
+	size_t i = 0;
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it, i++){
+		DatalogChannel &channel = it->second;
 
 		m_channelMapGrid->SetCellEditor(i, 0, new wxGridCellBoolEditor);
 		m_channelMapGrid->SetCellRenderer(i, 0, new wxGridCellBoolRenderer);
@@ -492,23 +468,24 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 		m_channelMapGrid->SetCellValue(i, 2, wxString::Format("%d", channel.sampleRate));
 		m_channelMapGrid->SetReadOnly(i, 1, true);
 
-		int typeId = channel.typeId;
-		if (typeId >=0){
-			DatalogChannelType &channelType = channelTypes[typeId];
-			m_channelMapGrid->SetCellValue(i,3,channelType.name);
-			m_channelMapGrid->SetCellEditor(i,3,new wxGridCellChoiceEditor(choices));
+		wxLogMessage("name: %s type %s", channel.name.ToAscii(), channel.type);
+		DatalogChannelTypes::iterator it2 = channelTypes.find(channel.type);
+		if (it2 != channelTypes.end()){
+			DatalogChannelType &channelType = it2->second;
+			m_channelMapGrid->SetCellValue(i, 3, channelType.name);
+			m_channelMapGrid->SetCellEditor(i, 3, new wxGridCellChoiceEditor(choices));
 
-			m_channelMapGrid->SetCellValue(i,4,channelType.unitsLabel);
-			m_channelMapGrid->SetReadOnly(i,4,true);
-			m_channelMapGrid->SetCellBackgroundColour(i,3,DISABLED_BACKGROUND_COLOR);
+			m_channelMapGrid->SetCellValue(i, 4, channelType.unitsLabel);
+			m_channelMapGrid->SetReadOnly(i, 4, true);
+			m_channelMapGrid->SetCellBackgroundColour(i, 3, DISABLED_BACKGROUND_COLOR);
 
-			m_channelMapGrid->SetCellValue(i,5,wxString::Format("%.2f",channelType.minValue));
+			m_channelMapGrid->SetCellValue(i, 5, wxString::Format("%.2f",channelType.minValue));
 			m_channelMapGrid->SetReadOnly(i,5,true);
-			m_channelMapGrid->SetCellBackgroundColour(i,4,DISABLED_BACKGROUND_COLOR);
+			m_channelMapGrid->SetCellBackgroundColour(i, 4, DISABLED_BACKGROUND_COLOR);
 
-			m_channelMapGrid->SetCellValue(i,6,wxString::Format("%.2f",channelType.maxValue));
-			m_channelMapGrid->SetReadOnly(i,6,true);
-			m_channelMapGrid->SetCellBackgroundColour(i,5,DISABLED_BACKGROUND_COLOR);
+			m_channelMapGrid->SetCellValue(i, 6, wxString::Format("%.2f",channelType.maxValue));
+			m_channelMapGrid->SetReadOnly(i, 6, true);
+			m_channelMapGrid->SetCellBackgroundColour(i, 5, DISABLED_BACKGROUND_COLOR);
 		}
 	}
 	m_channelMapGrid->Update();
@@ -519,7 +496,7 @@ void MapDatalogChannelsPage::UpdateUIState(){
 
 
 	GetParent()->FindWindow(wxID_BACKWARD)->Enable(true);
-	GetParent()->FindWindow(wxID_FORWARD)->Enable(m_params->datalogChannels.Count() > 0);
+	GetParent()->FindWindow(wxID_FORWARD)->Enable(m_params->datalogChannels.size() > 0);
 }
 
 BEGIN_EVENT_TABLE ( MapDatalogChannelsPage, wxWizardPageSimple )

@@ -69,7 +69,7 @@ public:
 	void CreateNew(wxString filePath);
 	wxString GetFileName();
 	bool IsOpen();
-	void ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener = NULL);
+	int ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener = NULL);
 
 	size_t CountFileLines(wxFFile &file);
 	void ReadDatalogInfo(int datalogId, DatalogInfo &info);
@@ -79,17 +79,24 @@ public:
 	void ReadDatalogIds(wxArrayInt &data);
 
 	void GetChannelNames(wxArrayString &channelNames);
+
+	void ClearChannelTypes();
+	int GetChannelTypeId(wxString &type);
+	wxString GetChannelTypeName(int id);
+	void GetChannelType(wxString &type, DatalogChannelType &channelType);
 	void GetChannelTypes(DatalogChannelTypes &channelTypes);
+
+	void ClearChannels();
 	void GetAllChannels(DatalogChannels &channels);
 	void GetChannel(int datalogId, wxString &channelName, DatalogChannel &channel);
 	void GetChannels(int datalogId, DatalogChannels &channels);
-	void ClearChannelTypes();
-	void ClearChannels();
+
 	void ImportChannels(DatalogChannels &channels);
 	void ImportChannelTypes(DatalogChannelTypes &channelTypes);
-	void ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds);
+	void ImportDatalogChannelMap(int datalogId, DatalogChannels &datalogChannels);
 	void GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file);
 	int GetTopDatalogId();
+
 
 private:
 
@@ -105,6 +112,9 @@ private:
 	bool DatalogColumnExists(wxString &name);
 	sqlite3_stmt * CreateDatalogInsertPreparedStatement(DatalogHeaders &headers, wxArrayInt &selectedColumns);
 	int GetTopTimePoint();
+	int GetTopId(const char *sql);
+	int GetTopChannelTypesId();
+	int GetTopChannelId();
 
 	bool m_isOpen;
 	sqlite3 *m_db;

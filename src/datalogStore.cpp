@@ -62,7 +62,7 @@ WX_DEFINE_OBJARRAY(DatalogHeaders);
 
 int DatalogHeaderUtil::FindMaxSampleRate(DatalogHeaders &datalogHeaders){
 	int sampleRate = sample_disabled;
-	for (int i = 0; i < datalogHeaders.Count(); i++){
+	for (size_t i = 0; i < datalogHeaders.Count(); i++){
 		int testSampleRate = datalogHeaders[i].sampleRate;
 		if (testSampleRate > sampleRate) sampleRate = testSampleRate;
 	}
@@ -220,18 +220,18 @@ void DatalogStore::GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file){
 	wxArrayString rawHeaders;
 	ExtractValues(rawHeaders, line);
 
-	for (int i = 0; i < rawHeaders.Count(); i++){
+	for (size_t i = 0; i < rawHeaders.Count(); i++){
 		DatalogHeader header;
 		if (DatalogHeader::ParseRawHeader(rawHeaders[i], header)) headers.Add(header);
 	}
 }
 
-void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds){
+void DatalogStore::ImportDatalogChannelMap(int datalogId, DatalogChannels &datalogChannels){
 
 	sqlite3_exec(m_db,"BEGIN TRANSACTION",NULL,NULL,NULL);
 
 	const char * INSERT_CHANNEL_TYPE_MAP =
-		"INSERT INTO datalogChannelMap (datalogId, channelId) values (?,?)";
+		"INSERT INTO datalogChannelMap (datalogId, channelId) values (?,(SELECT id FROM channels WHERE name = ?))";
 
 	sqlite3_stmt *stmt;
 
@@ -242,10 +242,7 @@ void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds
 		}
 	}
 
-	size_t count = channelIds.Count();
-
-	for (size_t i = 0; i < count; i++){
-		int channelId = channelIds[i];
+	for (DatalogChannels::iterator it = datalogChannels.begin(); it != datalogChannels.end(); ++it){
 		{
 			int rc = sqlite3_bind_int(stmt, 1, datalogId);
 			if (SQLITE_OK != rc){
@@ -253,7 +250,8 @@ void DatalogStore::ImportDatalogChannelMap(int datalogId, wxArrayInt &channelIds
 			}
 		}
 		{
-			int rc = sqlite3_bind_int(stmt, 2, channelId);
+			wxString name = it->second.name;
+			int rc = sqlite3_bind_text(stmt, 2, name, -1, NULL);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind channelId parameter for channelTypeMap", rc);
 			}
@@ -320,7 +318,7 @@ int DatalogStore::InsertDatalogInfo(const DatalogInfo &info){
 	return GetTopDatalogId();
 }
 
-void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener){
+int DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name, const wxString &notes, DatalogChannels &channels, DatalogChannelTypes &channelTypes, DatalogImportProgressListener *progressListener){
 
 	wxFFile datalogFile;
 
@@ -342,8 +340,7 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 	//Select the columns we are inserting
 	size_t datalogHeadersCount = headers.Count();
 	for (size_t i = 0; i < datalogHeadersCount; i++){
-		int id = DatalogChannelUtil::FindChannelIdByName(channels, headers[i].channelName);
-		selectedColumns.Add(id >= 0 ? 1 : 0);
+		selectedColumns.Add(channels.find(headers[i].channelName) != channels.end() ? 1 : 0 );
 	}
 
 	int timeOffset = 0;
@@ -376,10 +373,14 @@ void DatalogStore::ImportDatalog(const wxString &filePath, const wxString &name,
 			}
 		}
 	}
-	sqlite3_exec(m_db,"COMMIT",NULL,NULL,NULL);
-
 	sqlite3_finalize(insertStmt);
+
+	int id = GetTopDatalogId();
+	ImportDatalogChannelMap(id, channels);
+	sqlite3_exec(m_db,"COMMIT",NULL,NULL,NULL);
 	if (NULL != progressListener) progressListener->UpdateProgress(100);
+
+	return id;
 }
 
 sqlite3_stmt * DatalogStore::CreateDatalogInsertPreparedStatement(DatalogHeaders &headers, wxArrayInt &selectedColumns){
@@ -464,6 +465,8 @@ void DatalogStore::AddDatalogChannel(int channelId, DatalogChannel &channel){
 
 	const char * ADD_CHANNEL_SQL = "INSERT INTO channels(id,name,typeId,description) values(?,?,?,?)";
 
+	int channelTypeId = GetChannelTypeId(channel.type);
+
 	sqlite3_stmt *query;
 	{
 		int rc = sqlite3_prepare(m_db, ADD_CHANNEL_SQL, strlen(ADD_CHANNEL_SQL), &query, NULL);
@@ -484,7 +487,7 @@ void DatalogStore::AddDatalogChannel(int channelId, DatalogChannel &channel){
 		}
 	}
 	{
-		int rc = sqlite3_bind_int(query,3,channel.typeId);
+		int rc = sqlite3_bind_int(query, 3, channelTypeId);
 		if (SQLITE_OK != rc){
 			throw DatastoreException("Failed to bind channelTypeId parameter", rc);
 		}
@@ -626,16 +629,90 @@ void DatalogStore::GetChannelTypes(DatalogChannelTypes &channelTypes){
 	}
 
 	while( sqlite3_step(query) == SQLITE_ROW){
-
 		wxString name = sqlite3_column_text(query,0);
 		wxString units = sqlite3_column_text(query,1);
 		int smoothing = sqlite3_column_int(query,2);
 		double min = sqlite3_column_double(query,3);
 		double max = sqlite3_column_double(query,4);
 
-		channelTypes.Add(DatalogChannelType(name, units, smoothing, min, max, 2));
+		channelTypes[name] = DatalogChannelType(name, units, smoothing, min, max, 2);
 	}
 
+	sqlite3_finalize(query);
+}
+
+int DatalogStore::GetChannelTypeId(wxString &type){
+	const char * SQL = "SELECT id FROM channelTypes WHERE name = ?";
+
+	int id = -1;
+
+	sqlite3_stmt *query;
+	{
+		int rc = sqlite3_prepare(m_db, SQL, strlen(SQL), &query, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to prepare query for GetChannelTypeId", rc);
+		}
+	}
+	{
+		int rc =  sqlite3_bind_text(query, 1, type, -1, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind type parameter for GetChannelTypeId", rc);
+		}
+	}
+	if ( sqlite3_step(query) == SQLITE_ROW){
+		id = sqlite3_column_int(query, 0);
+	}
+	sqlite3_finalize(query);
+	return id;
+}
+
+wxString DatalogStore::GetChannelTypeName(int id){
+	const char * SQL = "SELECT name FROM channelTypes WHERE id = ?";
+
+	wxString name ="";
+	sqlite3_stmt *query;
+	{
+		int rc = sqlite3_prepare(m_db, SQL, strlen(SQL), &query, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to prepare query for GetChannelTypeName", rc);
+		}
+	}
+	{
+		int rc = sqlite3_bind_int(query, 1, id);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind type parameter for GetChannelTypeName", rc);
+		}
+	}
+	if ( sqlite3_step(query) == SQLITE_ROW){
+		name = sqlite3_column_text(query, 0);
+	}
+	sqlite3_finalize(query);
+	return name;
+}
+
+void DatalogStore::GetChannelType(wxString &type, DatalogChannelType &channelType){
+	const char * SQL = "SELECT name, units, smoothing, min, max from channelTypes where name = ?";
+
+	sqlite3_stmt *query;
+	{
+		int rc = sqlite3_prepare(m_db, SQL, strlen(SQL), &query, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to query for channelTypes", rc);
+		}
+	}
+	{
+		int rc =  sqlite3_bind_text(query, 1, type, -1, NULL);
+		if (SQLITE_OK != rc){
+			throw DatastoreException("Failed to bind type parameter for GetChannelType", rc);
+		}
+	}
+	if ( sqlite3_step(query) == SQLITE_ROW){
+		channelType.name = sqlite3_column_text(query, 0);
+		channelType.unitsLabel = sqlite3_column_text(query, 1);
+		channelType.smoothingLevel = sqlite3_column_int(query, 2);
+		channelType.minValue = sqlite3_column_int(query, 3);
+		channelType.maxValue = sqlite3_column_int(query, 4);
+	}
 	sqlite3_finalize(query);
 }
 
@@ -665,7 +742,7 @@ void DatalogStore::GetChannel(int datalogId, wxString &channelName, DatalogChann
 
 	if ( sqlite3_step(query) == SQLITE_ROW){
 		channel.name = sqlite3_column_text(query,0);
-		channel.typeId = sqlite3_column_int(query,1);
+		channel.type = GetChannelTypeName(sqlite3_column_int(query,1));
 		channel.description = sqlite3_column_text(query,2);
 	}
 
@@ -697,7 +774,8 @@ void DatalogStore::GetChannels(int datalogId, DatalogChannels &channels){
 		wxString name = sqlite3_column_text(query,0);
 		int typeId = sqlite3_column_int(query,1);
 		wxString description = sqlite3_column_text(query,2);
-		channels.Add(DatalogChannel(name,typeId,description));
+		wxString typeName = GetChannelTypeName(typeId);
+		channels[name] = DatalogChannel(name, typeName, description);
 	}
 
 	sqlite3_finalize(query);
@@ -720,23 +798,22 @@ void DatalogStore::GetAllChannels(DatalogChannels &channels){
 		wxString name = sqlite3_column_text(query,0);
 		int typeId = sqlite3_column_int(query,1);
 		wxString description = sqlite3_column_text(query,2);
-		channels.Add(DatalogChannel(name,typeId,description));
+		wxString typeName = GetChannelTypeName(typeId);
+		channels[name] = DatalogChannel(name, typeName, description);
 	}
 
 	sqlite3_finalize(query);
 
 }
 
-int DatalogStore::GetTopDatalogId(){
-
-	const char * GET_TOP_DATALOG_ID = "SELECT id from datalogInfo order by id DESC limit 1";
+int DatalogStore::GetTopId(const char *sql){
 
 	int topId = 0;
 	sqlite3_stmt *query;
 	{
-		int rc = sqlite3_prepare(m_db, GET_TOP_DATALOG_ID, strlen(GET_TOP_DATALOG_ID), &query, NULL);
+		int rc = sqlite3_prepare(m_db, sql, strlen(sql), &query, NULL);
 		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to query for top datalogId", rc);
+			throw DatastoreException("Failed to query for top id", rc);
 		}
 	}
 
@@ -744,35 +821,24 @@ int DatalogStore::GetTopDatalogId(){
 		topId = sqlite3_column_int(query, 0);
 		VERBOSE(FMT("Top Id: %d", topId));
 	}
-	else{
-		//VERBOSE("No TimePoint selected!");
-	}
 	sqlite3_finalize(query);
 	return topId;
 }
 
+int DatalogStore::GetTopChannelId(){
+	return GetTopId("SELECT id FROM channels ORDER BY id DESC LIMIT 1");
+}
+
+int DatalogStore::GetTopChannelTypesId(){
+	return GetTopId("SELECT id FROM channelTypes ORDER BY id DESC LIMIT 1");
+}
+
+int DatalogStore::GetTopDatalogId(){
+	return GetTopId("SELECT id FROM datalogInfo ORDER BY id DESC LIMIT 1");
+}
+
 int DatalogStore::GetTopTimePoint(){
-
-	const char * GET_TOP_TIMEPOINT_SQL = "SELECT timePoint from datalog order by timePoint DESC limit 1";
-
-	int topTimePoint = 0;
-	sqlite3_stmt *query;
-	{
-		int rc = sqlite3_prepare(m_db, GET_TOP_TIMEPOINT_SQL, strlen(GET_TOP_TIMEPOINT_SQL), &query, NULL);
-		if (SQLITE_OK != rc){
-			throw DatastoreException("Failed to query for top timePoint", rc);
-		}
-	}
-
-	if( sqlite3_step(query) == SQLITE_ROW){
-		topTimePoint = sqlite3_column_int(query, 0);
-		VERBOSE(FMT("Top TimePoint: %d", topTimePoint));
-	}
-	else{
-		//VERBOSE("No TimePoint selected!");
-	}
-	sqlite3_finalize(query);
-	return topTimePoint;
+	return GetTopId("SELECT timePoint FROM datalog ORDER BY timePoint DESC LIMIT 1");
 }
 
 size_t DatalogStore::CountFileLines(wxFFile &file){
@@ -827,7 +893,7 @@ size_t DatalogStore::ExtractValues(wxArrayString &valueList, wxString &line, wxA
 
 void DatalogStore::ReadChannelTypes(DatalogChannelTypes &channelTypes){
 
-	channelTypes.Clear();
+	channelTypes.clear();
 
 	const char *READ_CHANNEL_TYPES_SQL = "SELECT id, name, units, smoothing, min, max from channelTypes ORDER BY id ASC";
 
@@ -846,16 +912,16 @@ void DatalogStore::ReadChannelTypes(DatalogChannelTypes &channelTypes){
 		double min = sqlite3_column_double(query,4);
 		double max = sqlite3_column_double(query,5);
 
-		channelTypes.Add(DatalogChannelType(typeName, typeUnits, smoothing, min, max, 2));
+		channelTypes[typeName] = DatalogChannelType(typeName, typeUnits, smoothing, min, max, 2);
 	}
 	sqlite3_finalize(query);
 }
 
 void DatalogStore::ReadChannels(DatalogChannels &channels){
 
-	channels.Clear();
+	channels.clear();
 
-	const char *READ_CHANNELS_SQL = "SELECT id, name, typeId, description FROM channels ORDER BY id ASC";
+	const char *READ_CHANNELS_SQL = "SELECT channels.id, channels.name, channels.description, channelTypes.name FROM channels INNER JOIN channelTypes ON channels.typeId = channelTypes.id ORDER BY channels.id ASC";
 
 	sqlite3_stmt *query;
 	{
@@ -865,12 +931,10 @@ void DatalogStore::ReadChannels(DatalogChannels &channels){
 		}
 	}
 	while( sqlite3_step(query) == SQLITE_ROW){
-
 		wxString name(sqlite3_column_text(query, 1));
-		int typeId = sqlite3_column_int(query,2);
-		wxString description(sqlite3_column_text(query,3));
-
-		channels.Add(DatalogChannel(name,typeId, description));
+		wxString description(sqlite3_column_text(query,2));
+		wxString type(sqlite3_column_text(query,3));
+		channels[name] = DatalogChannel(name, type, description);
 	}
 	sqlite3_finalize(query);
 }
@@ -970,10 +1034,10 @@ void DatalogStore::ClearChannels(){
 
 void DatalogStore::ImportChannels(DatalogChannels &channels){
 
-	size_t count = channels.Count();
-	for (size_t i = 0; i < count; i++){
-		DatalogChannel &channel = channels[i];
-		AddDatalogChannel(i,channel);
+	int id = GetTopChannelId();
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it, ++id){
+		DatalogChannel &channel = it->second;
+		AddDatalogChannel(id,channel);
 	}
 }
 
@@ -994,12 +1058,12 @@ void DatalogStore::ImportChannelTypes(DatalogChannelTypes &channelTypes){
 		}
 	}
 
-	size_t count = channelTypes.Count();
+	int id = GetTopChannelTypesId();
 
-	for (size_t i = 0; i < count; i++){
-		DatalogChannelType &channelType = channelTypes[i];
+	for (DatalogChannelTypes::iterator it = channelTypes.begin(); it != channelTypes.end(); ++it, ++id){
+		DatalogChannelType &channelType = it->second;
 		{
-			int rc = sqlite3_bind_int(stmt, 1, i);
+			int rc = sqlite3_bind_int(stmt, 1, id);
 			if (SQLITE_OK != rc){
 				throw DatastoreException("Failed to bind id parameter for datalogChannelType", rc);
 			}

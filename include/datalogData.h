@@ -66,6 +66,10 @@ class DatalogChannelType{
 
 public:
 	static const int DEFAULT_PRECISION = 2;
+	static const int DEFAULT_MIN = -1000;
+	static const int DEFAULT_MAX = 1000;
+	static const int DEFAULT_SMOOTHING_LEVEL = 0;
+	DatalogChannelType();
 	DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, size_t precision);
 	bool operator==(const DatalogChannelType &rh){
 		return (name == rh.name);
@@ -89,19 +93,20 @@ public:
 class DatalogChannel{
 
 public:
-	static const int UNDEFINED_TYPE = -1;
-	DatalogChannel(wxString newName, int newTypeId = UNDEFINED_TYPE, wxString newDescription = "", bool en = true);
+	DatalogChannel(wxString newName, wxString newType = "Value", wxString newDescription = "", int newSampleRate = 0, bool en = true);
 	DatalogChannel();
 
 	wxString name;
-	int typeId;
-	int sampleRate;
+	wxString type;
 	wxString description;
+	int sampleRate;
 	bool enabled;
 };
 
-WX_DECLARE_OBJARRAY(DatalogChannel,DatalogChannels);
-WX_DECLARE_OBJARRAY(DatalogChannelType, DatalogChannelTypes);
+WX_DECLARE_STRING_HASH_MAP(DatalogChannel, DatalogChannels );
+WX_DECLARE_STRING_HASH_MAP(DatalogChannelType, DatalogChannelTypes );
+
+WX_DECLARE_STRING_HASH_MAP( int, NameIndexMap);
 
 class DatalogSnapshot{
 public:
@@ -112,18 +117,12 @@ public:
 	DatalogInfo 		datalogInfo;
 	DatalogStoreRows 	rows;
 	DatalogChannels 	channels;
+	wxArrayString		rowChannelNames;
+	NameIndexMap 		rowChannelColumns;
 
 	DatastoreRow & GetRow(size_t index);
 };
 
 WX_DECLARE_OBJARRAY(DatalogSnapshot, DatalogSnapshots);
 
-class DatalogChannelUtil{
-
-public:
-
-	static int FindChannelIdByName(DatalogChannels &channels, wxString &name);
-	static int FindChannelTypeIdByName(DatalogChannelTypes &channelTypes, wxString &name);
-
-};
 #endif /* DATALOGDATA_H_ */

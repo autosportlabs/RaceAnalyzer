@@ -101,9 +101,8 @@ void ChannelConfigPanel::SetChannelConfig(ChannelConfig *config){
 
 
 void ChannelConfigPanel::InitChannelLabelCombo(wxComboBox *combo, DatalogChannels &standardChannels){
-
-	for (size_t i = 0; i < standardChannels.Count(); i++){
-		combo->Append(standardChannels[i].name);
+	for (DatalogChannels::iterator it = standardChannels.begin(); it != standardChannels.end(); ++it){
+		combo->Append(it->second.name);
 	}
 }
 

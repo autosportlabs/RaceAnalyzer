@@ -9,8 +9,6 @@
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 
 WX_DEFINE_OBJARRAY(DatalogStoreRows);
-WX_DEFINE_OBJARRAY(DatalogChannels);
-WX_DEFINE_OBJARRAY(DatalogChannelTypes);
 WX_DEFINE_OBJARRAY(ViewChannels);
 WX_DEFINE_OBJARRAY(DatalogSnapshots);
 
@@ -22,33 +20,18 @@ DatastoreRow & DatalogSnapshot::GetRow(size_t index){
 	return rows[adjustedIndex];
 }
 
+DatalogChannelType::DatalogChannelType() :
+	name("Value"), unitsLabel(""), smoothingLevel(DEFAULT_SMOOTHING_LEVEL), minValue(DEFAULT_MIN), maxValue(DEFAULT_MAX), precision(DEFAULT_PRECISION)
+{}
+
 DatalogChannelType::DatalogChannelType(wxString newName, wxString newUnitsLabel, int newSmoothingLevel, double newMinValue, double newMaxValue, size_t precision) :
 	name(newName), unitsLabel(newUnitsLabel), smoothingLevel(newSmoothingLevel), minValue(newMinValue), maxValue(newMaxValue), precision(precision)
 { }
 
-DatalogChannel::DatalogChannel(wxString newName, int newTypeId, wxString newDescription, bool en) :
-	name(newName), typeId(newTypeId), sampleRate(0), description(newDescription), enabled(en)
+DatalogChannel::DatalogChannel(wxString newName, wxString newType, wxString newDescription, int newSampleRate, bool en) :
+	name(newName), type(newType), description(newDescription), sampleRate(newSampleRate), enabled(en)
 { }
 
 DatalogChannel::DatalogChannel() :
-	name(""), typeId(UNDEFINED_TYPE), sampleRate(0), description(""), enabled(true)
+	name(""), type("Value"), description(""), sampleRate(0), enabled(true)
 { }
-
-int DatalogChannelUtil::FindChannelIdByName(DatalogChannels &channels, wxString &name){
-
-	size_t count = channels.Count();
-
-	for (size_t i = 0; i < count; i++){
-		if (name == channels[i].name) return i;
-	}
-	return -1;
-}
-
-int DatalogChannelUtil::FindChannelTypeIdByName(DatalogChannelTypes &channelTypes, wxString &name){
-	size_t count = channelTypes.Count();
-
-	for (size_t i = 0; i < count; i++){
-		if (name == channelTypes[i].name) return i;
-	}
-	return -1;
-}
