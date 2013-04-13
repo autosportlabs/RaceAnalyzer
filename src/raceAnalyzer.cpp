@@ -577,43 +577,6 @@ void MainFrame::UpdateAnalyzerView(){
 	INFO("Updating Analyzer view complete");
 }
 
-void MainFrame::UpdateAnalysis(){
-
-/*	m_datalogData.Clear();
-
-	wxArrayString channels;
-	channels.Add("GPSSpeed");
-	channels.Add("AccelX");
-	channels.Add("AccelY");
-	channels.Add("AccelZ");
-	channels.Add("Yaw");
-
-	int datalogId = 1;
-	m_datalogStore.ReadDatalog(m_datalogData, datalogId, channels, 0);
-
-	Range *speedRange = new Range(0,300,"KPh");
-	int rangeId = m_analyzePanel->GetLineChart()->AddRange(speedRange);
-	Series *gpsSpeed = new Series(&m_datalogData,0,rangeId,0,"GPS Speed",*wxGREEN);
-	m_analyzePanel->GetLineChart()->AddSeries(gpsSpeed);
-
-	Range *gForceRange = new Range(-2.0,2.0,"G");
-	int gForceRangeId= m_analyzePanel->GetLineChart()->AddRange(gForceRange);
-
-	Series *accelX = new Series(&m_datalogData, 1, gForceRangeId,0,"Accel X",*wxWHITE);
-	m_analyzePanel->GetLineChart()->AddSeries(accelX);
-
-	Series *accelY = new Series(&m_datalogData, 2, gForceRangeId,0,"Accel Y",*wxBLUE);
-	m_analyzePanel->GetLineChart()->AddSeries(accelY);
-
-	Series *accelZ = new Series(&m_datalogData, 3, gForceRangeId,0,"Accel Z",wxColor(255,255,0));
-	m_analyzePanel->GetLineChart()->AddSeries(accelZ);
-
-	Series *yaw = new Series(&m_datalogData,4,gForceRangeId,0,"Yaw",*wxRED);
-	m_analyzePanel->GetLineChart()->AddSeries(yaw);
-*/
-}
-
-
 void MainFrame::RaceEventUpdated(){
 	UpdateAnalyzerView();
 	m_datalogPlayer.DatalogSessionsUpdated();
@@ -790,7 +753,7 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 
 		m_datalogStore.GetChannel(datalogId, sel.channelName, channel);
 
-		DatalogChannelType &ct = channelTypes[channel.typeId];
+		DatalogChannelType &ct = channelTypes[channel.type];
 		if (ct == DatalogChannelSystemTypes::GetLongitudeChannelType()){
 			longitudeChannelName = sel.channelName;
 			longitudeDatalogId = sel.datalogId;

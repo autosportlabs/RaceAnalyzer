@@ -91,7 +91,7 @@ double Series::GetValueAtOrNear(size_t index){
 double Series::GetValueAt(size_t index){
 	int adjustedIndex = index + GetOffset();
 	if (adjustedIndex < 0 ) return NULL_VALUE;
-	else if (adjustedIndex >= m_seriesValues.Count()) return NULL_VALUE;
+	else if ((size_t)adjustedIndex >= m_seriesValues.Count()) return NULL_VALUE;
 	return m_seriesValues[adjustedIndex];
 }
 

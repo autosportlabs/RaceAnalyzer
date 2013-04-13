@@ -70,7 +70,6 @@ public:
 	virtual void UpdateProgress(int completePercent);
 
 private:
-
 	ImportWizardParams *m_params;
 	wxWindow *m_owner;
 };

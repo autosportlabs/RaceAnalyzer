@@ -3123,7 +3123,7 @@ wxTreeItemId wxTreeListMainWindow::GetPrevSibling (const wxTreeItemId& item) con
     // get index
     wxArrayTreeListItems& siblings = parent->GetChildren();
     size_t index = siblings.Index(i);
-    wxASSERT (index != wxNOT_FOUND); // I'm not a child of my parent?
+    wxASSERT ((int)index != wxNOT_FOUND); // I'm not a child of my parent?
     return (index >= 1)? wxTreeItemId(siblings[index-1]): wxTreeItemId();
 }
 

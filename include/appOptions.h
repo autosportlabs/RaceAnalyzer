@@ -6,6 +6,82 @@
 #include "raceAnalyzerConfigBase.h"
 
 
+#define CHANNEL_TYPE_VALUE "Value"
+#define CHANNEL_TYPE_RAW "Raw"
+#define CHANNEL_TYPE_GFORCE "GForce"
+#define CHANNEL_TYPE_ROTATION "Rotation"
+#define CHANNEL_TYPE_TIMEDATE "TimeDate"
+#define CHANNEL_TYPE_COUNT "Count"
+#define CHANNEL_TYPE_LATITUDE "Latitude"
+#define CHANNEL_TYPE_LONGITUDE "Longitude"
+#define CHANNEL_TYPE_SPEED "Speed"
+#define CHANNEL_TYPE_VOLTS "Volts"
+#define CHANNEL_TYPE_PRESSURE "Pressure"
+#define CHANNEL_TYPE_TEMPERATURE "Temperature"
+#define CHANNEL_TYPE_FREQUENCY "Frequency"
+#define CHANNEL_TYPE_RPM "RPM"
+#define CHANNEL_TYPE_DURATION "Duration"
+#define CHANNEL_TYPE_PERCENT "Percent"
+#define CHANNEL_TYPE_DIGITAL "Digital"
+#define CHANNEL_TYPE_TIME "Time"
+#define CHANNEL_TYPE_DISTANCE "Distance"
+#define CHANNEL_TYPE_ANGLE "Angle"
+
+#define DEFAULT_CHANNEL_TYPE CHANNEL_TYPE_VALUE
+
+#define CHANNEL_TIME "Time"
+#define CHANNEL_GPS_SATS "GpsSats"
+#define CHANNEL_LATITUDE "Latitude"
+#define CHANNEL_LONGITUDE "Longitude"
+#define CHANNEL_SPEED "Speed"
+#define CHANNEL_LAPCOUNT "LapCount"
+#define CHANNEL_LAPTIME "LapTime"
+#define CHANNEL_SPLITTIME "SplitTime"
+#define CHANNEL_FUEL_LEVEL "FuelLevel"
+#define CHANNEL_COOLANT "Coolant"
+#define CHANNEL_OIL_PRESSURE "OilPress"
+#define CHANNEL_OIL_TEMP "OilTemp"
+#define CHANNEL_AFR "AFR"
+#define CHANNEL_IAR "IAR"
+#define CHANNEL_MAP "MAP"
+#define CHANNEL_EGT "EGT"
+#define CHANNEL_TPS "TPS"
+#define CHANNEL_BATTERY "Battery"
+#define CHANNEL_FUEL_PRESSURE "FuelPressure"
+#define CHANNEL_STEERING "Steering"
+#define CHANNEL_BRAKE "Brake"
+#define CHANNEL_LF_HEIGHT "LF_Height"
+#define CHANNEL_RF_HEIGHT "RF_Height"
+#define CHANNEL_LR_HEIGHT "LR_Height"
+#define CHANNEL_RR_HEIGHT "RR_Height"
+#define CHANNEL_ANALOG1 "Analog1"
+#define CHANNEL_ANALOG2 "Analog2"
+#define CHANNEL_ANALOG3 "Analog3"
+#define CHANNEL_ANALOG4 "Analog4"
+#define CHANNEL_ANALOG5 "Analog5"
+#define CHANNEL_ANALOG6 "Analog6"
+#define CHANNEL_ANALOG7 "Analog7"
+#define CHANNEL_RPM "RPM"
+#define CHANNEL_WHEEL "Wheel"
+#define CHANNEL_INJECTOR "Injector"
+#define CHANNEL_FREQ1 "Freq1"
+#define CHANNEL_FREQ2 "Freq2"
+#define CHANNEL_FREQ3 "Freq3"
+#define CHANNEL_VOUT1 "Vout1"
+#define CHANNEL_VOUT2 "Vout2"
+#define CHANNEL_VOUT3 "Vout3"
+#define CHANNEL_VOUT4 "Vout4"
+#define CHANNEL_FREQOUT1 "FreqOut1"
+#define CHANNEL_FREQOUT2 "FreqOut2"
+#define CHANNEL_FREQOUT3 "FreqOut3"
+#define CHANNEL_FREQOUT4 "FreqOut4"
+#define CHANNEL_GPI1 "GPI1"
+#define CHANNEL_GPI2 "GPI2"
+#define CHANNEL_GPI3 "GPI3"
+#define CHANNEL_GPO1 "GPO1"
+#define CHANNEL_GPO2 "GPO2"
+#define CHANNEL_GPO3 "GPO3"
+
 class AnalogGaugeType{
 
 public:
@@ -69,6 +145,7 @@ class AppOptions{
 		void SaveAppOptions();
 		void LoadAppOptions();
 
+		DatalogChannel CreateGenericChannel(wxString &name, int sampleRate);
 		DatalogChannels & GetAllStandardChannels();
 		DatalogChannels & GetStandardAccelChannels();
 		DatalogChannels & GetStandardGpsChannels();
@@ -92,6 +169,7 @@ class AppOptions{
 		void LoadStandardGpioChannels(DatalogChannels &channels);
 		void LoadAllStandardChannels(DatalogChannels &channels);
 
+		DatalogChannelType GetGenericChannelType();
 		void LoadStandardChannelTypes(DatalogChannelTypes &channelTypes);
 		void LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes);
 		void LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes);

@@ -126,21 +126,9 @@ void ChannelSelectorPage::PopulateAvailableChannels(wxGrid *grid, RaceCaptureCon
 }
 
 void ChannelSelectorPage::OnWizardPageChanged(wxWizardEvent &event){
-	int i=1;
-		int b=i;
-	/*
-	m_importing = false;
-	UpdateUIState();
-	*/
 }
 
 void ChannelSelectorPage::OnWizardPageChanging(wxWizardEvent &event){
-	int i=1;
-		int b=i;
-	/*
-	m_importing = false;
-	UpdateUIState();
-	*/
 }
 
 BEGIN_EVENT_TABLE ( ChannelSelectorPage, wxWizardPageSimple )

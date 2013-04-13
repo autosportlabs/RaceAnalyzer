@@ -67,13 +67,13 @@ void ChannelSelectorPanel::RefreshChannels(){
 		m_channelGrid->DeleteRows(0,existingRows);
 	}
 
-	size_t channelCount = channels.Count();
-	m_channelGrid->InsertRows(0,channelCount);
+	int i = 0;
+	m_channelGrid->InsertRows(0,channels.size());
 
-	for (size_t i = 0; i < channelCount; i++){
-		DatalogChannel &channel = channels[i];
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it, i++){
+		DatalogChannel &channel = it->second;
 		m_channelGrid->SetCellValue(i,0,channel.name);
-		DatalogChannelType &type = channelTypes[channel.typeId];
+		DatalogChannelType &type = channelTypes[channel.type];
 		m_channelGrid->SetCellValue(i,1,type.name);
 	}
 }

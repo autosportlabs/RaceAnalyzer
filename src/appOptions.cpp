@@ -10,7 +10,6 @@
 #define DEFAULT_ANALOG_GAUGE_TYPE_COUNT			-1
 #define DEFAULT_DIGITAL_GAUGE_TYPE_COUNT		-1
 
-
 #define DEFAULT_CHART_COLORS					"0x003AC1,0xFF5D00,0xFFC700,0x607DC1,0xFFAE7F,0xFFE37F,0x919FC1,0xFFD6BF,0xFFF1BF"
 #define CHART_COLOR_STRING_DELIMITER			","
 
@@ -144,6 +143,10 @@ DatalogChannels & AppOptions::GetStandardGpioChannels(){
 	return m_standardGpioChannels;
 }
 
+DatalogChannel AppOptions::CreateGenericChannel(wxString &name, int sampleRate){
+	return DatalogChannel(name, DEFAULT_CHANNEL_TYPE, "", sampleRate, true);
+}
+
 DatalogChannels & AppOptions::GetAllStandardChannels(){
 	return m_allStandardChannels;
 }
@@ -161,128 +164,135 @@ DigitalGaugeTypes & AppOptions::GetDigitalGaugeTypes(){
 }
 
 DatalogChannelType AppOptions::GetDefaultUnknownChannelType(wxString name){
-	DatalogChannelType channelType(name, "", 0, 0, 10000, 2);
-	return channelType;
+	return m_standardChannelTypes[CHANNEL_TYPE_VALUE];
 }
 
 DatalogChannelType AppOptions::GetChannelTypeForChannel(ViewChannel &channel){
-	//search through this. maybe change this to a wxHashMap for better efficiency
-	size_t count = m_allStandardChannels.Count();
-	for (size_t i = 0; i < count; i++){
-		DatalogChannel &datalogChannel = m_allStandardChannels[i];
-		if (datalogChannel.name == channel.channelName){
-			int typeId = datalogChannel.typeId;
-			return m_standardChannelTypes[typeId];
+
+	DatalogChannels::iterator it = m_allStandardChannels.find(channel.channelName);
+	if (it != m_allStandardChannels.end()){
+		DatalogChannelTypes::iterator it2 = m_standardChannelTypes.find(it->second.type);
+		if (it2 != m_standardChannelTypes.end()){
+			return it2->second;
 		}
 	}
 	return GetDefaultUnknownChannelType(channel.channelName);
 }
 
-void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
 
-	types.Add( DatalogChannelType("Raw","Number", 0, 0, 1024, 0) );
-	types.Add( DatalogChannelType("GForce", "G", 5, -2.0, 2.0, 2) );
-	types.Add( DatalogChannelType("Rotation", "Deg/Sec", 5, -300.0, 300.0, 1) );
-	types.Add( DatalogChannelType("TimeDate", "UTC", 0, 0, 0, 2) );
-	types.Add( DatalogChannelType("Count", "Count", 0,0, 1000.0, 0) );
-	types.Add( DatalogChannelSystemTypes::GetLatitudeChannelType());
-	types.Add( DatalogChannelSystemTypes::GetLongitudeChannelType());
-	types.Add( DatalogChannelType("Speed", "MPH", 0, 0, 240.0, 0) );
-	types.Add( DatalogChannelType("Volts", "Volts", 0, 0, 25.0, 2) );
-	types.Add( DatalogChannelType("Pressure", "PSI", 0, 0, 300.0, 2) );
-	types.Add( DatalogChannelType("Temperature", "F", 0, 0, 300.0, 0) );
-	types.Add( DatalogChannelType("Frequency", "Hz", 0, 0, 2000.0, 0) );
-	types.Add( DatalogChannelType("RPM", "RPM", 0, 0, 10000.0, 0) );
-	types.Add( DatalogChannelType("Duration", "Ms.", 0, 0, 100.0, 0) );
-	types.Add( DatalogChannelType("Percent", "%", 0, 0, 100.0, 2) );
-	types.Add( DatalogChannelType("Digital", "Off/On", 0, 0, 1, 0) );
-	types.Add( DatalogChannelType("Time", "Seconds", 0, 0, 1000, 2));
-	types.Add( DatalogChannelType("Distance", "mm", 0, 0, 1000, 2));
+void AppOptions::LoadStandardChannelTypes(DatalogChannelTypes &types){
+	types[CHANNEL_TYPE_VALUE] = DatalogChannelType(CHANNEL_TYPE_VALUE, "Number", 0, -1000, 1000, 0);
+	types[CHANNEL_TYPE_RAW] = DatalogChannelType(CHANNEL_TYPE_RAW,"Number", 0, 0, 1024, 0);
+	types[CHANNEL_TYPE_GFORCE] = DatalogChannelType(CHANNEL_TYPE_GFORCE, "G", 5, -2.0, 2.0, 2);
+	types[CHANNEL_TYPE_ROTATION] = DatalogChannelType(CHANNEL_TYPE_ROTATION, "Deg/Sec", 5, -300.0, 300.0, 1);
+	types[CHANNEL_TYPE_TIMEDATE] = DatalogChannelType(CHANNEL_TYPE_TIMEDATE, "UTC", 0, 0, 0, 2);
+	types[CHANNEL_TYPE_COUNT] = DatalogChannelType(CHANNEL_TYPE_COUNT, "Count", 0,0, 1000.0, 0);
+	types[CHANNEL_TYPE_LATITUDE] = DatalogChannelSystemTypes::GetLatitudeChannelType();
+	types[CHANNEL_TYPE_LONGITUDE] = DatalogChannelSystemTypes::GetLongitudeChannelType();
+	types[CHANNEL_TYPE_SPEED] = DatalogChannelType(CHANNEL_TYPE_SPEED, "MPH", 0, 0, 240.0, 0);
+	types[CHANNEL_TYPE_VOLTS] = DatalogChannelType(CHANNEL_TYPE_VOLTS, "Volts", 0, 0, 25.0, 2);
+	types[CHANNEL_TYPE_PRESSURE] = DatalogChannelType(CHANNEL_TYPE_PRESSURE, "PSI", 0, 0, 300.0, 2);
+	types[CHANNEL_TYPE_TEMPERATURE] = DatalogChannelType(CHANNEL_TYPE_TEMPERATURE, "F", 0, 0, 300.0, 0);
+	types[CHANNEL_TYPE_FREQUENCY] = DatalogChannelType(CHANNEL_TYPE_FREQUENCY, "Hz", 0, 0, 2000.0, 0);
+	types[CHANNEL_TYPE_RPM] = DatalogChannelType(CHANNEL_TYPE_RPM, "RPM", 0, 0, 10000.0, 0);
+	types[CHANNEL_TYPE_DURATION] = DatalogChannelType(CHANNEL_TYPE_DURATION, "Ms.", 0, 0, 100.0, 0);
+	types[CHANNEL_TYPE_PERCENT] = DatalogChannelType(CHANNEL_TYPE_PERCENT, "%", 0, 0, 100.0, 2);
+	types[CHANNEL_TYPE_DIGITAL] = DatalogChannelType(CHANNEL_TYPE_DIGITAL, "Off/On", 0, 0, 1, 0);
+	types[CHANNEL_TYPE_TIME] = DatalogChannelType(CHANNEL_TYPE_TIME, "Seconds", 0, 0, 1000, 2);
+	types[CHANNEL_TYPE_DISTANCE] = DatalogChannelType(CHANNEL_TYPE_DISTANCE, "mm", 0, 0, 1000, 2);
+	types[CHANNEL_TYPE_ANGLE] = DatalogChannelType(CHANNEL_TYPE_ANGLE, "deg", 0, 0, 1000, 2);
 }
+
+#define CHANNEL_ACCELX "AccelX"
+#define CHANNEL_ACCELY "AccelY"
+#define CHANNEL_ACCELZ "AccelZ"
+#define CHANNEL_YAW "Yaw"
 
 void AppOptions::LoadStandardAccelChannels(DatalogChannels &channels){
 	//Accelerometer inputs
-	channels.Add( DatalogChannel("AccelX", 1, "Accelerometer X Axis") );
-	channels.Add( DatalogChannel("AccelY", 1, "Accelerometer Y Axis") );
-	channels.Add( DatalogChannel("AccelZ", 1, "Accelerometer Z Axis") );
-	channels.Add( DatalogChannel("Yaw", 2, "Accelerometer Z Axis Rotation") );
+	channels[CHANNEL_ACCELX] = DatalogChannel(CHANNEL_ACCELX, CHANNEL_TYPE_GFORCE, "Accelerometer X Axis");
+	channels[CHANNEL_ACCELY] = DatalogChannel(CHANNEL_ACCELY, CHANNEL_TYPE_GFORCE, "Accelerometer Y Axis");
+	channels[CHANNEL_ACCELZ] = DatalogChannel(CHANNEL_ACCELZ, CHANNEL_TYPE_GFORCE, "Accelerometer Z Axis");
+	channels[CHANNEL_YAW] = DatalogChannel(CHANNEL_YAW, CHANNEL_TYPE_ROTATION, "Accelerometer Z Axis Rotation");
 }
 
 void AppOptions::LoadStandardGpsChannels(DatalogChannels &channels){
 	//GPS inputs
-	channels.Add( DatalogChannel("Time", 3, "GPS Time in UTC") );
-	channels.Add( DatalogChannel("GpsSats", 4, "Number of Active Satellites") );
-	channels.Add( DatalogChannel("Latitude", 5, "GPS Latitude in Degrees") );
-	channels.Add( DatalogChannel("Longitude", 6,"GPS Longitude in Degrees") );
-	channels.Add( DatalogChannel("Speed", 7, "GPS Speed") );
-	channels.Add( DatalogChannel("LapCount",4, "Lap Count" ));
-	channels.Add( DatalogChannel("LapTime", 16, "Lap Time" ));
-	channels.Add( DatalogChannel("SplitTime", 16, "Split Time" ));
+	channels[CHANNEL_TIME] = DatalogChannel(CHANNEL_TIME, CHANNEL_TYPE_TIMEDATE, "GPS Time in UTC");
+	channels[CHANNEL_GPS_SATS] =  DatalogChannel(CHANNEL_GPS_SATS, CHANNEL_TYPE_COUNT, "Number of Active Satellites");
+	channels[CHANNEL_LATITUDE] = DatalogChannel(CHANNEL_LATITUDE, CHANNEL_TYPE_LATITUDE, "GPS Latitude in Degrees");
+	channels[CHANNEL_LONGITUDE] = DatalogChannel(CHANNEL_LONGITUDE, CHANNEL_TYPE_LONGITUDE, "GPS Longitude in Degrees");
+	channels[CHANNEL_SPEED] =  DatalogChannel(CHANNEL_SPEED, CHANNEL_TYPE_SPEED, "GPS Speed");
+	channels[CHANNEL_LAPCOUNT] = DatalogChannel(CHANNEL_LAPCOUNT, CHANNEL_TYPE_COUNT, "Lap Count" );
+	channels[CHANNEL_LAPTIME] = DatalogChannel(CHANNEL_LAPTIME, CHANNEL_TYPE_TIME, "Lap Time" );
+	channels[CHANNEL_SPLITTIME] = DatalogChannel(CHANNEL_SPLITTIME, CHANNEL_TYPE_TIME, "Split Time" );
 }
 
 void AppOptions::LoadStandardAnalogChannels(DatalogChannels &channels){
 	//Analog inputs
-	channels.Add( DatalogChannel("FuelLevel", 9, "Fuel Level") );
-	channels.Add( DatalogChannel("Coolant", 10, "Engine Coolant Temperature") );
-	channels.Add( DatalogChannel("OilPress", 9, "Oil Pressure") );
-	channels.Add( DatalogChannel("OilTemp", 10, "Engine Oil Temperature") );
-	channels.Add( DatalogChannel("AFR", 0, "Air/Fuel Ratio") );
-	channels.Add( DatalogChannel("IAR", 10, "Inlet Air Temperature") );
-	channels.Add( DatalogChannel("MAP", 10, "Manifold Air Pressure") );
-	channels.Add( DatalogChannel("EGT", 10, "Exhaust Gas Temperature") );
-	channels.Add( DatalogChannel("TPS", 14, "Throttle Position") );
-	channels.Add( DatalogChannel("Battery", 8, "Battery Voltage") );
-	channels.Add( DatalogChannel("FuelPress", 9, "Fuel Pressure") );
-	channels.Add( DatalogChannel("Steering", 15, "Steering angle") );
-	channels.Add( DatalogChannel("Brake", 9, "Brake Pressure") );
-	channels.Add( DatalogChannel("LF_Height", 17, "Left Front suspension height") );
-	channels.Add( DatalogChannel("RF_Height", 17, "Right Front suspension height") );
-	channels.Add( DatalogChannel("LR_Height", 17, "Left Rear suspension height") );
-	channels.Add( DatalogChannel("RR_Height", 17, "Right Rear suspension height") );
-	channels.Add( DatalogChannel("Analog1", 8, "Analog Input 1") );
-	channels.Add( DatalogChannel("Analog2", 8, "Analog Input 2") );
-	channels.Add( DatalogChannel("Analog3", 8, "Analog Input 3") );
-	channels.Add( DatalogChannel("Analog4", 8, "Analog Input 4") );
-	channels.Add( DatalogChannel("Analog5", 8, "Analog Input 5") );
-	channels.Add( DatalogChannel("Analog6", 8, "Analog Input 6") );
-	channels.Add( DatalogChannel("Analog7", 8, "Analog Input 7") );
+	channels[CHANNEL_FUEL_LEVEL] = DatalogChannel(CHANNEL_FUEL_LEVEL, CHANNEL_TYPE_PERCENT, "Fuel Level");
+	channels[CHANNEL_COOLANT] = DatalogChannel(CHANNEL_COOLANT, CHANNEL_TYPE_TEMPERATURE, "Engine Coolant Temperature");
+	channels[CHANNEL_OIL_PRESSURE] = DatalogChannel(CHANNEL_OIL_PRESSURE, CHANNEL_TYPE_PRESSURE, "Oil Pressure");
+	channels[CHANNEL_OIL_TEMP] = DatalogChannel(CHANNEL_OIL_TEMP, CHANNEL_TYPE_TEMPERATURE, "Engine Oil Temperature");
+	channels[CHANNEL_AFR] = DatalogChannel(CHANNEL_AFR, CHANNEL_TYPE_RAW, "Air/Fuel Ratio");
+	channels[CHANNEL_IAR] = DatalogChannel(CHANNEL_IAR, CHANNEL_TYPE_TEMPERATURE, "Inlet Air Temperature");
+	channels[CHANNEL_MAP] = DatalogChannel(CHANNEL_MAP, CHANNEL_TYPE_PRESSURE, "Manifold Air Pressure");
+	channels[CHANNEL_EGT] = DatalogChannel(CHANNEL_EGT, CHANNEL_TYPE_TEMPERATURE, "Exhaust Gas Temperature");
+	channels[CHANNEL_TPS] = DatalogChannel(CHANNEL_TPS, CHANNEL_TYPE_TEMPERATURE, "Throttle Position");
+	channels[CHANNEL_BATTERY] = DatalogChannel(CHANNEL_BATTERY, CHANNEL_TYPE_VOLTS, "Battery Voltage");
+	channels[CHANNEL_FUEL_PRESSURE] = DatalogChannel(CHANNEL_FUEL_PRESSURE, CHANNEL_TYPE_PRESSURE, "Fuel Pressure");
+	channels[CHANNEL_STEERING] = DatalogChannel(CHANNEL_STEERING, CHANNEL_TYPE_ANGLE, "Steering angle");
+	channels[CHANNEL_BRAKE] = DatalogChannel(CHANNEL_BRAKE, CHANNEL_TYPE_PRESSURE, "Brake Pressure");
+	channels[CHANNEL_LF_HEIGHT] = DatalogChannel(CHANNEL_LF_HEIGHT, CHANNEL_TYPE_DISTANCE, "Left Front suspension height");
+	channels[CHANNEL_RF_HEIGHT] =  DatalogChannel(CHANNEL_RF_HEIGHT, CHANNEL_TYPE_DISTANCE, "Right Front suspension height");
+	channels[CHANNEL_LR_HEIGHT] =  DatalogChannel(CHANNEL_LR_HEIGHT, CHANNEL_TYPE_DISTANCE, "Left Rear suspension height");
+	channels[CHANNEL_RR_HEIGHT] =  DatalogChannel(CHANNEL_RR_HEIGHT, CHANNEL_TYPE_DISTANCE, "Right Rear suspension height");
+	channels[CHANNEL_ANALOG1] = DatalogChannel(CHANNEL_ANALOG1, CHANNEL_TYPE_VOLTS, "Analog Input 1");
+	channels[CHANNEL_ANALOG2] =  DatalogChannel(CHANNEL_ANALOG2, CHANNEL_TYPE_VOLTS, "Analog Input 2");
+	channels[CHANNEL_ANALOG3] =  DatalogChannel(CHANNEL_ANALOG3, CHANNEL_TYPE_VOLTS, "Analog Input 3");
+	channels[CHANNEL_ANALOG4] =  DatalogChannel(CHANNEL_ANALOG4, CHANNEL_TYPE_VOLTS, "Analog Input 4");
+	channels[CHANNEL_ANALOG5] =  DatalogChannel(CHANNEL_ANALOG5, CHANNEL_TYPE_VOLTS, "Analog Input 5");
+	channels[CHANNEL_ANALOG6] =  DatalogChannel(CHANNEL_ANALOG6, CHANNEL_TYPE_VOLTS, "Analog Input 6");
+	channels[CHANNEL_ANALOG7] =  DatalogChannel(CHANNEL_ANALOG7, CHANNEL_TYPE_VOLTS, "Analog Input 7");
 }
+
 
 void AppOptions::LoadStandardFrequencyChannels(DatalogChannels &channels){
 	//Frequency Inputs
-	channels.Add( DatalogChannel("RPM", 12, "Engine Speed in RPM") );
-	channels.Add( DatalogChannel("Wheel", 12, "Wheel Speed in RPM") );
-	channels.Add( DatalogChannel("Injector", 13, "Injector pulse width in Ms.") );
-	channels.Add( DatalogChannel("Freq1", 11, "Frequency Input 1") );
-	channels.Add( DatalogChannel("Freq2", 11, "Frequency Input 2") );
-	channels.Add( DatalogChannel("Freq3", 11, "Frequency Input 3") );
-
+	channels[CHANNEL_RPM] =  DatalogChannel(CHANNEL_RPM, CHANNEL_TYPE_RPM, "Engine Speed in RPM");
+	channels[CHANNEL_WHEEL] =  DatalogChannel(CHANNEL_WHEEL, CHANNEL_TYPE_RPM, "Wheel Speed in RPM");
+	channels[CHANNEL_INJECTOR] =  DatalogChannel(CHANNEL_INJECTOR, CHANNEL_TYPE_DURATION, "Injector pulse width in Ms.");
+	channels[CHANNEL_FREQ1] =  DatalogChannel(CHANNEL_FREQ1, CHANNEL_TYPE_FREQUENCY, "Frequency Input 1");
+	channels[CHANNEL_FREQ2] =  DatalogChannel(CHANNEL_FREQ2, CHANNEL_TYPE_FREQUENCY, "Frequency Input 2");
+	channels[CHANNEL_FREQ3] =  DatalogChannel(CHANNEL_FREQ3, CHANNEL_TYPE_FREQUENCY, "Frequency Input 3");
 }
+
 
 void AppOptions::LoadStandardPwmChannels(DatalogChannels &channels){
 	//Analog Outputs
-	channels.Add( DatalogChannel("Vout1", 8, "Analog Output 1") );
-	channels.Add( DatalogChannel("Vout2", 8, "Analog Output 2") );
-	channels.Add( DatalogChannel("Vout3", 8, "Analog Output 3") );
-	channels.Add( DatalogChannel("Vout4", 8, "Analog Output 4") );
+	channels[CHANNEL_VOUT1] =  DatalogChannel(CHANNEL_VOUT1, CHANNEL_TYPE_VOLTS, "Analog Output 1");
+	channels[CHANNEL_VOUT2] =  DatalogChannel(CHANNEL_VOUT2, CHANNEL_TYPE_VOLTS, "Analog Output 2");
+	channels[CHANNEL_VOUT3] =  DatalogChannel(CHANNEL_VOUT3, CHANNEL_TYPE_VOLTS, "Analog Output 3");
+	channels[CHANNEL_VOUT4] =  DatalogChannel(CHANNEL_VOUT4, CHANNEL_TYPE_VOLTS, "Analog Output 4");
 
 	//Frequency Outputs
-	channels.Add( DatalogChannel("FreqOut1", 11, "Frequency Output 1") );
-	channels.Add( DatalogChannel("FreqOut2", 11, "Frequency Output 2") );
-	channels.Add( DatalogChannel("FreqOut3", 11, "Frequency Output 3") );
-	channels.Add( DatalogChannel("FreqOut4", 11, "Frequency Output 4") );
+	channels[CHANNEL_FREQOUT1] =  DatalogChannel(CHANNEL_FREQOUT1, CHANNEL_TYPE_FREQUENCY, "Frequency Output 1");
+	channels[CHANNEL_FREQOUT2] =  DatalogChannel(CHANNEL_FREQOUT2, CHANNEL_TYPE_FREQUENCY, "Frequency Output 2");
+	channels[CHANNEL_FREQOUT3] =  DatalogChannel(CHANNEL_FREQOUT3, CHANNEL_TYPE_FREQUENCY, "Frequency Output 3");
+	channels[CHANNEL_FREQOUT4] =  DatalogChannel(CHANNEL_FREQOUT4, CHANNEL_TYPE_FREQUENCY, "Frequency Output 4");
 }
+
 
 void AppOptions::LoadStandardGpioChannels(DatalogChannels &channels){
 	//Digital Inputs
-	channels.Add(DatalogChannel("GPI1", 15, "Digital Input 1") );
-	channels.Add(DatalogChannel("GPI2", 15, "Digital Input 2") );
-	channels.Add(DatalogChannel("GPI3", 15, "Digital Input 3") );
+	channels[CHANNEL_GPI1] = DatalogChannel(CHANNEL_GPI1, CHANNEL_TYPE_DIGITAL, "Digital Input 1");
+	channels[CHANNEL_GPI2] = DatalogChannel(CHANNEL_GPI2, CHANNEL_TYPE_DIGITAL, "Digital Input 2");
+	channels[CHANNEL_GPI3] = DatalogChannel(CHANNEL_GPI3, CHANNEL_TYPE_DIGITAL, "Digital Input 3");
 
 	//Digital Outputs
-	channels.Add(DatalogChannel("GPO1", 15, "Digital Output 1") );
-	channels.Add(DatalogChannel("GPO2", 15, "Digital Output 2") );
-	channels.Add(DatalogChannel("GPO3", 15, "Digital Output 3") );
+	channels[CHANNEL_GPO1] = DatalogChannel(CHANNEL_GPO1, CHANNEL_TYPE_DIGITAL, "Digital Output 1");
+	channels[CHANNEL_GPO2] = DatalogChannel(CHANNEL_GPO2, CHANNEL_TYPE_DIGITAL, "Digital Output 2");
+	channels[CHANNEL_GPO3] = DatalogChannel(CHANNEL_GPO3, CHANNEL_TYPE_DIGITAL, "Digital Output 3");
 }
 
 void AppOptions::LoadAllStandardChannels(DatalogChannels &channels){
@@ -297,34 +307,35 @@ void AppOptions::LoadAllStandardChannels(DatalogChannels &channels){
 
 void AppOptions::LoadDefaultAnalogGaugeTypes(AnalogGaugeTypes &analogGaugeTypes){
 
-	analogGaugeTypes["Raw"] = AnalogGaugeType(100, 50, 0);
-	analogGaugeTypes["GForce"] = AnalogGaugeType(0.5, 0.1,2);
-	analogGaugeTypes["Rotation"] = AnalogGaugeType(100.0, 50.0, 1);
-	analogGaugeTypes["Count"] = AnalogGaugeType(10.0, 5.0, 1);
-	analogGaugeTypes["Speed"] = AnalogGaugeType(20.0, 10.0, 0);
-	analogGaugeTypes["Volts"] = AnalogGaugeType(5.0, 1.0, 2);
-	analogGaugeTypes["Pressure"] = AnalogGaugeType(10.0, 5.0, 0);
-	analogGaugeTypes["Temperature"] = AnalogGaugeType(10.0, 5.0, 0);
-	analogGaugeTypes["Frequency"] = AnalogGaugeType(100.0, 50.0, 0);
-	analogGaugeTypes["RPM"] = AnalogGaugeType(100.0, 50.0, 0);
-	analogGaugeTypes["Duration"] = AnalogGaugeType(10.0, 5.0, 0);
-	analogGaugeTypes["Percent"] = AnalogGaugeType(10.0, 5.0, 0);
-	analogGaugeTypes["Time"] = AnalogGaugeType(1,0,0);
+	analogGaugeTypes[CHANNEL_TYPE_RAW] = AnalogGaugeType(100, 50, 0);
+	analogGaugeTypes[CHANNEL_TYPE_GFORCE] = AnalogGaugeType(0.5, 0.1,2);
+	analogGaugeTypes[CHANNEL_TYPE_ROTATION] = AnalogGaugeType(100.0, 50.0, 1);
+	analogGaugeTypes[CHANNEL_TYPE_COUNT] = AnalogGaugeType(10.0, 5.0, 1);
+	analogGaugeTypes[CHANNEL_TYPE_SPEED] = AnalogGaugeType(20.0, 10.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_VOLTS] = AnalogGaugeType(5.0, 1.0, 2);
+	analogGaugeTypes[CHANNEL_TYPE_PRESSURE] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_TEMPERATURE] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_FREQUENCY] = AnalogGaugeType(100.0, 50.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_RPM] = AnalogGaugeType(100.0, 50.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_DURATION] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_PERCENT] = AnalogGaugeType(10.0, 5.0, 0);
+	analogGaugeTypes[CHANNEL_TYPE_TIME] = AnalogGaugeType(1,0,0);
 }
 
 void AppOptions::LoadDefaultDigitalGaugeTypes(DigitalGaugeTypes &digitalGaugeTypes){
 
-	digitalGaugeTypes["Raw"] = DigitalGaugeType(3,0);
-	digitalGaugeTypes["GForce"] = DigitalGaugeType(1,2);
-	digitalGaugeTypes["Rotation"] = DigitalGaugeType(2,2);
-	digitalGaugeTypes["Count"] = DigitalGaugeType(3,0);
-	digitalGaugeTypes["Speed"] = DigitalGaugeType(3,0);
-	digitalGaugeTypes["Volts"] = DigitalGaugeType(2,2);
-	digitalGaugeTypes["Pressure"] = DigitalGaugeType(3,0);
-	digitalGaugeTypes["Temperature"] = DigitalGaugeType(3,0);
-	digitalGaugeTypes["Frequency"] = DigitalGaugeType(4,0);
-	digitalGaugeTypes["RPM"] = DigitalGaugeType(4,0);
-	digitalGaugeTypes["Duration"] = DigitalGaugeType(3,1);
-	digitalGaugeTypes["Percent"] = DigitalGaugeType(2,0);
-	digitalGaugeTypes["Time"] = DigitalGaugeType(2,3);
+	digitalGaugeTypes[CHANNEL_TYPE_VALUE] = DigitalGaugeType(4,0);
+	digitalGaugeTypes[CHANNEL_TYPE_RAW] = DigitalGaugeType(3,0);
+	digitalGaugeTypes[CHANNEL_TYPE_GFORCE] = DigitalGaugeType(1,2);
+	digitalGaugeTypes[CHANNEL_TYPE_ROTATION] = DigitalGaugeType(2,2);
+	digitalGaugeTypes[CHANNEL_TYPE_COUNT] = DigitalGaugeType(3,0);
+	digitalGaugeTypes[CHANNEL_TYPE_SPEED] = DigitalGaugeType(3,0);
+	digitalGaugeTypes[CHANNEL_TYPE_VOLTS] = DigitalGaugeType(2,2);
+	digitalGaugeTypes[CHANNEL_TYPE_PRESSURE] = DigitalGaugeType(3,0);
+	digitalGaugeTypes[CHANNEL_TYPE_TEMPERATURE] = DigitalGaugeType(3,0);
+	digitalGaugeTypes[CHANNEL_TYPE_FREQUENCY] = DigitalGaugeType(4,0);
+	digitalGaugeTypes[CHANNEL_TYPE_RPM] = DigitalGaugeType(4,0);
+	digitalGaugeTypes[CHANNEL_TYPE_DURATION] = DigitalGaugeType(3,1);
+	digitalGaugeTypes[CHANNEL_TYPE_PERCENT] = DigitalGaugeType(2,0);
+	digitalGaugeTypes[CHANNEL_TYPE_TIME] = DigitalGaugeType(2,3);
 }
