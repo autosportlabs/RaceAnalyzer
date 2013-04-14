@@ -52,6 +52,7 @@ wxThread::ExitCode ImporterThread::Entry(){
 			DatalogChannel &importChannel = it->second;
 
 			if (importChannel.enabled){
+				VERBOSE(FMT("channel enabled %s", importChannel.name));
 				//need to add the channel?
 				if (existingChannels.find(importChannel.name) == existingChannels.end()){
 
@@ -63,13 +64,13 @@ wxThread::ExitCode ImporterThread::Entry(){
 					existingChannels[importChannel.name] = importChannel;
 				}
 			}
+			else{
+				VERBOSE(FMT("channel skipped %s", importChannel.name));
+			}
 		}
 
-		store->ClearChannelTypes();
-		store->ClearChannels();
-
-		store->ImportChannelTypes(existingChannelTypes);
-		store->ImportChannels(existingChannels);
+		store->SaveChannelTypes(existingChannelTypes);
+		store->SaveChannels(existingChannels);
 
 		store->ImportDatalog(m_params->datalogFilePath,
 				m_params->datalogName,
@@ -333,14 +334,10 @@ void MapDatalogChannelsPage::OnWizardPageChanging(wxWizardEvent &event){
 
 	size_t count = m_channelMapGrid->GetRows();
 	for (size_t i = 0; i < count; i++){
-		wxString channelType = m_channelMapGrid->GetCellValue(i,3);
-		DatalogChannels::iterator it = channels.find(channelType);
-		if (it != channels.end()){
-			DatalogChannel &channel = it->second;
-			channel.type = channelType;
-			bool selected= m_channelMapGrid->GetCellValue(i,0) == "1";
-			channel.enabled = selected;
-		}
+		wxString channelName = m_channelMapGrid->GetCellValue(i,1);
+		DatalogChannel &channel = channels[channelName];
+		channel.type = m_channelMapGrid->GetCellValue(i,3);
+		channel.enabled = m_channelMapGrid->GetCellValue(i,0) == "1";
 	}
 }
 
@@ -453,9 +450,14 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 
 	m_channelMapGrid->InsertRows(0,channels.size(),true);
 
-	size_t i = 0;
-	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it, i++){
-		DatalogChannel &channel = it->second;
+	wxArrayString sortedChannelNames;
+	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it){
+		sortedChannelNames.Add(it->second.name);
+	}
+	sortedChannelNames.Sort();
+
+	for (size_t i = 0; i < sortedChannelNames.Count(); i++){
+		DatalogChannel &channel = channels[sortedChannelNames[i]];
 
 		m_channelMapGrid->SetCellEditor(i, 0, new wxGridCellBoolEditor);
 		m_channelMapGrid->SetCellRenderer(i, 0, new wxGridCellBoolRenderer);
@@ -468,7 +470,6 @@ void MapDatalogChannelsPage::RefreshChannelGrid(){
 		m_channelMapGrid->SetCellValue(i, 2, wxString::Format("%d", channel.sampleRate));
 		m_channelMapGrid->SetReadOnly(i, 1, true);
 
-		wxLogMessage("name: %s type %s", channel.name.ToAscii(), channel.type);
 		DatalogChannelTypes::iterator it2 = channelTypes.find(channel.type);
 		if (it2 != channelTypes.end()){
 			DatalogChannelType &channelType = it2->second;
@@ -594,7 +595,7 @@ void DatalogImporterPage::OnImportResult(wxCommandEvent &event){
 	else{
 		wxString msg("Error Importing Datalog: \n\n");
 		msg += event.GetString();
-		wxMessageBox(msg ,"Error Importing",wxICON_ERROR);
+		wxMessageBox(msg ,"Error Importing",wxICON_ERROR | wxOK);
 	}
 	m_importing = false;
 	UpdateUIState();

@@ -83,16 +83,19 @@ public:
 	void ClearChannelTypes();
 	int GetChannelTypeId(wxString &type);
 	wxString GetChannelTypeName(int id);
-	void GetChannelType(wxString &type, DatalogChannelType &channelType);
+	bool GetChannelType(wxString &type, DatalogChannelType &channelType);
 	void GetChannelTypes(DatalogChannelTypes &channelTypes);
 
 	void ClearChannels();
 	void GetAllChannels(DatalogChannels &channels);
+	int GetChannelId(wxString &type);
 	void GetChannel(int datalogId, wxString &channelName, DatalogChannel &channel);
 	void GetChannels(int datalogId, DatalogChannels &channels);
 
-	void ImportChannels(DatalogChannels &channels);
-	void ImportChannelTypes(DatalogChannelTypes &channelTypes);
+	void SaveChannels(DatalogChannels &channels);
+	void SaveChannelTypes(DatalogChannelTypes &channelTypes);
+	void AddChannelType(DatalogChannelType &channelType);
+	void UpdateChannelType(DatalogChannelType &channelType);
 	void ImportDatalogChannelMap(int datalogId, DatalogChannels &datalogChannels);
 	void GetDatalogHeaders(DatalogHeaders &headers, wxFFile &file);
 	int GetTopDatalogId();
@@ -104,11 +107,12 @@ private:
 	void CreateTables();
 	size_t ReadLine(wxString &buffer, wxFFile &file);
 	void StripQuotes(wxString &values);
-	size_t ExtractValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns = NULL);
+	size_t ExtractHeaderValues(wxArrayString &valueList, wxString &line, wxArrayInt *selectedColumns = NULL);
 
 	int InsertDatalogInfo(const DatalogInfo &info);
 	void InsertDatalogRow(sqlite3_stmt *query, int id, int timePoint, wxArrayString &values);
-	void AddDatalogChannel(int channelId, DatalogChannel &channel);
+	void AddChannel(DatalogChannel &channel);
+	void UpdateChannel(DatalogChannel &channel);
 	bool DatalogColumnExists(wxString &name);
 	sqlite3_stmt * CreateDatalogInsertPreparedStatement(DatalogHeaders &headers, wxArrayInt &selectedColumns);
 	int GetTopTimePoint();

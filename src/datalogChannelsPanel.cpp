@@ -180,9 +180,14 @@ void DatalogChannelsPanel::AddDatalogSession(int datalogId){
 	DatalogChannelTypes channelTypes;
 	m_datalogStore->GetChannelTypes(channelTypes);
 
+	wxArrayString sortedChannelNames;
 	for (DatalogChannels::iterator it = channels.begin(); it != channels.end(); ++it){
+		sortedChannelNames.Add(it->second.name);
+	}
+	sortedChannelNames.Sort();
 
-		DatalogChannel &channel = it->second;
+	for (size_t i = 0; i < sortedChannelNames.Count(); i++){
+		DatalogChannel &channel = channels[sortedChannelNames[i]];
 		wxTreeItemId channelItem = m_channelsList->AppendItem(session, channel.name);
 		m_channelsList->SetItemData(session, new ChannelNode(datalogId, channel.name));
 
