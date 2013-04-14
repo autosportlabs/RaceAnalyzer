@@ -25,6 +25,7 @@ using namespace json;
 #define CONFIG_ANALOG_SCALING_BINS			5
 #define MIN_ANALOG_RAW						0
 #define MAX_ANALOG_RAW						1023
+#define ANALOG_RAW_VOLTAGE_SCALING			204.6
 
 #define MIN_ACCEL_RAW						0
 #define MAX_ACCEL_RAW						4095
