@@ -1,5 +1,12 @@
 #include "configuration/configPanel.h"
 #include "configuration/accelInputPanel.h"
+#include "BitmapWindow.h"
+
+#include "upArrow.xpm"
+#include "rcp.xpm"
+#include "rcp_180.xpm"
+#include "rcp_90_ccw.xpm"
+#include "rcp_90_cw.xpm"
 
 AccelInputPanel::AccelInputPanel() : BaseChannelConfigPanel()
 {
@@ -117,7 +124,12 @@ wxPanel * AccelInputPanel::GetTopInnerPanel(){
 }
 
 wxPanel * AccelInputPanel::GetBottomInnerPanel(){
-	return NULL;
+	wxPanel *panel = new wxPanel(this);
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,10,10);
+	panel->SetSizer(sizer);
+	sizer->Add(new BitmapWindow(panel, wxID_ANY, upArrow_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
+	sizer->Add(new BitmapWindow(panel, wxID_ANY, rcp_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
+	return panel;
 }
 
 void AccelInputPanel::UpdatedExtendedFields()

@@ -243,7 +243,6 @@ private:
 
 	void ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson);
 	void GpsTargetFromJson(GpsTarget &target, const Object &gpsTargetJson);
-	void PopulateGpsTargets(GpsTarget &target, Object &gpsRoot);
 	void PopulateGpsConfig(Object &gpsRoot);
 	void PopulateAnalogConfig(Array &analogRoot);
 	void PopulatePulseInputConfig(Array &pulseInputRoot);

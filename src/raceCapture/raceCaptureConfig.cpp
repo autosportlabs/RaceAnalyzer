@@ -39,27 +39,23 @@ void RaceCaptureConfig::ChannelConfigFromJson(ChannelConfig &channelConfig, cons
 }
 
 void RaceCaptureConfig::GpsTargetFromJson(GpsTarget &target, const Object &gpsTargetJson){
-	((Number)gpsTargetJson["latitude"]).Value();
-	((Number)gpsTargetJson["longitude"]).Value();
-	((Number)gpsTargetJson["targetRadius"]).Value();
-}
-
-void RaceCaptureConfig::PopulateGpsTargets(GpsTarget &target, Object &gpsRoot){
 	try{
-		GpsTargetFromJson(target, gpsRoot["startFinishTarget"]);
-		GpsTargetFromJson(target, gpsRoot["splitTarget"]);
+		target.latitude = ((Number)gpsTargetJson["latitude"]).Value();
+		target.longitude = ((Number)gpsTargetJson["longitude"]).Value();
+		target.targetRadius = ((Number)gpsTargetJson["targetRadius"]).Value();
 	}
 	catch(json::Exception &e){
 		wxLogError("Error parsing GpsTargets: %s", e.what());
 	}
+
 }
 
 void RaceCaptureConfig::PopulateGpsConfig(Object &gpsRoot){
 	try{
 		gpsConfig.gpsInstalled = ((Number)gpsRoot["gpsInstalled"]).Value();
 
-		PopulateGpsTargets(gpsConfig.startFinishTarget, gpsRoot);
-		PopulateGpsTargets(gpsConfig.splitTarget, gpsRoot);
+		GpsTargetFromJson(gpsConfig.startFinishTarget,  gpsRoot["startFinishTarget"]);
+		GpsTargetFromJson(gpsConfig.splitTarget, gpsRoot["splitTarget"]);
 		ChannelConfigFromJson(gpsConfig.latitudeCfg,gpsRoot["latitude"]);
 		ChannelConfigFromJson(gpsConfig.longitudeCfg,gpsRoot["longitude"]);
 		ChannelConfigFromJson(gpsConfig.speedCfg,gpsRoot["speed"]);
