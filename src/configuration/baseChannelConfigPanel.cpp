@@ -88,7 +88,7 @@ void BaseChannelConfigPanel::InitComponents(){
 	sizer->AddGrowableCol(0);
 
 	if (NULL != topPanel){
-		sizer->Add(topPanel,1,wxEXPAND);
+		sizer->Add(topPanel,1, wxEXPAND, wxALIGN_CENTER_HORIZONTAL);
 	}
 
 	wxStaticBoxSizer *borderSizer= new wxStaticBoxSizer(new wxStaticBox(this,-1,GetChannelListTitle()),wxVERTICAL);
@@ -107,7 +107,7 @@ void BaseChannelConfigPanel::InitComponents(){
 	sizer->Add(borderSizer,1,wxEXPAND);
 
 	if (NULL != bottomPanel){
-		sizer->Add(bottomPanel,1);
+		sizer->Add(bottomPanel, 1, wxALIGN_CENTER_HORIZONTAL);
 	}
 
 
