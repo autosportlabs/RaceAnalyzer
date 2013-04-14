@@ -58,17 +58,22 @@ void AnalogInputAdvancedDialog::RefreshControls(){
 	}
 	{
 		wxTextCtrl *linearScaling = dynamic_cast<wxTextCtrl*>(FindWindowById(SIMPLE_LINEAR_SCALE_TEXTBOX));
-		if (NULL != linearScaling) linearScaling->SetValue(wxString::Format("%f",m_config.linearScaling));
+		if (NULL != linearScaling){
+			linearScaling->SetValue(wxString::Format("%f",m_config.linearScaling));
+			linearScaling->Enable(m_config.scalingMode == scaling_mode_linear);
+		}
 	}
 	{
 		ScalingMap &scalingMap = m_config.scalingMap;
 		for (int i = 0; i < CONFIG_ANALOG_SCALING_BINS; i++){
-			m_analogScalingMapGrid->SetCellValue(wxString::Format("%d",scalingMap.rawValues[i]),0,i);
+			m_analogScalingMapGrid->SetCellValue(wxString::Format("%.2f",scalingMap.rawValues[i] / ANALOG_RAW_VOLTAGE_SCALING),0,i);
 		}
 		for (int i = 0; i < CONFIG_ANALOG_SCALING_BINS; i++){
-			m_analogScalingMapGrid->SetCellValue(wxString::Format("%f",scalingMap.scaledValue[i]),1,i);
+			m_analogScalingMapGrid->SetCellValue(wxString::Format("%.3f",scalingMap.scaledValue[i]),1,i);
 		}
+		m_analogScalingMapGrid->Enable(m_config.scalingMode == scaling_mode_map);
 	}
+
 	RefreshScalingChart();
 }
 
@@ -173,11 +178,11 @@ AnalogScalingMapGrid * AnalogInputAdvancedDialog::GetAnalogScalingMapGrid(){
 	m_analogScalingMapGrid->CreateGrid(2,CONFIG_ANALOG_SCALING_BINS);
 	for (int i=0;i<CONFIG_ANALOG_SCALING_BINS;i++){
 		m_analogScalingMapGrid->SetColSize(i,80);
-		m_analogScalingMapGrid->SetCellEditor(0,i,new wxGridCellNumberEditor(MIN_ANALOG_RAW,MAX_ANALOG_RAW));
-		m_analogScalingMapGrid->SetCellEditor(1,i,new wxGridCellFloatEditor(-1,4));
+		m_analogScalingMapGrid->SetCellEditor(0,i,new wxGridCellFloatEditor(-1,2));
+		m_analogScalingMapGrid->SetCellEditor(1,i,new wxGridCellFloatEditor(-1,3));
 		m_analogScalingMapGrid->SetColLabelValue(i,wxString::Format("%d",i+1));
 	}
-	m_analogScalingMapGrid->SetRowLabelValue(0,"Raw");
+	m_analogScalingMapGrid->SetRowLabelValue(0,"Volts");
 	m_analogScalingMapGrid->SetRowLabelValue(1,"Scaled");
 
 	m_analogScalingMapGrid->EnableDragColSize(false);
@@ -220,7 +225,7 @@ double AnalogInputAdvancedDialog::LinearInterpolate(double x, double x1, double 
 void AnalogInputAdvancedDialog::OnScalingMapGridChanged(wxGridEvent &event){
 	ScalingMap &scalingMap = m_config.scalingMap;
 	for (int i = 0; i < CONFIG_ANALOG_SCALING_BINS;i++){
-		scalingMap.rawValues[i] = atoi(m_analogScalingMapGrid->GetCellValue(0,i));
+		scalingMap.rawValues[i] = atof(m_analogScalingMapGrid->GetCellValue(0,i)) * ANALOG_RAW_VOLTAGE_SCALING;
 		scalingMap.scaledValue[i] = atof(m_analogScalingMapGrid->GetCellValue(1,i));
 	}
 	RefreshScalingChart();
@@ -228,14 +233,17 @@ void AnalogInputAdvancedDialog::OnScalingMapGridChanged(wxGridEvent &event){
 
 void AnalogInputAdvancedDialog::OnLinearScalingButton(wxCommandEvent &event){
 	m_config.scalingMode = scaling_mode_linear;
+	RefreshControls();
 }
 
 void AnalogInputAdvancedDialog::OnRawScalingButton(wxCommandEvent &event){
 	m_config.scalingMode = scaling_mode_raw;
+	RefreshControls();
 }
 
 void AnalogInputAdvancedDialog::OnMapScalingButton(wxCommandEvent &event){
 	m_config.scalingMode = scaling_mode_map;
+	RefreshControls();
 }
 
 void AnalogInputAdvancedDialog::OnLinearScaleChanged(wxCommandEvent &event){

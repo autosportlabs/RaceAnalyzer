@@ -8,6 +8,11 @@ Corrected labels on LineCharts
 LineChart colors cycling improvements
 Added telemetry settings for config file read/write
 Added improved Channels List widget
+Fixed issues around GPS Target (start/finish line & split target) not saving / loading from file
+Fixed channel mapping corruption when importing multiple log files 
+Changed Analog Scaling map to display in volts instead of the raw analog-digital value
+Changed Advanced Analog options to enable/disble fields according to what scaling mode is enabled, to aid clarity
+
 
 ===1.1.6===
 Fixed GPS rendering corruption when GPS data leads with null values
