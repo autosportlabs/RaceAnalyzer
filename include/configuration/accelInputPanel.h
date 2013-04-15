@@ -10,7 +10,7 @@
 #include "commonEvents.h"
 #include "configPanel.h"
 #include "comm.h"
-
+#include "BitmapWindow.h"
 
 class AccelInputPanel : public BaseChannelConfigPanel{
 
@@ -45,10 +45,14 @@ class AccelInputPanel : public BaseChannelConfigPanel{
 		void OnAccelZeroChanged(wxCommandEvent &event);
 		void InitMappingCombo(wxComboBox *combo);
 		void InitModeCombo(wxComboBox *combo);
+		void UpdateRcpBitmap();
 
 		wxComboBox *m_accelMapping[CONFIG_ACCEL_CHANNELS];
 		wxComboBox *m_accelMode[CONFIG_ACCEL_CHANNELS];
 		SteppedSpinCtrl *m_accelZeroValue[CONFIG_ACCEL_CHANNELS];
+		BitmapWindow *m_rcpBitmap;
+		wxStaticText *m_orientationMsg;
+
 	DECLARE_EVENT_TABLE()
 };
 

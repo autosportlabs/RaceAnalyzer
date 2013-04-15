@@ -1,12 +1,20 @@
 #include "configuration/configPanel.h"
 #include "configuration/accelInputPanel.h"
-#include "BitmapWindow.h"
 
-#include "upArrow.xpm"
+#include "accelX_pos.xpm"
+#include "accelX_neg.xpm"
+#include "accelY_pos.xpm"
+#include "accelY_neg.xpm"
+
 #include "rcp.xpm"
 #include "rcp_180.xpm"
 #include "rcp_90_ccw.xpm"
 #include "rcp_90_cw.xpm"
+
+#define MSG_NORMAL_MOUNTING "Upright mounting"
+#define MSG_INVERTED_MOUNTING "Upside-down mounting"
+#define MSG_INVALID_CONFIGURATION "Invalid configuration"
+#define MSG_INVALID_MODE_COMBO "Invert X, Y or Z-Axis"
 
 AccelInputPanel::AccelInputPanel() : BaseChannelConfigPanel()
 {
@@ -73,7 +81,7 @@ ChannelConfigExtraFields AccelInputPanel::CreateExtendedChannelFields(int i){
 		InitMappingCombo(c);
 		m_accelMapping[i] = c;
 		f.control = c;
-		f.header = "Mapping";
+		f.header = "Hardware\nMapping";
 		extraFields.Add(f);
 	}
 	{
@@ -125,16 +133,132 @@ wxPanel * AccelInputPanel::GetTopInnerPanel(){
 
 wxPanel * AccelInputPanel::GetBottomInnerPanel(){
 	wxPanel *panel = new wxPanel(this);
-	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,10,10);
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,5,5);
 	panel->SetSizer(sizer);
-	sizer->Add(new BitmapWindow(panel, wxID_ANY, upArrow_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
-	sizer->Add(new BitmapWindow(panel, wxID_ANY, rcp_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
+
+
+	m_orientationMsg = new wxStaticText(panel, wxID_DEFAULT, "");
+	wxFont f = m_orientationMsg->GetFont();
+	f.SetWeight(wxBOLD);
+	m_orientationMsg->SetFont(f);
+
+	sizer->Add(m_orientationMsg, 1, wxALIGN_CENTER_HORIZONTAL);
+
+	sizer->Add(new wxStaticText(panel, wxID_DEFAULT, "Front of Vehicle"),1, wxALIGN_CENTER_HORIZONTAL);
+
+	sizer->Add(new BitmapWindow(panel, wxID_ANY, accelY_pos_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
+
+	wxFlexGridSizer *innerSizer = new wxFlexGridSizer(1,3,5,5);
+	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_pos_xpm), 1, wxALIGN_CENTER_VERTICAL);
+	m_rcpBitmap = new BitmapWindow(panel, wxID_ANY, rcp_xpm);
+	innerSizer->Add(m_rcpBitmap, 1, wxALIGN_CENTER_HORIZONTAL);
+	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_neg_xpm), 1, wxALIGN_CENTER_VERTICAL);
+
+	sizer->Add(innerSizer, 1, wxALIGN_CENTER_HORIZONTAL);
+	sizer->Add(new BitmapWindow(panel, wxID_ANY, accelY_neg_xpm), 1, wxALIGN_CENTER_HORIZONTAL);\
+
 	return panel;
 }
 
 void AccelInputPanel::UpdatedExtendedFields()
 {
+	UpdateRcpBitmap();
 }
+
+void AccelInputPanel::UpdateRcpBitmap(){
+
+	AccelConfig &hardX = (m_configParams.config->accelConfigs[0]);
+	AccelConfig &hardY = (m_configParams.config->accelConfigs[1]);
+	AccelConfig &hardZ = (m_configParams.config->accelConfigs[2]);
+
+
+	AccelConfig logicalX = hardX;
+	AccelConfig logicalY = hardY;
+	AccelConfig logicalZ = hardZ;
+	const char ** mount_normal 	= rcp_xpm;
+	const char ** mount_180		= rcp_180_xpm;
+	int x_normal = accel_mode_normal;
+	int x_inverted = accel_mode_inverted;
+	int y_normal = accel_mode_normal;
+	int y_inverted = accel_mode_inverted;
+	int z_normal = accel_mode_normal;
+	int z_inverted = accel_mode_inverted;
+
+	if (hardX.channel == accel_channel_x && hardY.channel == accel_channel_y){
+		logicalX 		= hardX;
+		logicalY 		= hardY;
+		logicalZ 		= hardZ;
+		mount_normal 	= rcp_xpm;
+		mount_180		= rcp_180_xpm;
+		x_normal = accel_mode_normal;
+		x_inverted = accel_mode_inverted;
+		y_normal = accel_mode_normal;
+		y_inverted = accel_mode_inverted;
+		z_normal = accel_mode_normal;
+		z_inverted = accel_mode_inverted;
+	}
+
+	if (hardX.channel == accel_channel_y && hardY.channel == accel_channel_x){
+		logicalX = hardY;
+		logicalY = hardX;
+		logicalZ = hardZ;
+		mount_normal 	= rcp_90_cw_xpm;
+		mount_180		= rcp_90_ccw_xpm;
+		x_normal = accel_mode_normal;
+		x_inverted = accel_mode_inverted;
+		y_normal = accel_mode_inverted;
+		y_inverted = accel_mode_normal;
+		z_normal = accel_mode_normal;
+		z_inverted = accel_mode_inverted;
+	}
+
+
+	//Default mounting
+	if (logicalX.mode == x_normal && logicalY.mode == y_normal && logicalZ.mode == z_normal){
+		m_rcpBitmap->SetBitmap(mount_normal);
+		m_orientationMsg->SetLabel(MSG_NORMAL_MOUNTING);
+	}
+
+	//Upside mounting
+	if (logicalX.mode == x_inverted && logicalY.mode == y_normal &&	logicalZ.mode == z_inverted){
+		m_rcpBitmap->SetBitmap(mount_normal);
+		m_orientationMsg->SetLabel(MSG_INVERTED_MOUNTING);
+	}
+
+	if (logicalX.mode == x_inverted && logicalY.mode == y_inverted && logicalZ.mode == z_normal){
+		m_rcpBitmap->SetBitmap(mount_180);
+		m_orientationMsg->SetLabel(MSG_NORMAL_MOUNTING);
+	}
+
+	if (logicalX.mode == x_normal && logicalY.mode == y_inverted &&	logicalZ.mode == z_inverted){
+		m_rcpBitmap->SetBitmap(mount_180);
+		m_orientationMsg->SetLabel(MSG_INVERTED_MOUNTING);
+	}
+
+	if (logicalX.mode == x_normal && logicalY.mode == y_inverted &&	logicalZ.mode == z_normal){
+		m_rcpBitmap->SetBitmap(mount_180);
+		m_orientationMsg->SetLabel(wxString::Format("%s: %s", MSG_INVALID_CONFIGURATION, MSG_INVALID_MODE_COMBO));
+	}
+
+	if (logicalX.mode == x_inverted && logicalY.mode == y_normal && logicalZ.mode == z_normal){
+		m_rcpBitmap->SetBitmap(mount_normal);
+		m_orientationMsg->SetLabel(wxString::Format("%s: %s", MSG_INVALID_CONFIGURATION, MSG_INVALID_MODE_COMBO));
+	}
+
+	if (logicalX.mode == x_normal && logicalY.mode == y_normal && logicalZ.mode == z_inverted){
+		m_rcpBitmap->SetBitmap(mount_normal);
+		m_orientationMsg->SetLabel(wxString::Format("%s: %s", MSG_INVALID_CONFIGURATION, MSG_INVALID_MODE_COMBO));
+	}
+
+	if (logicalX.mode == x_inverted && logicalY.mode == y_inverted && logicalZ.mode == z_inverted){
+		m_rcpBitmap->SetBitmap(mount_180);
+		m_orientationMsg->SetLabel(wxString::Format("%s: %s", MSG_INVALID_CONFIGURATION, MSG_INVALID_MODE_COMBO));
+	}
+
+	this->Layout();
+
+}
+
 
 void AccelInputPanel::OnChannelModeChanged(wxCommandEvent &event){
 	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
@@ -142,6 +266,7 @@ void AccelInputPanel::OnChannelModeChanged(wxCommandEvent &event){
 		AccelConfig *cfg = (AccelConfig*)c->GetClientData();
 		cfg->mode = (accel_mode_t)c->GetSelection();
 	}
+	UpdateRcpBitmap();
 }
 
 void AccelInputPanel::OnChannelMappingChanged(wxCommandEvent &event){
@@ -150,6 +275,7 @@ void AccelInputPanel::OnChannelMappingChanged(wxCommandEvent &event){
 		AccelConfig *cfg = (AccelConfig*)c->GetClientData();
 		cfg->channel = (accel_channel_t)c->GetSelection();
 	}
+	UpdateRcpBitmap();
 }
 
 void AccelInputPanel::OnAccelZeroChanged(wxCommandEvent &event){
