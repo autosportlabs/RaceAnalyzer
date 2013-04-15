@@ -13,6 +13,14 @@ const wxString ConfigValueException::GetMessage(){
 	return _message;
 }
 
+VersionData::VersionData() : _major(0), _minor(0), _bugfix(0) {}
+
+VersionData::VersionData(int major, int minor, int bugfix, wxString &notes) :
+		_major(major),
+		_minor(minor),
+		_bugfix(bugfix),
+		_notes(notes) {}
+
 bool VersionData::IsDefined() const{
 	return !(!_major && !_minor && !_bugfix);
 }
@@ -49,3 +57,6 @@ void VersionData::SetNotes(wxString notes){
 	_notes = notes;
 }
 
+wxString VersionData::ToString(){
+	return wxString::Format("%d.%d.%d %s", _major, _minor, _bugfix, _notes);
+}

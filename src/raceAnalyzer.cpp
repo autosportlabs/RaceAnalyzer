@@ -378,7 +378,18 @@ void MainFrame::InitializeComponents(){
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
-	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright (c) 2008-2013 Autosport Labs\n\n",RACE_ANALYZER_VERSION);
+	wxString rcpVersionInfo = "";
+	try{
+		VersionData versionData;
+		m_raceAnalyzerComm.ReadVersion(versionData);
+		rcpVersionInfo = wxString::Format("RaceCapture/Pro Version %s", versionData.ToString());
+
+	}
+	catch(CommException &ex){
+		rcpVersionInfo = wxString::Format("Could not read RaceCapture/Pro version. Error: %s", ex.GetErrorMessage().ToAscii());
+	}
+
+	wxString msg = wxString::Format("Race Analyzer %s\n\nhttp://www.autosportlabs.net\n\nCopyright (c) 2008-2013 Autosport Labs\n\n%s",RACE_ANALYZER_VERSION, rcpVersionInfo.ToAscii());
 	wxMessageDialog dlg(this,msg, "About", wxOK);
 	dlg.ShowModal();
 }
