@@ -261,6 +261,30 @@ wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name){
 	return "";
 }
 
+void RaceAnalyzerComm::ReadVersion(VersionData &version){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	wxString result = SendCommand(serialPort, "version");
+
+	long major = 0;
+	long minor = 0;
+	long bugfix = 0;
+
+	if (	GetParam(result, "major").ToLong(&major,10) &&
+			GetParam(result, "minor").ToLong(&minor, 10) &&
+			GetParam(result, "bugfix").ToLong(&bugfix, 10)){
+
+	}
+	else{
+		throw CommException(CommException::CMD_ERROR,wxString::Format("Could not read version response: %s", result));
+	}
+
+	version.SetMajor(major);
+	version.SetMinor(minor);
+	version.SetBugfix(bugfix);
+}
+
 void RaceAnalyzerComm::reloadScript(void){
 
 	CComm *serialPort = GetSerialPort();

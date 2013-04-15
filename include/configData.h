@@ -20,9 +20,7 @@ class VersionData{
 
 	public:
 		VersionData();
-		VersionData(int major, int minor, int bugfix, wxString notes);
-		VersionData(const VersionData &data);
-		VersionData & operator=(const VersionData &rhs);
+		VersionData(int major, int minor, int bugfix, wxString &notes);
 
 		bool IsClientCompatible(const VersionData &clientVersion) const;
 
@@ -36,6 +34,8 @@ class VersionData{
 
 		void SetNotes(wxString notes);
 		wxString GetNotes() const;
+
+		wxString ToString();
 
 	private:
 		int _major;

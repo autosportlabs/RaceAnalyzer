@@ -26,10 +26,12 @@ class RaceAnalyzerComm {
 		void CloseSerialPort();
 		wxString readScript();
 		void writeScript(wxString &script);
-		void reloadScript(void);
 		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
 		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
 		void flashCurrentConfig();
+
+		void ReadVersion(VersionData &version);
+		void reloadScript(void);
 		void readRuntime(RuntimeValues *values);
 		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);

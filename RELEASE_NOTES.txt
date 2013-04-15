@@ -13,7 +13,8 @@ Fixed channel mapping corruption when importing multiple log files
 Changed Analog Scaling map to display in volts instead of the raw analog-digital value
 Changed Advanced Analog options to enable/disble fields according to what scaling mode is enabled, to aid clarity
 Fixed issue with config file not loading start/finish and split time coordinates
-Added stylized RaceCapture/Pro graphic to accel input configuration to show orientation
+Added dynamic graphic on Accelerometer input configuration page to show orientation
+Added ability to read RaceCapture/Pro firmware version from "Help/About"
 
 ===1.1.6===
 Fixed GPS rendering corruption when GPS data leads with null values
