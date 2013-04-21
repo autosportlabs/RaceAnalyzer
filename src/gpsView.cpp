@@ -6,16 +6,23 @@
  */
 
 #include "gpsView.h"
-#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+
 #include "logging.h"
 #include <iostream>
+
+#define POINT_MIN_PERCENTILE 1
+#define POINT_MAX_PERCENTILE 99
 
 WX_DEFINE_OBJARRAY(GPSPoints);
 
 
+static int DoubleCompare(double *n1, double *n2){
+	return *n1 < *n2;
+}
+
 GPSView::GPSView(wxWindow *parent, wxWindowID id,
     const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size,style,name)
+    : wxWindow(parent, id, pos, size,style,name), m_xSortedPoints(DoubleCompare), m_ySortedPoints(DoubleCompare)
     {
 	ClearGPSPoints();
 
@@ -108,7 +115,7 @@ GPSPoint GPSView::GetMarker()
 	return m_marker;
 }
 
-void GPSView::SetMarker(GPSPoint p)
+void GPSView::SetMarker(GPSPoint &p)
 {
 	m_marker.x = p.x;
 	m_marker.y = p.y;
@@ -129,6 +136,8 @@ void GPSView::OnEraseBackground(wxEraseEvent& WXUNUSED(event))
 
 void GPSView::ClearGPSPoints(){
 	m_gpsPoints.Clear();
+	m_xSortedPoints.Clear();
+	m_ySortedPoints.Clear();
 	m_minX = 0;
 	m_maxX = 0;
 	m_minY = 0;
@@ -138,21 +147,51 @@ void GPSView::ClearGPSPoints(){
 	Refresh();
 }
 
-void GPSView::AddGPSPoint(GPSPoint point){
-	if (m_minX == 0 || point.x < m_minX){
-		m_minX = point.x;
-	}
-	if (m_minY == 0 || point.y < m_minY){
-		m_minY = point.y;
-	}
-	if (m_maxX == 0 || point.x > m_maxX){
-		m_maxX = point.x;
-	}
-	if (m_maxY == 0 || point.y > m_maxY){
-		m_maxY = point.y;
-	}
-	m_gpsPoints.Add(point);
+void GPSView::AddGPSPoint(GPSPoint &p){
+	m_gpsPoints.Add(p);
+	UpdateMinMax(p);
 	Refresh();
+}
+
+void GPSView::UpdateMinMax(GPSPoint &p){
+	double *newX = (double*)malloc(sizeof(double));
+	double *newY = (double*)malloc(sizeof(double));
+
+	*newX = p.x;
+	*newY = p.y;
+
+	m_xSortedPoints.Add(newX);
+	m_ySortedPoints.Add(newY);
+
+	size_t xCount = m_xSortedPoints.Count();
+	size_t yCount = m_ySortedPoints.Count();
+
+	size_t maxPercentileIndex_x = xCount * POINT_MAX_PERCENTILE / 100;
+	size_t minPercentileIndex_x = xCount * POINT_MIN_PERCENTILE / 100;
+
+	size_t maxPercentileIndex_y = yCount * POINT_MAX_PERCENTILE / 100;
+	size_t minPercentileIndex_y = yCount * POINT_MIN_PERCENTILE / 100;
+
+	m_minX = *m_xSortedPoints[minPercentileIndex_x];
+	m_maxX = *m_xSortedPoints[maxPercentileIndex_x];
+
+	m_minY = *m_ySortedPoints[minPercentileIndex_y];
+	m_maxY = *m_ySortedPoints[maxPercentileIndex_y];
+
+	VERBOSE(FMT("point: %f, %f -- X index(min/max): %d %d -- Y index(min/max): %d %d -- %f %f -- %f %f",
+			*newX,
+			*newY,
+			minPercentileIndex_x,
+			maxPercentileIndex_x,
+			minPercentileIndex_y,
+			maxPercentileIndex_y,
+			m_minX,
+			m_maxX,
+			m_minY,
+			m_maxY
+			));
+
+
 }
 
 BEGIN_EVENT_TABLE(GPSView, wxWindow)
