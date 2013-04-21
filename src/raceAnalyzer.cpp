@@ -297,10 +297,10 @@ void MainFrame::InitializeMenus(){
 	menuBar->Append(toolsMenu, "Tools");
 
 	wxMenu* viewMenu = new wxMenu();
-	viewMenu->AppendSeparator();
-	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
 	viewMenu->Append(ID_CONFIG_MODE, "Configuration F2");
 	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis F3");
+	viewMenu->AppendSeparator();
+	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
 
 	menuBar->Append(viewMenu, "View");
 
