@@ -47,7 +47,7 @@
 
 //wxAUI string definitions
 #define PANE_CONFIGURATION 		"config"
-#define PANE_RUNTIME			"runtime"
+#define PANE_ANALYSIS			"analysis"
 
 #define CAPTION_CHANNELS 		"Channels"
 #define CAPTION_CONFIG			"Configuration"
@@ -61,8 +61,7 @@ enum{
 	ID_WRITE_CONFIG,
 
 	ID_CONFIG_MODE,
-	ID_RUNTIME_MODE,
-	ID_SCRIPT_MODE,
+	ID_ANALYSIS_MODE,
 
 	ID_HELP_ABOUT,
 	ID_IMPORT_DATALOG,
@@ -77,14 +76,8 @@ enum{
 	ID_SAVE_CONFIG,
 	ID_SAVE_CONFIG_AS,
 
-	ID_RESTORE_DEFAULT_VIEWS,
-	ID_PERSPECTIVES //this must be last
+	ID_RESTORE_DEFAULT_VIEWS
 
-};
-
-enum{
-		PERSPECTIVE_INDEX_CONFIG = 0,
-		PERSPECTIVE_INDEX_RUNTIME
 };
 
 bool RaceAnalyzerApp::OnInit()
@@ -136,7 +129,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	InitComms();
 
 	InitDatalogPlayer();
-	EnableVerbose(true);
+	//EnableVerbose(true);
 
 	try{
 	 LoadInitialConfig();
@@ -204,89 +197,74 @@ void MainFrame::InitializeFrame(){
 
 	InitializeComponents();
 
-	_frameManager.Update();
-
-	if (0 == _appPrefs.GetPerspectives().Count()){
-		SetDefaultPerspectiveView();
-	}
-	else{
-		SwitchToPerspective(_appPrefs.GetActivePerspective());
-	}
-
 	InitializeMenus();
+	LoadInitialPerspective();
+}
+
+void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
+	CreateDefaultPerspectives();
+}
+
+void MainFrame::SaveCurrentPerspective(){
+	wxString config = _frameManager.SavePerspective();
+	wxString perspectiveName = _appPrefs.GetCurrentPerspectiveName();
+	_appPrefs.SavePerspectiveConfig(perspectiveName, config);
 }
 
 
-void MainFrame::SetDefaultPerspectiveView(void){
-	int perspectiveCount = _appPrefs.GetPerspectives().Count();
-	if (perspectiveCount == 0){
+void MainFrame::LoadInitialPerspective(){
+
+	wxString name = _appPrefs.GetCurrentPerspectiveName();
+
+	if (name != ""){
+		SwitchToPerspective(name);
+	}
+	else{
 		CreateDefaultPerspectives();
-		_appPrefs.SetActivePerspective(0);
-		SwitchToPerspective(0);
 	}
 }
 
 void MainFrame::CreateDefaultPerspectives(){
-
-	_appPrefs.GetPerspectives().Clear();
-	CreateDefaultConfigPerspective();
 	CreateDefaultRuntimePerspective();
-	_appPrefs.SaveAppPrefs();
+	CreateDefaultConfigPerspective();
+	SwitchToPerspective(PANE_CONFIGURATION);
 }
 
 void MainFrame::CreateDefaultConfigPerspective(){
 
+	_frameManager.GetPane(wxT(PANE_ANALYSIS)).Show(false);
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(true);
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(false);
 	_frameManager.Update();
 
-	wxString perspective = _frameManager.SavePerspective();
-
-	_appPrefs.GetPerspectives().Add(perspective);
-	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_CONFIG);
+	wxString perspectiveConfig = _frameManager.SavePerspective();
+	_appPrefs.SavePerspectiveConfig(PANE_CONFIGURATION, perspectiveConfig);
 }
 
 void MainFrame::CreateDefaultRuntimePerspective(){
 
 	_frameManager.GetPane(wxT(PANE_CONFIGURATION)).Show(false);
-	_frameManager.GetPane(wxT(PANE_RUNTIME)).Show(true);
+	_frameManager.GetPane(wxT(PANE_ANALYSIS)).Show(true);
 	_frameManager.Update();
 
-	wxString perspective = _frameManager.SavePerspective();
-
-	_appPrefs.GetPerspectives().Add(perspective);
-	_appPrefs.GetPerspectiveNames().Add(PERSPECTIVE_RUNTIME);
+	wxString perspectiveConfig = _frameManager.SavePerspective();
+	_appPrefs.SavePerspectiveConfig(PANE_ANALYSIS, perspectiveConfig);
 }
 
-void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
-	CreateDefaultPerspectives();
-	SetDefaultPerspectiveView();
-}
-
-void MainFrame::SaveCurrentPerspective(){
-
-	//save the current perspective
-	int currentPerspective = _appPrefs.GetActivePerspective();
-	_appPrefs.GetPerspectives()[currentPerspective] = _frameManager.SavePerspective();
-
-}
-
-void MainFrame::SwitchToPerspective(int id){
-
+void MainFrame::SwitchToPerspective(wxString perspectiveName){
 	//load the new perspective
-	_frameManager.LoadPerspective(_appPrefs.GetPerspectives()[id],true);
-	_appPrefs.SetActivePerspective(id);
-	_frameManager.Update();
+	wxString perspectiveConfig = _appPrefs.ReadPerspectiveConfig(perspectiveName);
+	_frameManager.LoadPerspective(perspectiveConfig,true);
+	_appPrefs.SetCurrentPerspectiveName(perspectiveName);
 }
 
 void MainFrame::OnConfigPerspective(wxCommandEvent& event){
-	SaveCurrentPerspective();
-	SwitchToPerspective(PERSPECTIVE_INDEX_CONFIG);
+	//SaveCurrentPerspective();
+	SwitchToPerspective(PANE_CONFIGURATION);
 }
 
-void MainFrame::OnRuntimePerspective(wxCommandEvent& event){
-	SaveCurrentPerspective();
-	SwitchToPerspective(PERSPECTIVE_INDEX_RUNTIME);
+void MainFrame::OnAnalysisPerspective(wxCommandEvent& event){
+	//SaveCurrentPerspective();
+	SwitchToPerspective(PANE_ANALYSIS);
 }
 
 void MainFrame::InitializeMenus(){
@@ -314,6 +292,8 @@ void MainFrame::InitializeMenus(){
 	wxMenu* viewMenu = new wxMenu();
 	viewMenu->AppendSeparator();
 	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
+	viewMenu->Append(ID_CONFIG_MODE, "Configuration F2");
+	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis F3");
 
 	menuBar->Append(viewMenu, "View");
 
@@ -324,15 +304,6 @@ void MainFrame::InitializeMenus(){
 	chartsMenu->Append(ID_ADD_GPS_VIEW, wxT("GPS View"));
 
 	menuBar->Append(chartsMenu, "Charts");
-
-	wxMenu* perspectiveMenu = new wxMenu();
-	int perspectiveCount = _appPrefs.GetPerspectiveNames().Count();
-
-	for (int i = 0; i < perspectiveCount; i++){
-		perspectiveMenu->Append(ID_PERSPECTIVES + i, wxString::Format("%s\tF%s",_appPrefs.GetPerspectiveNames()[i].ToAscii(), wxString::Format("%d",2+i).ToAscii()));
-	}
-
-	menuBar->Append(perspectiveMenu, wxT("Perspective"));
 
 	wxMenu* helpMenu = new wxMenu();
 	helpMenu->Append(ID_HELP_ABOUT, wxT("About Race Analyzer"));
@@ -356,8 +327,8 @@ void MainFrame::InitializeMenus(){
 	toolBar->AddTool(ID_IMPORT_DATALOG, "", go_bottom_xpm, "ImportDatalog");
 
 	toolBar->AddSeparator();
-	toolBar->AddTool(ID_CONFIG_MODE, "", wrench_xpm, "Edit Configuration");
-	toolBar->AddTool(ID_RUNTIME_MODE, "", analysis_runtime2_xpm, "Analysis/Monitor Mode");
+	toolBar->AddTool(ID_CONFIG_MODE, "", wrench_xpm, "Configuration Mode");
+	toolBar->AddTool(ID_ANALYSIS_MODE, "", analysis_runtime2_xpm, "Analysis Mode");
 
 	toolBar->AddSeparator();
 
@@ -369,10 +340,11 @@ void MainFrame::InitializeComponents(){
 
 	m_channelsPanel = new DatalogChannelsPanel(DatalogChannelsParams(&m_currentConfig, &_appPrefs, &m_appOptions, &m_datalogStore),	this);
 	m_datalogPlayer.SetPlayerListener(m_channelsPanel);
-	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_RUNTIME)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide().CloseButton(false));
+	_frameManager.AddPane(m_channelsPanel, wxAuiPaneInfo().Name(wxT(PANE_ANALYSIS)).Caption(wxT(CAPTION_CHANNELS)).Center().Hide().CloseButton(false).Show(true));
 
 	m_configPanel = new ConfigPanel(this, ConfigPanelParams(&m_raceAnalyzerComm, &m_currentConfig, &m_appOptions));
-	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide().CloseButton(false));
+	_frameManager.AddPane(m_configPanel, wxAuiPaneInfo().Name(wxT(PANE_CONFIGURATION)).Caption(wxT(CAPTION_CONFIG)).Center().Hide().CloseButton(false).Show(true));
+	_frameManager.Update();
 }
 
 
@@ -435,13 +407,6 @@ void MainFrame::ConfigModified(){
 
 void MainFrame::SyncControls(){
 
-}
-
-
-void MainFrame::OnSwitchView(wxCommandEvent &event){
-
-	SaveCurrentPerspective();
-	SwitchToPerspective(event.GetId() - ID_PERSPECTIVES);
 }
 
 void MainFrame::SetActivityMessage(const wxString& message){
@@ -816,7 +781,7 @@ void MainFrame::AddGPSView(DatalogChannelSelectionSet *selectionSet){
 void MainFrame::ShowNoChannelSelectedError(void){
 	wxMessageDialog dlg(this, "Please select one or more channels to display", "Channels", wxOK | wxICON_HAND);
 	dlg.ShowModal();
-	SwitchToPerspective(PERSPECTIVE_INDEX_RUNTIME);
+	SwitchToPerspective(PANE_ANALYSIS);
 }
 
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
@@ -1058,7 +1023,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
     EVT_COMMAND( ID_REQUEST_DATALOG_DATA, REQUEST_DATALOG_DATA_EVENT, MainFrame::OnRequestDatalogData )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
-	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
+	EVT_MENU( ID_ANALYSIS_MODE, MainFrame::OnAnalysisPerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
 
@@ -1092,9 +1057,6 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_COMMAND(SEEK_FWD_DATALOG, SEEK_FWD_DATALOG_EVENT, MainFrame::OnSeekFwdDatalog)
 	EVT_COMMAND(SEEK_REV_DATALOG, SEEK_REV_DATALOG_EVENT, MainFrame::OnSeekRevDatalog)
 	EVT_COMMAND(TIME_OFFSET_CHANGED, TIME_OFFSET_CHANGED_EVENT, MainFrame::OnTimeOffsetChanged)
-
-	//this must always be last
-	EVT_MENU_RANGE(ID_PERSPECTIVES, ID_PERSPECTIVES + MAX_PERSPECTIVES, MainFrame::OnSwitchView)
 
 END_EVENT_TABLE()
 

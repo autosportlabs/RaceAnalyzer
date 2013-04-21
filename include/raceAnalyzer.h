@@ -38,7 +38,6 @@
 #define	RACEANALYZER_WINDOW_TITLE 	"RaceAnalyzer V%s"
 
 #define PERSPECTIVE_CONFIG	"Configuration"
-#define PERSPECTIVE_RUNTIME	"Runtime"
 #define PERSPECTIVE_ANALYZE	"Analysis"
 #define MAX_PERSPECTIVES	20
 
@@ -79,14 +78,16 @@ class MainFrame : public wxFrame, public RuntimeListener
 	void TerminateApp();
 	bool QuerySaveModifications();
 	bool QueryFileOverwrite();
-	void SwitchToPerspective(int id);
+	void SwitchToPerspective(wxString perspectiveName);
 	void SaveCurrentPerspective();
-	void SetDefaultPerspectiveView(void);
+	void SyncControls();
+	void LoadConfigurationFile(const wxString fileName);
+
+	void LoadInitialPerspective();
 	void CreateDefaultPerspectives();
 	void CreateDefaultConfigPerspective();
 	void CreateDefaultRuntimePerspective();
-	void SyncControls();
-	void LoadConfigurationFile(const wxString fileName);
+
 
 	void NewRaceEvent(wxString fileName);
 	void CloseRaceEvent();
@@ -116,10 +117,8 @@ class MainFrame : public wxFrame, public RuntimeListener
 
 	void OnImportDatalog(wxCommandEvent &event);
 	void OnAppOptions(wxCommandEvent &event);
-    void OnSwitchView(wxCommandEvent &event);
     void OnConfigPerspective(wxCommandEvent &event);
-    void OnRuntimePerspective(wxCommandEvent &event);
-    void OnAnalyzePerspective(wxCommandEvent &event);
+    void OnAnalysisPerspective(wxCommandEvent &event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
 
 	void OnImportWizardFinished(wxWizardEvent &event);
