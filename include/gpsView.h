@@ -9,6 +9,7 @@
 #define GPSVIEW_H_
 #include <wx/wx.h>
 #include <wx/dynarray.h>
+#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 
 #define POINT_SCALING	100000
 
@@ -28,6 +29,7 @@ public:
 };
 
 WX_DECLARE_OBJARRAY(GPSPoint,GPSPoints);
+WX_DEFINE_SORTED_ARRAY(double *, SortedPoints);
 
 class GPSView : public wxWindow
 {
@@ -42,12 +44,15 @@ public:
 	    void OnSize(wxSizeEvent& event);
 	    void OnPaint(wxPaintEvent& event);
 	    void ClearGPSPoints();
-	    void AddGPSPoint(GPSPoint point);
+	    void UpdateMinMax(GPSPoint &p);
+	    void AddGPSPoint(GPSPoint &p);
 	    void OnEraseBackground(wxEraseEvent& event);
 	    void OnEnterWindow( wxMouseEvent& event );
-	    void SetMarker(GPSPoint p);
+	    void SetMarker(GPSPoint &p);
 	    GPSPoint GetMarker();
 private:
+	    SortedPoints	m_xSortedPoints;
+	    SortedPoints	m_ySortedPoints;
 	    GPSPoints		m_gpsPoints;
 	    GPSPoint		m_marker;
 	    double			m_minX;

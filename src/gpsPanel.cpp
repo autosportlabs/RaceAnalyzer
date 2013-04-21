@@ -78,7 +78,8 @@ void GPSPane::ClearGPSPoints(){
 
 
 void GPSPane::AddGPSPoint(double latitude, double longitude){
-	m_gpsView->AddGPSPoint(ProjectPoint(latitude,longitude));
+	GPSPoint p = ProjectPoint(latitude,longitude);
+	m_gpsView->AddGPSPoint(p);
 }
 
 
@@ -129,7 +130,8 @@ void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
 	if (channel == m_longitudeChannel){
 		m_currentLongitude = value;
 	}
-	m_gpsView->SetMarker(ProjectPoint(m_currentLatitude, m_currentLongitude));
+	GPSPoint p = ProjectPoint(m_currentLatitude, m_currentLongitude);
+	m_gpsView->SetMarker(p);
 }
 
 void GPSPane::SetOffset(ViewChannels &channels, int offset){
