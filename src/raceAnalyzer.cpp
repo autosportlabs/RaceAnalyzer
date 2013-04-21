@@ -297,8 +297,8 @@ void MainFrame::InitializeMenus(){
 	menuBar->Append(toolsMenu, "Tools");
 
 	wxMenu* viewMenu = new wxMenu();
-	viewMenu->Append(ID_CONFIG_MODE, "Configuration F2");
-	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis F3");
+	viewMenu->Append(ID_CONFIG_MODE, "Configuration\tF2");
+	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis\tF3");
 	viewMenu->AppendSeparator();
 	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
 
