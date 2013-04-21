@@ -8,9 +8,8 @@
 #define CONFIG_KEY_LAST_CONFIG_DIRECTORY "lastConfigDir"
 #define CONFIG_KEY_LAST_DATALOG_DIRECTORY "lastDatalogDir"
 #define CONFIG_KEY_PERSPECTIVE 	"perspective_"
-#define CONFIG_KEY_PERSPECTIVE_COUNT "perspectiveCount"
 #define CONFIG_KEY_ACTIVE_PERSPECTIVE "activePerspective"
-#define CONFIG_KEY_PERSPECTIVE_NAME "perspectiveName_"
+#define DEFAULT_PERSPECTIVE ""
 
 
 class AppPrefs{
@@ -20,9 +19,6 @@ class AppPrefs{
 
 		AppPrefs();
 
-		wxArrayString & GetPerspectives();
-		int & GetActivePerspective();
-		void SetActivePerspective(int activePerspective);
 		wxArrayString & GetPerspectiveNames();
 		wxString GetLastRaceEventDirectory();
 		void SetLastRaceEventDirectory(wxString lastRaceEventDirectory);
@@ -30,6 +26,11 @@ class AppPrefs{
 		void SetLastConfigFileDirectory(wxString lastconfigFileDirectory);
 		wxString GetLastDatalogDirectory();
 		void SetLastDatalogDirectory(wxString lastDatalogDirectory);
+		wxString GetCurrentPerspectiveName();
+		void SetCurrentPerspectiveName(wxString perspectiveName);
+		wxString ReadPerspectiveConfig(wxString perspectiveName);
+		void SavePerspectiveConfig(wxString perspectiveName, wxString perspectiveConfig);
+
 
 
 		void SaveAppPrefs();
@@ -37,9 +38,7 @@ class AppPrefs{
 		void ResetDefaults();
 
 	private:
-		int				m_activePerspective;
-		wxArrayString 	m_perspectives;
-		wxArrayString	m_perspectiveNames;
+		wxString		m_currentPerspectiveName;
 
 		wxString		m_lastRaceEventDirectory;
 		wxString		m_lastConfigFileDirectory;
