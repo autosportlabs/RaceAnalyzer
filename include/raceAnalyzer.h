@@ -105,6 +105,9 @@ class MainFrame : public wxFrame, public RuntimeListener
 	//Main Panels
 
   	//events
+	void OnHelpDownloads(wxCommandEvent &event);
+	void OnHelpHardwareInstallGuide(wxCommandEvent &event);
+	void OnHelpOperationGuide(wxCommandEvent &event);
   	void OnHelpAbout(wxCommandEvent &event);
 
   	void OnRequestDatalogData(wxCommandEvent &event);

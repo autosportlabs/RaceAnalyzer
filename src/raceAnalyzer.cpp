@@ -53,6 +53,10 @@
 #define CAPTION_CONFIG			"Configuration"
 #define CAPTION_SCRIPT			"Script"
 
+#define OPERATION_GUIDE_URL						"http://autosportlabs.net/RaceCapturePro_SoftwareOperation"
+#define HARDWARE_INSTALL_GUIDE_URL 				"http://autosportlabs.net/RaceCapturePro_installation_guide"
+#define SOFTWARE_FIRMWARE_DOWNLOADS 			"http://autosportlabs.net/RaceCapturePro_Downloads"
+
 IMPLEMENT_APP(RaceAnalyzerApp);
 
 enum{
@@ -64,6 +68,9 @@ enum{
 	ID_ANALYSIS_MODE,
 
 	ID_HELP_ABOUT,
+	ID_HELP_OPERATION_GUIDE,
+	ID_HELP_INSTALL_GUIDE,
+	ID_HELP_DOWNLOADS,
 	ID_IMPORT_DATALOG,
 
 	ID_ADD_LINE_CHART,
@@ -306,6 +313,10 @@ void MainFrame::InitializeMenus(){
 	menuBar->Append(chartsMenu, "Charts");
 
 	wxMenu* helpMenu = new wxMenu();
+	helpMenu->Append(ID_HELP_OPERATION_GUIDE, wxT("Operation Guide"));
+	helpMenu->Append(ID_HELP_INSTALL_GUIDE, wxT("Installation Guide"));
+	helpMenu->Append(ID_HELP_DOWNLOADS, wxT("Software and Firmware Downloads"));
+	helpMenu->AppendSeparator();
 	helpMenu->Append(ID_HELP_ABOUT, wxT("About Race Analyzer"));
 	menuBar->Append(helpMenu, wxT("Help"));
 
@@ -347,6 +358,19 @@ void MainFrame::InitializeComponents(){
 	_frameManager.Update();
 }
 
+
+
+void MainFrame::OnHelpDownloads(wxCommandEvent &event){
+	wxLaunchDefaultBrowser(SOFTWARE_FIRMWARE_DOWNLOADS);
+}
+
+void MainFrame::OnHelpHardwareInstallGuide(wxCommandEvent &event){
+	wxLaunchDefaultBrowser(HARDWARE_INSTALL_GUIDE_URL);
+}
+
+void MainFrame::OnHelpOperationGuide(wxCommandEvent &event){
+	wxLaunchDefaultBrowser(OPERATION_GUIDE_URL);
+}
 
 void MainFrame::OnHelpAbout(wxCommandEvent &event){
 
@@ -1014,7 +1038,6 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
     EVT_MENU(wxID_EXIT, MainFrame::OnFileExit)
     EVT_MENU(ID_OPTIONS, MainFrame::OnAppOptions)
 
-
     EVT_MENU(wxID_NEW, MainFrame::OnNewRaceEvent)
     EVT_MENU(wxID_OPEN,MainFrame::OnOpenRaceEvent)
     EVT_MENU(ID_IMPORT_DATALOG,MainFrame::OnImportDatalog)
@@ -1026,6 +1049,9 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 	EVT_MENU( ID_ANALYSIS_MODE, MainFrame::OnAnalysisPerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
+	EVT_MENU( ID_HELP_OPERATION_GUIDE, MainFrame::OnHelpOperationGuide)
+	EVT_MENU( ID_HELP_INSTALL_GUIDE, MainFrame::OnHelpHardwareInstallGuide)
+	EVT_MENU( ID_HELP_DOWNLOADS, MainFrame::OnHelpDownloads)
 
 	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
 
