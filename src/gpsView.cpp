@@ -12,17 +12,15 @@
 
 #define POINT_MIN_PERCENTILE 1
 #define POINT_MAX_PERCENTILE 99
+#define DEFAULT_ZOOM 1
+#define ZOOM_ADJUST 1.1
+
 
 WX_DEFINE_OBJARRAY(GPSPoints);
 
-
-static int DoubleCompare(double *n1, double *n2){
-	return *n1 < *n2;
-}
-
 GPSView::GPSView(wxWindow *parent, wxWindowID id,
     const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-    : wxWindow(parent, id, pos, size,style,name), m_xSortedPoints(DoubleCompare), m_ySortedPoints(DoubleCompare)
+    : wxWindow(parent, id, pos, size,style,name)
     {
 	ClearGPSPoints();
 
@@ -35,12 +33,19 @@ GPSView::GPSView(wxWindow *parent, wxWindowID id,
 	_currentWidth = size.GetWidth();
 	_currentHeight = size.GetHeight();
 	_memBitmap = new wxBitmap(_currentWidth, _currentHeight);
-
+	m_zoom = DEFAULT_ZOOM;
     }
 
 GPSView::~GPSView(){}
 
-#define SCALE(P, MIN, MAX, VIEWSIZE) ((P - MIN) / (MAX - MIN)) * VIEWSIZE
+
+
+inline double GPSView::SCALE(double point, double min, double max, double currentSize, double zoom){
+
+	double scale = ((point - min) / (max - min)) * (currentSize * zoom);
+	scale += (currentSize - (currentSize * zoom)) / 2;
+	return scale;
+}
 
 void GPSView::OnPaint( wxPaintEvent& event )
 {
@@ -76,16 +81,28 @@ void GPSView::OnPaint( wxPaintEvent& event )
 	double lastY = 0;
 	int pointCount = m_gpsPoints.size();
 
+	int currentSize, xCenter, yCenter;
+	if (_currentWidth > _currentHeight){
+		currentSize = _currentHeight;
+		yCenter = 0;
+		xCenter = (_currentWidth - _currentHeight) / 2;
+	}
+	else{
+		currentSize = _currentWidth;
+		xCenter = 0;
+		yCenter = (_currentHeight - _currentWidth) / 2;
+	}
+
     for (int i = 0; i < pointCount; i++){
 		GPSPoint p = m_gpsPoints[i];
 		if (p.x != 0 && p.y != 0){
 			if (lastX == 0 && lastY == 0){
-				lastX = SCALE(p.x, m_minX, m_maxX, _currentWidth);
-				lastY = SCALE(p.y, m_minY, m_maxY, _currentHeight);
+				lastX = SCALE(p.x, m_minX, m_maxX, currentSize, m_zoom) + xCenter;
+				lastY = SCALE(p.y, m_minY, m_maxY, currentSize, m_zoom) + yCenter;
 			}
 			else{
-				double x = SCALE(p.x, m_minX, m_maxX, _currentWidth);
-				double y = SCALE(p.y, m_minY, m_maxY, _currentHeight);
+				double x = SCALE(p.x, m_minX, m_maxX, currentSize, m_zoom) + xCenter;
+				double y = SCALE(p.y, m_minY, m_maxY, currentSize, m_zoom) + yCenter;
 
 				dc.DrawLine(lastX, lastY, x, y);
 				lastX = x;
@@ -96,8 +113,8 @@ void GPSView::OnPaint( wxPaintEvent& event )
 
 
     dc.SetPen(*wxThePenList->FindOrCreatePen(*wxRED, 10, wxSOLID));
-    double markerX = SCALE(m_marker.x, m_minX, m_maxX, _currentWidth);
-    double markerY = SCALE(m_marker.y, m_minY, m_maxY, _currentHeight);
+    double markerX = SCALE(m_marker.x, m_minX, m_maxX, _currentWidth, m_zoom);
+    double markerY = SCALE(m_marker.y, m_minY, m_maxY, _currentHeight, m_zoom);
 
     dc.DrawCircle(wxPoint(markerX, markerY), 4);
 
@@ -136,8 +153,6 @@ void GPSView::OnEraseBackground(wxEraseEvent& WXUNUSED(event))
 
 void GPSView::ClearGPSPoints(){
 	m_gpsPoints.Clear();
-	m_xSortedPoints.Clear();
-	m_ySortedPoints.Clear();
 	m_minX = 0;
 	m_maxX = 0;
 	m_minY = 0;
@@ -147,51 +162,47 @@ void GPSView::ClearGPSPoints(){
 	Refresh();
 }
 
-void GPSView::AddGPSPoint(GPSPoint &p){
-	m_gpsPoints.Add(p);
-	UpdateMinMax(p);
+void GPSView::OnMouseWheel(wxMouseEvent &event){
+
+	int rotation = event.GetWheelRotation();
+	if (rotation > 0){
+		m_zoom *= ZOOM_ADJUST;
+	}
+	else{
+		m_zoom /= ZOOM_ADJUST;
+	}
 	Refresh();
 }
 
-void GPSView::UpdateMinMax(GPSPoint &p){
-	double *newX = (double*)malloc(sizeof(double));
-	double *newY = (double*)malloc(sizeof(double));
+void GPSView::AddGPSPoints(GPSPoints &p){
 
-	*newX = p.x;
-	*newY = p.y;
+    std::vector<double> m_xSortedPoints;
+    std::vector<double> m_ySortedPoints;
 
-	m_xSortedPoints.Add(newX);
-	m_ySortedPoints.Add(newY);
+    for (size_t i = 0; i < p.Count(); i++){
+    	m_xSortedPoints.push_back(p[i].x);
+    	m_ySortedPoints.push_back(p[i].y);
+    	m_gpsPoints.Add(p[i]);
+    }
 
-	size_t xCount = m_xSortedPoints.Count();
-	size_t yCount = m_ySortedPoints.Count();
+	std::sort(m_xSortedPoints.begin(), m_xSortedPoints.end());
+	std::sort(m_ySortedPoints.begin(), m_ySortedPoints.end());
 
-	size_t maxPercentileIndex_x = xCount * POINT_MAX_PERCENTILE / 100;
-	size_t minPercentileIndex_x = xCount * POINT_MIN_PERCENTILE / 100;
+	double xUbound = m_xSortedPoints.size() - 1;
+	double yUbound = m_ySortedPoints.size() - 1;
 
-	size_t maxPercentileIndex_y = yCount * POINT_MAX_PERCENTILE / 100;
-	size_t minPercentileIndex_y = yCount * POINT_MIN_PERCENTILE / 100;
+	int maxPercentileIndex_x = (int)(xUbound * POINT_MAX_PERCENTILE / 100);
+	int minPercentileIndex_x = (int)(xUbound * POINT_MIN_PERCENTILE / 100);
 
-	m_minX = *m_xSortedPoints[minPercentileIndex_x];
-	m_maxX = *m_xSortedPoints[maxPercentileIndex_x];
+	int maxPercentileIndex_y = (int)(yUbound * POINT_MAX_PERCENTILE / 100);
+	int minPercentileIndex_y = (int)(yUbound * POINT_MIN_PERCENTILE / 100);
 
-	m_minY = *m_ySortedPoints[minPercentileIndex_y];
-	m_maxY = *m_ySortedPoints[maxPercentileIndex_y];
+	m_minX = m_xSortedPoints[minPercentileIndex_x];
+	m_maxX = m_xSortedPoints[maxPercentileIndex_x];
+	m_minY = m_ySortedPoints[minPercentileIndex_y];
+	m_maxY = m_ySortedPoints[maxPercentileIndex_y];
 
-	VERBOSE(FMT("point: %f, %f -- X index(min/max): %d %d -- Y index(min/max): %d %d -- %f %f -- %f %f",
-			*newX,
-			*newY,
-			minPercentileIndex_x,
-			maxPercentileIndex_x,
-			minPercentileIndex_y,
-			maxPercentileIndex_y,
-			m_minX,
-			m_maxX,
-			m_minY,
-			m_maxY
-			));
-
-
+	Refresh();
 }
 
 BEGIN_EVENT_TABLE(GPSView, wxWindow)
@@ -199,5 +210,6 @@ BEGIN_EVENT_TABLE(GPSView, wxWindow)
     EVT_PAINT(GPSView::OnPaint)
     EVT_ENTER_WINDOW(GPSView::OnEnterWindow)
     EVT_ERASE_BACKGROUND(GPSView::OnEraseBackground)
+    EVT_MOUSEWHEEL(GPSView::OnMouseWheel)
 END_EVENT_TABLE()
 
