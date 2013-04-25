@@ -113,8 +113,8 @@ void GPSView::OnPaint( wxPaintEvent& event )
 
 
     dc.SetPen(*wxThePenList->FindOrCreatePen(*wxRED, 10, wxSOLID));
-    double markerX = SCALE(m_marker.x, m_minX, m_maxX, _currentWidth, m_zoom);
-    double markerY = SCALE(m_marker.y, m_minY, m_maxY, _currentHeight, m_zoom);
+    double markerX = SCALE(m_marker.x, m_minX, m_maxX, _currentWidth, m_zoom) + xCenter;
+    double markerY = SCALE(m_marker.y, m_minY, m_maxY, _currentHeight, m_zoom) + yCenter;
 
     dc.DrawCircle(wxPoint(markerX, markerY), 4);
 
