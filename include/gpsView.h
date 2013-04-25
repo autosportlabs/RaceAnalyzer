@@ -10,6 +10,10 @@
 #include <wx/wx.h>
 #include <wx/dynarray.h>
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+#include <vector>
+#include <algorithm>
+
+using std::vector;
 
 #define POINT_SCALING	100000
 
@@ -42,27 +46,28 @@ public:
 
 	    ~GPSView();
 	    void OnSize(wxSizeEvent& event);
+	    inline double SCALE(double point, double min, double max, double currentSize, double zoom);
 	    void OnPaint(wxPaintEvent& event);
 	    void ClearGPSPoints();
-	    void UpdateMinMax(GPSPoint &p);
-	    void AddGPSPoint(GPSPoint &p);
+	    void AddGPSPoints(GPSPoints &point);
 	    void OnEraseBackground(wxEraseEvent& event);
 	    void OnEnterWindow( wxMouseEvent& event );
+	    void OnMouseWheel( wxMouseEvent& event );
 	    void SetMarker(GPSPoint &p);
 	    GPSPoint GetMarker();
 private:
-	    SortedPoints	m_xSortedPoints;
-	    SortedPoints	m_ySortedPoints;
+
 	    GPSPoints		m_gpsPoints;
 	    GPSPoint		m_marker;
 	    double			m_minX;
 	    double			m_maxX;
 	    double			m_minY;
 	    double			m_maxY;
+	    double 			m_zoom;
+
 		int				_currentWidth;
 		int				_currentHeight;
 		wxBitmap 		*_memBitmap;
-
 	    DECLARE_EVENT_TABLE()
 
 };

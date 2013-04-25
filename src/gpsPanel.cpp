@@ -7,6 +7,11 @@
 #include "gpsPanel.h"
 #include "logging.h"
 
+static int DoubleCompare(double *n1, double *n2){
+	int result = *n1 < *n2;
+	VERBOSE(FMT("%f < %f = %d", *n1, *n2, result));
+	return result;
+}
 
 GPSPane::GPSPane(wxWindow *parent,
 			ChartParams chartParams,
@@ -64,24 +69,19 @@ void GPSPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIn
 
 	if (latitudeValues && longitudeValues){
 		ClearGPSPoints();
+
+		GPSPoints points;
 		for (size_t i = fromIndex; i < toIndex; i++){
-			AddGPSPoint((*latitudeValues)[i], (*longitudeValues)[i]);
+			GPSPoint p = GPSPoint(ProjectPoint((*latitudeValues)[i], (*longitudeValues)[i]));
+			points.Add(p);
 		}
+		m_gpsView->AddGPSPoints(points);
 	}
 }
-
 
 void GPSPane::ClearGPSPoints(){
 	m_gpsView->ClearGPSPoints();
 }
-
-
-
-void GPSPane::AddGPSPoint(double latitude, double longitude){
-	GPSPoint p = ProjectPoint(latitude,longitude);
-	m_gpsView->AddGPSPoint(p);
-}
-
 
 GPSPoint GPSPane::ProjectPoint(double latitude, double longitude){
 
