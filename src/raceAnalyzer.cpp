@@ -136,7 +136,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	InitComms();
 
 	InitDatalogPlayer();
-	EnableVerbose(true);
+	EnableVerbose(false);
 
 	try{
 	 LoadInitialConfig();
