@@ -55,8 +55,9 @@ WX_DEFINE_ARRAY_INT(sample_rate_t, SampleRates);
 
 enum telemetry_mode_t{
 	telemetry_mode_disabled = 0,
-	telemetry_mode_p2p,
-	telemetry_mode_cell
+	telemetry_mode_bluetooth,
+	telemetry_mode_cell,
+	telemetry_mode_p2p
 };
 
 enum logging_mode_t{

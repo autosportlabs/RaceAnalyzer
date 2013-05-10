@@ -1,6 +1,9 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.9===
+Clarified Logger Output Configuration panel
+
 ===1.1.8===
 Fixed GPS view so that it filters out invalid GPS points so rendering remains visible
 Fixed View Switching issue
