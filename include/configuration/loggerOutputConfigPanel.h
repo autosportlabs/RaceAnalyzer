@@ -8,6 +8,7 @@
 #include "raceCapture/raceCaptureConfig.h"
 #include "configuration/channelConfigPanel.h"
 #include "configuration/baseChannelConfigPanel.h"
+#include "configuration/loggerOutputAdvancedOptionsDialog.h"
 #include "commonEvents.h"
 #include "configPanelParams.h"
 
@@ -26,24 +27,32 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		~LoggerOutputConfigPanel();
 		void OnConfigUpdated();
 		void InitComponents();
+		wxStaticBoxSizer * GetP2PPanel();
+		wxStaticBoxSizer * GetBluetoothPanel();
+		wxStaticBoxSizer * GetCellTelemetryPanel();
 
 	private:
 		//event handlers
 		void OnP2PAddressHighChanged(wxCommandEvent &event);
 		void OnP2PAddressLowChanged(wxCommandEvent &event);
 		void OnTelemetryModeChanged(wxCommandEvent &event);
-		void OnTelemetryServerChanged(wxCommandEvent &event);
 		void OnTelemetryDeviceIdChanged(wxCommandEvent &event);
-
+		void UpdateTelemetryModeView(telemetry_mode_t mode);
 		void OnLoggingModeChanged(wxCommandEvent &event);
+  		void OnAdvancedOptions(wxCommandEvent &event);
+
 
 		wxComboBox * m_sdLoggingModeCombo;
 		wxComboBox * m_telemetryModeCombo;
 		wxTextCtrl * m_p2pAddressHighTextCtrl;
 		wxTextCtrl * m_p2pAddressLowTextCtrl;
-		wxTextCtrl * m_telemetryServerTextCtrl;
+		wxTextCtrl * m_bluetoothPasswordTextCtrl;
+		wxTextCtrl * m_bluetoothDeviceNameTextCtrl;
 		wxTextCtrl * m_deviceIdTextCtrl;
 
+		wxSizer * m_p2pSizer;
+		wxSizer * m_cellSizer;
+		wxSizer * m_btSizer;
 
 		DECLARE_EVENT_TABLE()
 };
