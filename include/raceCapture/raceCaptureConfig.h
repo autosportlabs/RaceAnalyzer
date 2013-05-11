@@ -212,6 +212,7 @@ public:
 class RaceCaptureConfig
 {
 public:
+	RaceCaptureConfig();
 	const static int MAX_PRECISION = 8;
 	const static int MIN_PRECISION = 0;
 	AnalogConfig analogConfigs[CONFIG_ANALOG_CHANNELS];
