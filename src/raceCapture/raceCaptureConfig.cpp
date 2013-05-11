@@ -5,6 +5,10 @@
  *      Author: brent
  */
 #include "raceCapture/raceCaptureConfig.h"
+#include "appOptions.h"
+#include "configuration/defaultConfigJson.h"
+
+#define DEFAULT_TELEMETRY_SERVER "54.245.229.2";
 
 SampleRates ChannelConfig::sampleRates;
 
@@ -27,8 +31,19 @@ SampleRates ChannelConfig::GetSampleRates(){
 	return sampleRates;
 }
 
+RaceCaptureConfig::RaceCaptureConfig(){
+	SetDefaults();
+}
 void RaceCaptureConfig::SetDefaults(){
 
+	Object jsonConfig;
+	std::stringstream stream;
+
+	for (size_t i = 0; i < strlen(defaultConfig);i++){
+		stream.put(defaultConfig[i]);
+	}
+	Reader::Read(jsonConfig, stream);
+	FromJson(jsonConfig);
 }
 
 void RaceCaptureConfig::ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson){
