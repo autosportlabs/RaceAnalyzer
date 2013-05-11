@@ -2,7 +2,7 @@
 #define RACEANALYZERCONFIGBASE_H_
 
 #ifndef RACE_ANALYZER_VERSION
-	#define	RACE_ANALYZER_VERSION			"1.1.9"
+	#define	RACE_ANALYZER_VERSION			"1.1.10"
 #endif
 
 #define 	RACE_ANALYZER_APP_NAME 			"Autosport_Labs_RaceAnalyzer_" RACE_ANALYZER_VERSION
