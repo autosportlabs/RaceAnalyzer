@@ -32,7 +32,7 @@ class RaceAnalyzerComm {
 
 		void ReadVersion(VersionData &version);
 		void reloadScript(void);
-		void readRuntime(RuntimeValues *values);
+		void ReadRuntime(RuntimeValues &values);
 		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void updateWriteConfigPct(int count, RaceAnalyzerCommCallback *callback);

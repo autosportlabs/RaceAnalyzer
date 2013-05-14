@@ -32,7 +32,6 @@
 #include "analysis_runtime2.xpm"
 #include "script_edit.xpm"
 
-
 #include "page_lightning.xpm"
 #include "folder_database.xpm"
 #include "wrench.xpm"
@@ -66,6 +65,7 @@ enum{
 
 	ID_CONFIG_MODE,
 	ID_ANALYSIS_MODE,
+	ID_RUNTIME_MODE,
 
 	ID_HELP_ABOUT,
 	ID_HELP_OPERATION_GUIDE,
@@ -274,6 +274,12 @@ void MainFrame::OnAnalysisPerspective(wxCommandEvent& event){
 	SwitchToPerspective(PANE_ANALYSIS);
 }
 
+void MainFrame::OnRuntimePerspective(wxCommandEvent &event){
+	m_sensorMonitorWindow = new RuntimeDialog(this, &m_raceAnalyzerComm);
+	m_sensorMonitorWindow->Show(true);
+}
+
+
 void MainFrame::InitializeMenus(){
 
 	//initialize main menu
@@ -299,6 +305,7 @@ void MainFrame::InitializeMenus(){
 	wxMenu* viewMenu = new wxMenu();
 	viewMenu->Append(ID_CONFIG_MODE, "Configuration\tF2");
 	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis\tF3");
+	viewMenu->Append(ID_RUNTIME_MODE, "Sensor Monitor\tF4");
 	viewMenu->AppendSeparator();
 	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
 
@@ -1047,6 +1054,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_MENU( ID_CONFIG_MODE, MainFrame::OnConfigPerspective)
 	EVT_MENU( ID_ANALYSIS_MODE, MainFrame::OnAnalysisPerspective)
+	EVT_MENU( ID_RUNTIME_MODE, MainFrame::OnRuntimePerspective)
 
 	EVT_MENU( ID_HELP_ABOUT, MainFrame::OnHelpAbout)
 	EVT_MENU( ID_HELP_OPERATION_GUIDE, MainFrame::OnHelpOperationGuide)

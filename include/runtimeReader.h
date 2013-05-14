@@ -12,21 +12,16 @@
 #include "raceCapture/raceCaptureRuntime.h"
 #include "comm.h"
 
-class RuntimeListener{
-public:
-	virtual void OnRuntimeValueUpdated(wxString &name, float value) = 0;
-};
-
 class RuntimeReader : public wxThread {
 
 public:
-	void Create(RaceAnalyzerComm *comm, RuntimeListener *listener);
+	void Create(RaceAnalyzerComm *comm, wxWindow *parent);
 	void * Entry();
 
 private:
 	void ReadRuntimeValues();
 	void NotifyRuntimeValues(RuntimeValues &values);
-	RuntimeListener *m_listener;
+	wxWindow *m_parent;
 	RaceAnalyzerComm *m_comm;
 
 

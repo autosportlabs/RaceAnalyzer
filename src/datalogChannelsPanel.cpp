@@ -76,7 +76,7 @@ void DatalogChannelsPanel::OnDatalogTick(int datalogIndex, int tickDuration, siz
 	UpdateTimeSlider((double)datalogIndex / (double)maxDatalogSize);
 }
 
-wxControl * DatalogChannelsPanel::CreateTimeWidget(wxWindow *parent){
+wxWindow * DatalogChannelsPanel::CreateTimeWidget(wxWindow *parent){
 
 	m_timeDisplay = new LCDDisplay(parent);
 	m_timeDisplay->SetGrayColour(wxColor(10,51,56));

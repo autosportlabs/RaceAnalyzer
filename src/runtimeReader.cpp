@@ -5,10 +5,13 @@
  *      Author: brent
  */
 #include "runtimeReader.h"
+#include "commonEvents.h"
 
-void RuntimeReader::Create(RaceAnalyzerComm *comm, RuntimeListener *listener){
+
+void RuntimeReader::Create(RaceAnalyzerComm *comm, wxWindow *parent){
 	m_comm = comm;
-	m_listener = listener;
+	m_parent = parent;
+	wxThread::Create();
 }
 
 void * RuntimeReader::Entry(){
@@ -21,16 +24,16 @@ void * RuntimeReader::Entry(){
 void RuntimeReader::ReadRuntimeValues(){
 	RuntimeValues values;
 
+	m_comm->ReadRuntime(values);
 	//Read the runtime values here
 	NotifyRuntimeValues(values);
+	Sleep(50);
 }
 
 void RuntimeReader::NotifyRuntimeValues(RuntimeValues &values){
-	RuntimeValues::iterator it;
-	for (it = values.begin(); it != values.end(); ++it ){
-		m_listener->OnRuntimeValueUpdated(it->first,it->second);
-	}
-
+	wxCommandEvent event (wxEVT_COMMAND_THREAD, RUNTIME_UPDATED);
+	event.SetClientData(&values);
+	m_parent->GetEventHandler()->AddPendingEvent(event);
 }
 
 
