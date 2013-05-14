@@ -72,7 +72,7 @@ class DatalogChannelsPanel : public wxPanel, public DatalogPlayerListener{
 		void OnDatalogTick(int datalogIndex, int tickDuration, size_t maxDatalogSize);
 	private:
 
-		wxControl * CreateTimeWidget(wxWindow *parent);
+		wxWindow * CreateTimeWidget(wxWindow *parent);
 		wxControl * CreateTimeScrollbar(wxWindow *parent);
 		wxSizer * CreatePlaybackControls(void);
 		void UpdateTimeSlider(double factor);

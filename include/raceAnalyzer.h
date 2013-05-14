@@ -28,6 +28,8 @@
 #include "chartBase.h"
 #include "runtimeReader.h"
 #include "datalogPlayer.h"
+#include "runtimeDialog.h"
+
 
 #include <wx/aui/aui.h>
 #include <wx/aui/framemanager.h>
@@ -54,7 +56,7 @@ class RaceAnalyzerApp : public wxApp{
   };
 
 
-class MainFrame : public wxFrame, public RuntimeListener
+class MainFrame : public wxFrame
   {
 
   private:
@@ -123,6 +125,7 @@ class MainFrame : public wxFrame, public RuntimeListener
     void OnConfigPerspective(wxCommandEvent &event);
     void OnAnalysisPerspective(wxCommandEvent &event);
 	void OnRestoreDefaultView(wxCommandEvent &event);
+	void OnRuntimePerspective(wxCommandEvent &event);
 
 	void OnImportWizardFinished(wxWizardEvent &event);
 
@@ -176,6 +179,7 @@ private:
 	ConfigPanel					*m_configPanel;
 	DatalogChannelsPanel 		*m_channelsPanel;
 
+	RuntimeDialog				*m_sensorMonitorWindow;
 
 	RaceAnalyzerChannelViews	m_channelViews;
 

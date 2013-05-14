@@ -173,6 +173,7 @@ void RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 
 wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, size_t timeout){
 
+	wxMutexLocker lock(_commMutex);
 	wxString response;
 
 	try{
@@ -386,13 +387,12 @@ void RaceAnalyzerComm::populateChannelConfig(ChannelConfig &cfg, wxString &data)
 	cfg.sampleRate = (sample_rate_t)GetIntParam(data,"sampleRate");
 }
 
-void RaceAnalyzerComm::readRuntime(RuntimeValues *values){
+void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 	try{
 		wxDateTime start = wxDateTime::UNow();
 		CComm *serialPort = GetSerialPort();
 		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
-		wxString cmd = "sample";
 		wxString rsp = SendCommand(serialPort, "sample");
 
 		wxStringTokenizer tokenizer(rsp,";");
@@ -407,7 +407,7 @@ void RaceAnalyzerComm::readRuntime(RuntimeValues *values){
 					value = value.Left(value.Len() - 1);
 					value = value.Right(value.Len() - 1);
 				}
-				(*values)[name] = atof(value);
+				values[name] = atof(value);
 			}
 		}
 
