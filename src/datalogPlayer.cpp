@@ -7,7 +7,12 @@
 #include "datalogPlayer.h"
 #include "raceCapture/raceCaptureConfig.h"
 
-DatalogPlayer::DatalogPlayer() : m_sessionsStale(false), m_datalogIndex(0), m_multiplier(1), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
+#define PAUSE_MULTIPLIER_INDEX 6
+#define PLAYBACK_MULTIPLIER_UBOUND 12
+
+static const int playbackMultipliers[] = {-64,-32,-16,-8,-4,-2,0,2,4,8,16,32,64};
+
+DatalogPlayer::DatalogPlayer() : m_sessionsStale(false), m_datalogIndex(0), m_multiplierIndex(PAUSE_MULTIPLIER_INDEX), m_maxSampleRate(sample_1Hz), m_maxDatalogRowCount(0), m_datalogStore(NULL), m_views(NULL), m_shouldPlay(NULL), m_playerListener(NULL){
 	m_shouldPlay = new wxSemaphore(0,1);
 }
 
@@ -25,13 +30,13 @@ void DatalogPlayer::DatalogSessionsUpdated(void){
 
 void DatalogPlayer::PlayFwd(void){
 	if (m_sessionsStale) RequeryAll();
-	SetPlaybackMultiplier(1);
+	SetPlaybackMultiplierIndex(PAUSE_MULTIPLIER_INDEX + 1);
 	m_shouldPlay->Post();
 }
 
 void DatalogPlayer::PlayRev(void){
 	if (m_sessionsStale) RequeryAll();
-	SetPlaybackMultiplier(-1);
+	SetPlaybackMultiplierIndex(PAUSE_MULTIPLIER_INDEX - 1);
 	m_shouldPlay->Post();
 }
 
@@ -58,28 +63,28 @@ void DatalogPlayer::SkipFwd(){
 }
 
 void DatalogPlayer::SeekFwd(){
-	int playbackMultiplier = GetPlaybackMultiplier();
-	if (playbackMultiplier < MAX_PLAYBACK_MULTIPLIER){
-		SetPlaybackMultiplier(playbackMultiplier + 1);
+	int playbackIndex = GetPlaybackMultiplierIndex();
+	if (playbackIndex < PLAYBACK_MULTIPLIER_UBOUND){
+		SetPlaybackMultiplierIndex(playbackIndex + 1);
 		m_shouldPlay->Post();
 	}
 }
 
 void DatalogPlayer::SeekRev(){
-	int playbackMultiplier = GetPlaybackMultiplier();
-	if (playbackMultiplier > -MAX_PLAYBACK_MULTIPLIER){
-		SetPlaybackMultiplier(playbackMultiplier - 1);
+	int playbackIndex = GetPlaybackMultiplierIndex();
+	if (playbackIndex > 0){
+		SetPlaybackMultiplierIndex(playbackIndex - 1);
 		m_shouldPlay->Post();
 	}
 }
 
-void DatalogPlayer::SetPlaybackMultiplier(int multiplier)
+void DatalogPlayer::SetPlaybackMultiplierIndex(int index)
 {
-	m_multiplier = multiplier;
+	m_multiplierIndex = index;
 }
 
-int DatalogPlayer::GetPlaybackMultiplier(){
-	return m_multiplier;
+int DatalogPlayer::GetPlaybackMultiplierIndex(){
+	return m_multiplierIndex;
 }
 
 void DatalogPlayer::Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews *views )  {
@@ -89,7 +94,7 @@ void DatalogPlayer::Create(DatalogStore *datalogStore, RaceAnalyzerChannelViews 
 }
 
 void DatalogPlayer::StopPlayback(){
-	SetPlaybackMultiplier(0);
+	SetPlaybackMultiplierIndex(PAUSE_DATALOG_EVENT);
 	Pause();
 }
 
@@ -100,7 +105,7 @@ void * DatalogPlayer::Entry(){
 		m_shouldPlay->Post();
 		wxThread::Sleep(1000 / m_maxSampleRate);
 
-		m_datalogIndex += m_multiplier;
+		m_datalogIndex += playbackMultipliers[m_multiplierIndex];
 
 		int ubound = m_maxDatalogRowCount - 1;
 		if (m_datalogIndex < 0 ){

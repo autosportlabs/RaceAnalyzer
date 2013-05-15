@@ -22,7 +22,7 @@ public:
 class DatalogPlayer : public wxThread {
 
 public:
-	const static int MAX_PLAYBACK_MULTIPLIER = 25;
+	const static int MAX_PLAYBACK_MULTIPLIER = 64;
 	DatalogPlayer();
 	~DatalogPlayer();
 	void PlayFwd(void);
@@ -39,8 +39,8 @@ public:
 	void SeekRev();
 	void AdjustOffset(int datalogId, int offset);
 	void StopPlayback();
-	void SetPlaybackMultiplier(int multiplier);
-	int GetPlaybackMultiplier();
+	void SetPlaybackMultiplierIndex(int index);
+	int GetPlaybackMultiplierIndex();
 	void UpdateDataHistory(HistoricalView *view, ViewChannels &channels, size_t fromIndex, size_t toIndex);
 	void DatalogSessionsUpdated(void);
 	void SetPlayerListener(DatalogPlayerListener *listener);
@@ -56,7 +56,7 @@ private:
 
 	int m_sessionsStale;
 	int m_datalogIndex;
-	int m_multiplier;
+	int m_multiplierIndex;
 	int m_maxSampleRate;
 	size_t m_maxDatalogRowCount;
 

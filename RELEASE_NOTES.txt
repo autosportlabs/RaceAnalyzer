@@ -1,6 +1,10 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.10===
+Added Sensor Monitor Panel
+changed playback multiplier to increment in 2x 4x 8x 16x 32x 64x (forward and backwards)
+
 ===1.1.9===
 Clarified Logger Output Configuration panel
 
