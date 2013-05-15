@@ -6,6 +6,7 @@
 #include "importWizardDialog.h"
 #include "exceptions.h"
 
+#include "inspect.xpm"
 #include "filenew.xpm"
 #include "fileopen.xpm"
 #include "filesave.xpm"
@@ -347,7 +348,8 @@ void MainFrame::InitializeMenus(){
 	toolBar->AddSeparator();
 	toolBar->AddTool(ID_CONFIG_MODE, "", wrench_xpm, "Configuration Mode");
 	toolBar->AddTool(ID_ANALYSIS_MODE, "", analysis_runtime2_xpm, "Analysis Mode");
-
+	toolBar->AddSeparator();
+	toolBar->AddTool(ID_RUNTIME_MODE, "", inspect_xpm, "Sensor Monitor");
 	toolBar->AddSeparator();
 
 	toolBar->Realize();
