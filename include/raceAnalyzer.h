@@ -29,7 +29,7 @@
 #include "runtimeReader.h"
 #include "datalogPlayer.h"
 #include "runtimeDialog.h"
-
+#include "LogFileDropTarget.h"
 
 #include <wx/aui/aui.h>
 #include <wx/aui/framemanager.h>
@@ -61,6 +61,7 @@ class MainFrame : public wxFrame
 
   private:
 
+	void InitDragDrop();
 	void InitComms();
 	void InitDatalogPlayer();
 	void LoadInitialConfig();
@@ -182,6 +183,8 @@ private:
 	RuntimeDialog				*m_sensorMonitorWindow;
 
 	RaceAnalyzerChannelViews	m_channelViews;
+
+	LogFileDropTarget			m_logFileDropTarget;
 
 	//App Options and settings
 	AppOptions			m_appOptions;

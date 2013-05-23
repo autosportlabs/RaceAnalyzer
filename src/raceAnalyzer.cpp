@@ -207,6 +207,11 @@ void MainFrame::InitializeFrame(){
 
 	InitializeMenus();
 	LoadInitialPerspective();
+	InitDragDrop();
+}
+
+void MainFrame::InitDragDrop(){
+
 }
 
 void MainFrame::OnRestoreDefaultView(wxCommandEvent &event){
