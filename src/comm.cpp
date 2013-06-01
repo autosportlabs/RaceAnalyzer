@@ -410,14 +410,14 @@ void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 				values[name] = atof(value);
 			}
 		}
-
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		wxLogMessage("sample in %f",dur.GetMilliseconds().ToDouble());
 	}
 	catch(CommException &e){
-
+		wxLogMessage("error reading sample %s",e.GetErrorMessage().ToAscii());
+		CloseSerialPort();
+		throw e;
 	}
-
 }
 
 void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCallback *callback){

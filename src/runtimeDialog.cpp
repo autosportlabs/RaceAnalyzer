@@ -46,15 +46,8 @@ void RuntimeDialog::CreateControls(){
 
 	m_statusBar = new LedStatusBar(this);
 	SetStatusBar(m_statusBar);
-
 	m_mainSizer = new wxGridSizer(4,5,5);
-
-	wxGridSizer *tempSizer = new wxGridSizer(1,1,20,20);
-
-	wxStaticText *noDataMsg = new wxStaticText(this,wxID_ANY, "\n\n\n          No Data          \n\n\n");
-	noDataMsg->SetForegroundColour(*wxWHITE);
-	tempSizer->Add(noDataMsg,1,wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
-	this->SetSizer(tempSizer);
+	this->SetSizer(m_mainSizer);
 }
 
 void RuntimeDialog::AddChannel(wxString& name) {
@@ -62,11 +55,6 @@ void RuntimeDialog::AddChannel(wxString& name) {
 	lcd->SetLabel(name);
 	lcd->SetBackgroundColour(*wxBLACK);
 	lcd->SetMinSize(wxSize(100,50));
-	if (m_currentValues.size() == 0){
-		this->SetSizer(m_mainSizer);
-		this->Layout();
-		m_mainSizer->SetSizeHints(this);
-	}
 	m_currentValues[name] = lcd;
 	m_mainSizer->Add(lcd, 1, wxEXPAND | wxALL);
 	m_mainSizer->SetSizeHints(this);
@@ -75,6 +63,7 @@ void RuntimeDialog::AddChannel(wxString& name) {
 void RuntimeDialog::OnRuntimeValueUpdated(wxCommandEvent &event){
 	RuntimeValues *values = (RuntimeValues *)event.GetClientData();
 
+	SetStatusText(event.GetString(), 0);
 	RuntimeValues::iterator it;
 	for (it = values->begin(); it != values->end(); ++it ){
 		wxString name = it->first;

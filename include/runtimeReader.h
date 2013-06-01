@@ -20,7 +20,7 @@ public:
 
 private:
 	void ReadRuntimeValues();
-	void NotifyRuntimeValues(RuntimeValues &values);
+	void NotifyRuntimeValues(RuntimeValues &values, wxString &statusMsg);
 	wxWindow *m_parent;
 	RaceAnalyzerComm *m_comm;
 
