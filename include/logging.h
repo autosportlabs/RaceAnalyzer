@@ -17,10 +17,11 @@
 )
 
 extern bool loggingVerbose;
+extern bool loggingInfo;
 
 #define VERBOSE_ENABLED loggingVerbose
 #define VERBOSE(MSG) do { if (loggingVerbose){ \
-		wxLogMessage("%s (%d): %s",__SFILE__, __LINE__, MSG.ToAscii()); \
+		wxLogMessage("%s (%d): %s",__SFILE__, __LINE__, wxString(MSG).ToAscii()); \
 		} \
 	} while(0)
 

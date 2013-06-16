@@ -7,8 +7,13 @@
 #include "logging.h"
 
 bool loggingVerbose = false;
+bool loggingInfo = false;
 
 void EnableVerbose(bool enabled){
 	loggingVerbose = enabled;
+}
+
+void EnableInfo(bool enabled){
+	loggingInfo = enabled;
 }
 

@@ -2,14 +2,13 @@
 #define RACEANALYZERCONFIGBASE_H_
 
 #ifndef RACE_ANALYZER_VERSION
-	#define	RACE_ANALYZER_VERSION			"1.1.11"
+	#define	RACE_ANALYZER_VERSION			"1.1.12"
 #endif
 
 #define 	RACE_ANALYZER_APP_NAME 			"Autosport_Labs_RaceAnalyzer_" RACE_ANALYZER_VERSION
 
 
 class InvalidStateException{
-
 
 	public:
 		InvalidStateException(){}

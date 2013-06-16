@@ -304,7 +304,7 @@ size_t CComm::writeChar(char b )
 //
 size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 
-	wxLogMessage("Reading Line...");
+	//wxLogMessage("Reading Line...");
 	memset( buf, 0, bufSize );
     size_t totalRead = 0;
 	DWORD charsRead = 0;

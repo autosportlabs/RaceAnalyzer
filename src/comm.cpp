@@ -5,6 +5,7 @@
 #include "base64.h"
 #include <wx/tokenzr.h>
 #include <wx/hashmap.h>
+#include "logging.h"
 
 CommException::CommException(int errorStatus, wxString errorDetail){
 	_errorStatus = errorStatus;
@@ -49,7 +50,7 @@ void RaceAnalyzerComm::CloseSerialPort(){
 
 	wxMutexLocker lock(_commMutex);
 
-	wxLogMessage("closing serial port");
+	VERBOSE("closing serial port");
 	if (_serialPort){
 		if (_serialPort->isOpen()) _serialPort->closePort();
 		delete _serialPort;
@@ -76,7 +77,7 @@ CComm* RaceAnalyzerComm::GetSerialPort(){
 
 CComm* RaceAnalyzerComm::OpenSerialPort(){
 
-	wxLogMessage("Open Serial port %d" ,_serialPortNumber + 1);
+	VERBOSE(FMT("Open Serial port %d" , _serialPortNumber + 1));
 	CComm* comPort = new CComm();
 	if (!comPort->openPort(comPort->getPortName(_serialPortNumber + 1))){
 			delete ( comPort );
@@ -177,10 +178,10 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, s
 	wxString response;
 
 	try{
-		wxLogMessage("Send Cmd (%d): '%s'",buffer.Len(), buffer.ToAscii());
+		VERBOSE(FMT("Send Cmd (%d): '%s'",buffer.Len(), buffer.ToAscii()));
 		size_t bufferSize = 8192;
 		comPort->sendCommand(buffer.ToAscii(),wxStringBuffer(response,bufferSize),bufferSize,timeout,true);
-		wxLogMessage("Cmd Response: %s", response.ToAscii());
+		VERBOSE(FMT("Cmd Response: %s", response.ToAscii()));
 	}
 	catch(SerialException &e){
 		throw CommException(e.GetErrorStatus(), e.GetErrorDetail());
@@ -193,7 +194,7 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, s
 
 int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
 
-	//wxLogMessage("writeLine: %s", buffer.ToAscii());
+	VERBOSE(FMT("writeLine: %s", buffer.ToAscii()));
 	char *tempBuff = (char*)malloc(buffer.Len() + 10);
 	strcpy(tempBuff,buffer.ToAscii());
 	strcat(tempBuff,"\r");
@@ -411,7 +412,7 @@ void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 			}
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
-		wxLogMessage("sample in %f",dur.GetMilliseconds().ToDouble());
+		VERBOSE(FMT("sample in %f",dur.GetMilliseconds().ToDouble()));
 	}
 	catch(CommException &e){
 		wxLogMessage("error reading sample %s",e.GetErrorMessage().ToAscii());
@@ -538,7 +539,7 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 			updateWriteConfigPct(++updateCount,callback);
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
-		wxLogMessage("get config in %f",dur.GetMilliseconds().ToDouble());
+		VERBOSE(FMT("get config in %f",dur.GetMilliseconds().ToDouble()));
 		callback->ReadConfigComplete(true,"");
 	}
 	catch(CommException &e){
@@ -686,7 +687,7 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 			updateWriteConfigPct(++updateCount,callback);
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
-		wxLogMessage("write config in %f",dur.GetMilliseconds().ToDouble());
+		VERBOSE(FMT("write config in %f",dur.GetMilliseconds().ToDouble()));
 		callback->WriteConfigComplete(true,"");
 	}
 	catch(CommException &e){
@@ -705,10 +706,10 @@ void RaceAnalyzerComm::flashCurrentConfig(){
 		wxString result = SendCommand(serialPort, cmd);
 		CheckThrowResult(result);
 		wxTimeSpan dur = wxDateTime::UNow() - start;
-		wxLogMessage("flash config in %f",dur.GetMilliseconds().ToDouble());
+		VERBOSE(FMT("flash config in %f",dur.GetMilliseconds().ToDouble()));
 	}
 	catch(CommException &e){
-		wxLogMessage("Error during flash: " + e.GetErrorMessage());
+		VERBOSE(FMT("Error during flash: %s", e.GetErrorMessage()));
 	}
 	CloseSerialPort();
 }
