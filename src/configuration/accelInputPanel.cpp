@@ -149,10 +149,10 @@ wxPanel * AccelInputPanel::GetBottomInnerPanel(){
 	sizer->Add(new BitmapWindow(panel, wxID_ANY, accelY_pos_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
 
 	wxFlexGridSizer *innerSizer = new wxFlexGridSizer(1,3,5,5);
-	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_pos_xpm), 1, wxALIGN_CENTER_VERTICAL);
+	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_neg_xpm), 1, wxALIGN_CENTER_VERTICAL);
 	m_rcpBitmap = new BitmapWindow(panel, wxID_ANY, rcp_xpm);
 	innerSizer->Add(m_rcpBitmap, 1, wxALIGN_CENTER_HORIZONTAL);
-	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_neg_xpm), 1, wxALIGN_CENTER_VERTICAL);
+	innerSizer->Add(new BitmapWindow(panel, wxID_ANY, accelX_pos_xpm), 1, wxALIGN_CENTER_VERTICAL);
 
 	sizer->Add(innerSizer, 1, wxALIGN_CENTER_HORIZONTAL);
 	sizer->Add(new BitmapWindow(panel, wxID_ANY, accelY_neg_xpm), 1, wxALIGN_CENTER_HORIZONTAL);\

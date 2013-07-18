@@ -197,15 +197,43 @@ void RaceCaptureConfig::PopulateGpioConfig(Array &gpioConfigRoot){
 
 void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
 	try{
-		loggerOutputConfig.loggingMode = (logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
-		loggerOutputConfig.telemetryMode = (telemetry_mode_t)(int)Number(outputConfig["telemetryMode"]);
-		loggerOutputConfig.telemetryServer = ((String)outputConfig["telemetryServer"]).Value();
-		loggerOutputConfig.telemetryDeviceId = ((String)outputConfig["telemetryDeviceId"]).Value();
-		loggerOutputConfig.p2pDestinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
-		loggerOutputConfig.p2pDestinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
+		connectivityConfig.sdLoggingMode = (sd_logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
+		connectivityConfig.connectivityMode = (connectivity_mode_t)(int)Number(outputConfig["telemetryMode"]);
+		connectivityConfig.telemetryConfig.telemetryServer = ((String)outputConfig["telemetryServer"]).Value();
+		connectivityConfig.telemetryConfig.telemetryDeviceId = ((String)outputConfig["telemetryDeviceId"]).Value();
+		connectivityConfig.p2pConfig.destinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
+		connectivityConfig.p2pConfig.destinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
 	}
 	catch(json::Exception &e){
 		wxLogError("Error parsing OutputConfig: %s", e.what());
+	}
+}
+
+void RaceCaptureConfig::PopulateCellConfig(Object &cellConfig){
+	try{
+		connectivityConfig.cellularConfig.apnHost = ((String)cellConfig["apnHost"]).Value();
+		connectivityConfig.cellularConfig.apnUser = ((String)cellConfig["apnUser"]).Value();
+		connectivityConfig.cellularConfig.apnPass = ((String)cellConfig["apnPass"]).Value();
+	}catch(json::Exception &e){
+		wxLogError("Error parsing CellConfig: %s", e.what());
+	}
+}
+
+void RaceCaptureConfig::PopulateBtConfig(Object &btConfig){
+	try{
+		connectivityConfig.bluetoothConfig.deviceName = ((String)btConfig["user"]).Value();
+		connectivityConfig.bluetoothConfig.deviceName = ((String)btConfig["pass"]).Value();
+	}catch(json::Exception &e){
+		wxLogError("Error parsing ConnectivityConfig: %s", e.what());
+	}
+}
+
+void RaceCaptureConfig::PopulateConnectivityConfig(Object &connectivityConfig){
+	try{
+		PopulateCellConfig(connectivityConfig["cellCfg"]);
+		PopulateBtConfig(connectivityConfig["btCfg"]);
+	}catch(json::Exception &e){
+		wxLogError("Error parsing ConnectivityConfig: %s", e.what());
 	}
 }
 
@@ -227,6 +255,8 @@ void RaceCaptureConfig::FromJson(Object root){
 	PopulatePulseOutputConfig(root["pulseOutputConfigs"]);
 	PopulateGpioConfig(root["gpioConfigs"]);
 	PopulateOutputConfig(root["outputConfig"]);
+	PopulateConnectivityConfig(root["connectivityConfig"]);
+
 	PopulateAutomationConfig(root["automation"]);
 	}
 	catch(json::Exception &e){
@@ -351,12 +381,36 @@ Array RaceCaptureConfig::GpioConfigToJson(){
 
 Object RaceCaptureConfig::OutputConfigToJson(){
 	Object cfg;
-	cfg["sdLoggingMode"] = Number(loggerOutputConfig.loggingMode);
-	cfg["telemetryMode"] = Number(loggerOutputConfig.telemetryMode);
-	cfg["telemetryServer"] = String(loggerOutputConfig.telemetryServer.ToAscii());
-	cfg["telemetryDeviceId"] = String(loggerOutputConfig.telemetryDeviceId.ToAscii());
-	cfg["p2pDestAddrHigh"] = Number(loggerOutputConfig.p2pDestinationAddrHigh);
-	cfg["p2pDestAddrLow"] = Number(loggerOutputConfig.p2pDestinationAddrLow);
+	cfg["sdLoggingMode"] = Number(connectivityConfig.sdLoggingMode);
+	cfg["telemetryMode"] = Number(connectivityConfig.connectivityMode);
+	cfg["telemetryServer"] = String(connectivityConfig.telemetryConfig.telemetryServer.ToAscii());
+	cfg["telemetryDeviceId"] = String(connectivityConfig.telemetryConfig.telemetryDeviceId.ToAscii());
+	cfg["p2pDestAddrHigh"] = Number(connectivityConfig.p2pConfig.destinationAddrHigh);
+	cfg["p2pDestAddrLow"] = Number(connectivityConfig.p2pConfig.destinationAddrLow);
+	return cfg;
+}
+
+
+
+Object RaceCaptureConfig::ConnectivityConfigToJson(){
+	Object cfg;
+	cfg["cellCfg"] = CellularConfigToJson();
+	cfg["btCfg"] = BluetoothConfigToJson();
+	return cfg;
+}
+
+Object RaceCaptureConfig::BluetoothConfigToJson(){
+	Object cfg;
+	cfg["name"] = String(connectivityConfig.bluetoothConfig.deviceName.ToAscii());
+	cfg["pass"] = String(connectivityConfig.bluetoothConfig.passcode.ToAscii());
+	return cfg;
+}
+
+Object RaceCaptureConfig::CellularConfigToJson(){
+	Object cfg;
+	cfg["apnHost"] = String(connectivityConfig.cellularConfig.apnHost.ToAscii());
+	cfg["apnUser"] = String(connectivityConfig.cellularConfig.apnUser.ToAscii());
+	cfg["apnPass"] = String(connectivityConfig.cellularConfig.apnPass.ToAscii());
 	return cfg;
 }
 
@@ -369,6 +423,7 @@ Object RaceCaptureConfig::ScriptToJson(){
 Object RaceCaptureConfig::ToJson(void){
 
 	Object objRoot;
+	objRoot["configVersion"] = String(CONFIG_VERSION_1);
 	objRoot["gpsConfig"] = GpsConfigToJson();
 	objRoot["analogConfigs"] = AnalogConfigToJson();
 	objRoot["pulseInputConfigs"] = PulseInputConfigToJson();
@@ -376,6 +431,8 @@ Object RaceCaptureConfig::ToJson(void){
 	objRoot["pulseOutputConfigs"] = PulseOutputConfigToJson();
 	objRoot["gpioConfigs"] = GpioConfigToJson();
 	objRoot["outputConfig"] = OutputConfigToJson();
+	objRoot["connectivityConfig"] = ConnectivityConfigToJson();
+
 	objRoot["automation"] = ScriptToJson();
 	return objRoot;
 }

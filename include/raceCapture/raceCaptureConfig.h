@@ -12,6 +12,8 @@
 #include "json/writer.h"
 #include "json/elements.h"
 
+#define CONFIG_VERSION_1 "1"
+
 using namespace json;
 
 //Number of channels per feature
@@ -53,27 +55,53 @@ enum scaling_mode_t {
 
 WX_DEFINE_ARRAY_INT(sample_rate_t, SampleRates);
 
-enum telemetry_mode_t{
+enum connectivity_mode_t{
 	telemetry_mode_disabled = 0,
 	telemetry_mode_bluetooth,
 	telemetry_mode_cell,
 	telemetry_mode_p2p
 };
 
-enum logging_mode_t{
+enum sd_logging_mode_t{
 	logging_mode_disabled = 0,
 	logging_mode_csv,
 	logging_mode_binary
 };
 
-class LoggerOutputConfig{
+class CellularConfig{
 public:
-	telemetry_mode_t telemetryMode;
-	logging_mode_t loggingMode;
-	unsigned int p2pDestinationAddrHigh;
-	unsigned int p2pDestinationAddrLow;
-	wxString telemetryServer;
+	wxString apnHost;
+	wxString apnUser;
+	wxString apnPass;
+};
+
+class TelemetryConfig{
+public:
 	wxString telemetryDeviceId;
+	wxString telemetryServer;
+};
+
+class P2PConfig{
+public:
+	unsigned int destinationAddrHigh;
+	unsigned int destinationAddrLow;
+};
+
+class BluetoothConfig{
+public:
+	wxString deviceName;
+	wxString passcode;
+};
+
+
+class ConnectivityConfig{
+public:
+	TelemetryConfig telemetryConfig;
+	CellularConfig cellularConfig;
+	BluetoothConfig bluetoothConfig;
+	P2PConfig p2pConfig;
+	connectivity_mode_t connectivityMode;
+	sd_logging_mode_t sdLoggingMode;
 };
 
 class ChannelConfig{
@@ -223,7 +251,7 @@ public:
 	feature_installed_t accelInstalled;
 	AccelConfig accelConfigs[CONFIG_ACCEL_CHANNELS];
 	GpsConfig gpsConfig;
-	LoggerOutputConfig loggerOutputConfig;
+	ConnectivityConfig connectivityConfig;
 	wxString luaScript;
 
 
@@ -241,6 +269,9 @@ private:
 	Array PulseOutputConfigToJson();
 	Array GpioConfigToJson();
 	Object OutputConfigToJson();
+	Object ConnectivityConfigToJson();
+	Object CellularConfigToJson();
+	Object BluetoothConfigToJson();
 	Object ScriptToJson();
 
 	void ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson);
@@ -252,6 +283,9 @@ private:
 	void PopulatePulseOutputConfig(Array &pulseOutputRoot);
 	void PopulateGpioConfig(Array &gpioConfigRoot);
 	void PopulateOutputConfig(Object &outputConfig);
+	void PopulateConnectivityConfig(Object &outputConfig);
+	void PopulateCellConfig(Object &cellConfig);
+	void PopulateBtConfig(Object &btConfig);
 	void PopulateAutomationConfig(Object &automationConfig);
 
 };

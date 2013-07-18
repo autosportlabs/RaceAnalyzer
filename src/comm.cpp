@@ -522,15 +522,21 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 		}
 
 		{
-			LoggerOutputConfig &outputConfig = (config->loggerOutputConfig);
+			ConnectivityConfig &connectivityConfig = (config->connectivityConfig);
 			wxString cmd = "getOutputCfg";
 			wxString rsp = SendCommand(serialPort,cmd);
-			outputConfig.loggingMode = (logging_mode_t)GetIntParam(rsp,"sdLoggingMode");
-			outputConfig.telemetryMode = (telemetry_mode_t)GetIntParam(rsp,"telemetryMode");
-			outputConfig.p2pDestinationAddrHigh = GetIntParam(rsp,"p2pDestAddrHigh");
-			outputConfig.p2pDestinationAddrLow = GetIntParam(rsp,"p2pDestAddrLow");
-			outputConfig.telemetryServer = GetParam(rsp, "telemetryServerHost");
-			outputConfig.telemetryDeviceId = GetParam(rsp, "telemetryDeviceId");
+			connectivityConfig.sdLoggingMode = (sd_logging_mode_t)GetIntParam(rsp,"sdLoggingMode");
+			connectivityConfig.connectivityMode = (connectivity_mode_t)GetIntParam(rsp,"telemetryMode");
+			connectivityConfig.p2pConfig.destinationAddrHigh = GetIntParam(rsp,"p2pDestAddrHigh");
+			connectivityConfig.p2pConfig.destinationAddrLow = GetIntParam(rsp,"p2pDestAddrLow");
+			connectivityConfig.telemetryConfig.telemetryServer = GetParam(rsp, "telemetryServerHost");
+			connectivityConfig.telemetryConfig.telemetryDeviceId = GetParam(rsp, "telemetryDeviceId");
+
+			rsp = SendCommand(serialPort, "getCellCfg");
+			connectivityConfig.cellularConfig.apnHost = GetParam(rsp, "apnHost");
+			connectivityConfig.cellularConfig.apnUser = GetParam(rsp, "apnUser");
+			connectivityConfig.cellularConfig.apnPass = GetParam(rsp, "apnPass");
+
 			updateWriteConfigPct(++updateCount,callback);
 		}
 
@@ -669,17 +675,25 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 			}
 		}
 		{
-			LoggerOutputConfig &cfg = config->loggerOutputConfig;
+			ConnectivityConfig &cfg = config->connectivityConfig;
 			wxString cmd = "setOutputCfg";
-			cmd = AppendIntParam(cmd, cfg.loggingMode);
-			cmd = AppendIntParam(cmd, cfg.telemetryMode);
-			cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrHigh);
-			cmd = AppendUIntParam(cmd, cfg.p2pDestinationAddrLow);
-			cmd = AppendStringParam(cmd, cfg.telemetryServer);
-			cmd = AppendStringParam(cmd, cfg.telemetryDeviceId);
+			cmd = AppendIntParam(cmd, cfg.sdLoggingMode);
+			cmd = AppendIntParam(cmd, cfg.connectivityMode);
+			cmd = AppendUIntParam(cmd, cfg.p2pConfig.destinationAddrHigh);
+			cmd = AppendUIntParam(cmd, cfg.p2pConfig.destinationAddrLow);
+			cmd = AppendStringParam(cmd, cfg.telemetryConfig.telemetryServer);
+			cmd = AppendStringParam(cmd, cfg.telemetryConfig.telemetryDeviceId);
 
 			wxString result = SendCommand(serialPort, cmd);
 			CheckThrowResult(result);
+
+			cmd = "setCellCfg";
+			cmd = AppendStringParam(cmd, cfg.cellularConfig.apnHost);
+			cmd = AppendStringParam(cmd, cfg.cellularConfig.apnUser);
+			cmd = AppendStringParam(cmd, cfg.cellularConfig.apnPass);
+			result = SendCommand(serialPort, cmd);
+			CheckThrowResult(result);
+
 			updateWriteConfigPct(++updateCount,callback);
 		}
 		{

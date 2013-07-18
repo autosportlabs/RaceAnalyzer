@@ -8,7 +8,7 @@
 #include "raceCapture/raceCaptureConfig.h"
 #include "configuration/channelConfigPanel.h"
 #include "configuration/baseChannelConfigPanel.h"
-#include "configuration/loggerOutputAdvancedOptionsDialog.h"
+#include "configuration/telemetryAdvancedOptionsDialog.h"
 #include "commonEvents.h"
 #include "configPanelParams.h"
 
@@ -37,7 +37,10 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		void OnP2PAddressLowChanged(wxCommandEvent &event);
 		void OnTelemetryModeChanged(wxCommandEvent &event);
 		void OnTelemetryDeviceIdChanged(wxCommandEvent &event);
-		void UpdateTelemetryModeView(telemetry_mode_t mode);
+		void OnApnHostChanged(wxCommandEvent &event);
+		void OnApnUserChanged(wxCommandEvent &event);
+		void OnApnPassChanged(wxCommandEvent &event);
+		void UpdateTelemetryModeView(connectivity_mode_t mode);
 		void OnLoggingModeChanged(wxCommandEvent &event);
   		void OnAdvancedOptions(wxCommandEvent &event);
 
@@ -49,6 +52,9 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		wxTextCtrl * m_bluetoothPasswordTextCtrl;
 		wxTextCtrl * m_bluetoothDeviceNameTextCtrl;
 		wxTextCtrl * m_deviceIdTextCtrl;
+		wxTextCtrl * m_apnHostTextCtrl;
+		wxTextCtrl * m_apnUserTextCtrl;
+		wxTextCtrl * m_apnPassTextCtrl;
 
 		wxSizer * m_p2pSizer;
 		wxSizer * m_cellSizer;

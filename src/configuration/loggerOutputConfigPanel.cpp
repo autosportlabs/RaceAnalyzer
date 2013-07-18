@@ -25,13 +25,17 @@ LoggerOutputConfigPanel::~LoggerOutputConfigPanel(){
 }
 
 void LoggerOutputConfigPanel::OnConfigUpdated(){
-	LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-	m_sdLoggingModeCombo->Select(cfg.loggingMode);
-	m_telemetryModeCombo->Select(cfg.telemetryMode);
-	m_p2pAddressHighTextCtrl->SetValue(wxString::Format("%u",cfg.p2pDestinationAddrHigh));
-	m_p2pAddressLowTextCtrl->SetValue(wxString::Format("%u",cfg.p2pDestinationAddrLow));
-	m_deviceIdTextCtrl->SetValue(cfg.telemetryDeviceId);
-	UpdateTelemetryModeView(cfg.telemetryMode);
+	ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+	m_sdLoggingModeCombo->Select(cfg.sdLoggingMode);
+	m_telemetryModeCombo->Select(cfg.connectivityMode);
+	m_p2pAddressHighTextCtrl->SetValue(wxString::Format("%u",cfg.p2pConfig.destinationAddrHigh));
+	m_p2pAddressLowTextCtrl->SetValue(wxString::Format("%u",cfg.p2pConfig.destinationAddrLow));
+	m_deviceIdTextCtrl->SetValue(cfg.telemetryConfig.telemetryDeviceId);
+	m_apnHostTextCtrl->SetValue(cfg.cellularConfig.apnHost);
+	m_apnUserTextCtrl->SetValue(cfg.cellularConfig.apnUser);
+	m_apnPassTextCtrl->SetValue(cfg.cellularConfig.apnPass);
+
+	UpdateTelemetryModeView(cfg.connectivityMode);
 }
 
 
@@ -89,13 +93,32 @@ wxStaticBoxSizer * LoggerOutputConfigPanel::GetBluetoothPanel(){
 wxStaticBoxSizer * LoggerOutputConfigPanel::GetCellTelemetryPanel(){
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(new wxStaticBox(this,-1,"Cellular Telemetry"),wxVERTICAL);
 
-	wxFlexGridSizer* optionsSizer = new wxFlexGridSizer(3,3,10,10);
+	wxFlexGridSizer* optionsSizer = new wxFlexGridSizer(6,3,10,10);
 
 	optionsSizer->Add(new wxStaticText(this,wxID_ANY,"Telemetry Device Id"),1,wxALIGN_LEFT);
 	m_deviceIdTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
 	m_deviceIdTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnTelemetryDeviceIdChanged),NULL,this);
 	optionsSizer->Add(m_deviceIdTextCtrl, 1, wxEXPAND);
 	optionsSizer->AddStretchSpacer(1);
+
+	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "APN Host"), 1, wxALIGN_LEFT);
+	m_apnHostTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
+	m_apnHostTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnApnHostChanged),NULL,this);
+	optionsSizer->Add(m_apnHostTextCtrl, 1, wxEXPAND);
+	optionsSizer->AddStretchSpacer(1);
+
+	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "APN User"), 1, wxALIGN_LEFT);
+	m_apnUserTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
+	m_apnUserTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnApnUserChanged),NULL,this);
+	optionsSizer->Add(m_apnUserTextCtrl, 1, wxEXPAND);
+	optionsSizer->AddStretchSpacer(1);
+
+	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "APN Password"), 1, wxALIGN_LEFT);
+	m_apnPassTextCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0);
+	m_apnPassTextCtrl->Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(LoggerOutputConfigPanel::OnApnPassChanged),NULL,this);
+	optionsSizer->Add(m_apnPassTextCtrl, 1, wxEXPAND);
+	optionsSizer->AddStretchSpacer(1);
+
 	optionsSizer->AddGrowableRow(1);
 	optionsSizer->AddStretchSpacer(1);
 	optionsSizer->AddStretchSpacer(1);
@@ -174,7 +197,7 @@ void LoggerOutputConfigPanel::InitComponents(){
 	////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-void LoggerOutputConfigPanel::UpdateTelemetryModeView(telemetry_mode_t mode){
+void LoggerOutputConfigPanel::UpdateTelemetryModeView(connectivity_mode_t mode){
 
 	switch (mode){
 		case telemetry_mode_disabled:
@@ -207,49 +230,73 @@ void LoggerOutputConfigPanel::UpdateTelemetryModeView(telemetry_mode_t mode){
 void LoggerOutputConfigPanel::OnP2PAddressHighChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-		cfg.p2pDestinationAddrHigh = atoi(c->GetValue());
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.p2pConfig.destinationAddrHigh = atoi(c->GetValue());
 	}
 }
 
 void LoggerOutputConfigPanel::OnP2PAddressLowChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-		cfg.p2pDestinationAddrLow = atoi(c->GetValue());
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.p2pConfig.destinationAddrLow = atoi(c->GetValue());
 	}
 }
 
 void LoggerOutputConfigPanel::OnTelemetryModeChanged(wxCommandEvent &event){
 	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-		telemetry_mode_t mode = (telemetry_mode_t)c->GetSelection();
-		cfg.telemetryMode = mode;
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		connectivity_mode_t mode = (connectivity_mode_t)c->GetSelection();
+		cfg.connectivityMode = mode;
 		UpdateTelemetryModeView(mode);
+	}
+}
+
+void LoggerOutputConfigPanel::OnApnHostChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) {
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.cellularConfig.apnHost = c->GetValue();
+	}
+}
+
+void LoggerOutputConfigPanel::OnApnUserChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) {
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.cellularConfig.apnUser = c->GetValue();
+	}
+}
+
+void LoggerOutputConfigPanel::OnApnPassChanged(wxCommandEvent &event){
+	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
+	if (NULL != c) {
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.cellularConfig.apnPass = c->GetValue();
 	}
 }
 
 void LoggerOutputConfigPanel::OnTelemetryDeviceIdChanged(wxCommandEvent &event){
 	wxTextCtrl *c = dynamic_cast<wxTextCtrl*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-		cfg.telemetryDeviceId = c->GetValue();
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.telemetryConfig.telemetryDeviceId = c->GetValue();
 	}
 }
 
 void LoggerOutputConfigPanel::OnLoggingModeChanged(wxCommandEvent &event){
 	wxComboBox *c = dynamic_cast<wxComboBox*>(event.GetEventObject());
 	if (NULL != c) {
-		LoggerOutputConfig &cfg = (m_configParams.config->loggerOutputConfig);
-		cfg.loggingMode = (logging_mode_t)c->GetSelection();
+		ConnectivityConfig &cfg = (m_configParams.config->connectivityConfig);
+		cfg.sdLoggingMode = (sd_logging_mode_t)c->GetSelection();
 	}
 }
 
 void LoggerOutputConfigPanel::OnAdvancedOptions(wxCommandEvent &event){
 
-	LoggerOutputAdvancedOptionsDialog dlg;
-	LoggerOutputConfig *c = &(m_configParams.config->loggerOutputConfig);
+	TelemetryAdvancedOptionsDialog dlg;
+	ConnectivityConfig *c = &(m_configParams.config->connectivityConfig);
 	dlg.SetConfig(c);
 	dlg.Create(this);
 	if (dlg.ShowModal() == wxID_OK){
