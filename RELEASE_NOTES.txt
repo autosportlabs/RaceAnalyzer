@@ -1,6 +1,11 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.12===
+*** This release requires RaceCapture/Pro firmware 1.1.10 and above
+Added accelerometer and yaw sensor automatic calibration feature
+Added configurable APN setting to enable alternative cellular providers
+
 ===1.1.11===
 Disabled extra verbose console logging that was left enabled; may cause issues with some systems.
 
