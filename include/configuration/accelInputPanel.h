@@ -40,6 +40,7 @@ class AccelInputPanel : public BaseChannelConfigPanel{
 
 	private:
 		//event handlers
+		void OnCalibrateAccel(wxCommandEvent &event);
 		void OnChannelModeChanged(wxCommandEvent &event);
 		void OnChannelMappingChanged(wxCommandEvent &event);
 		void OnAccelZeroChanged(wxCommandEvent &event);

@@ -728,6 +728,25 @@ void RaceAnalyzerComm::flashCurrentConfig(){
 	CloseSerialPort();
 }
 
+void RaceAnalyzerComm::calibrateAccelZero(){
+	try{
+		wxDateTime start = wxDateTime::UNow();
+		CComm *serialPort = GetSerialPort();
+		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+		wxString cmd = "calibrateAccelZero";
+
+		wxString result = SendCommand(serialPort, cmd);
+		CheckThrowResult(result);
+		wxTimeSpan dur = wxDateTime::UNow() - start;
+		VERBOSE(FMT("calibrateAccelZero in %f",dur.GetMilliseconds().ToDouble()));
+	}
+	catch(CommException &e){
+		VERBOSE(FMT("Error during calibrateAccelZero: %s", e.GetErrorMessage()));
+		throw e;
+	}
+	CloseSerialPort();
+}
+
 wxString RaceAnalyzerComm::AppendStringParam(wxString &cmd, wxString param){
 	param.Replace(" ","_",true);
 	return cmd + wxString::Format(" \"%s\"", param.ToAscii());

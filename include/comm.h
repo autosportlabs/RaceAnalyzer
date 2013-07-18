@@ -29,6 +29,7 @@ class RaceAnalyzerComm {
 		void populateChannelConfig(ChannelConfig &cfg, wxString suffix, wxString &data);
 		void populateChannelConfig(ChannelConfig &cfg, wxString &data);
 		void flashCurrentConfig();
+		void calibrateAccelZero();
 
 		void ReadVersion(VersionData &version);
 		void reloadScript(void);

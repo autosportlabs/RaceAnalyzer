@@ -128,7 +128,19 @@ wxString AccelInputPanel::GetChannelConfigPanelName(int index){
 }
 
 wxPanel * AccelInputPanel::GetTopInnerPanel(){
-	return NULL;
+	wxPanel *panel = new wxPanel(this);
+
+	wxStaticBoxSizer *borderSizer= new wxStaticBoxSizer(new wxStaticBox(this,-1,"Accelerometer and Yaw Sensor Calibration"),wxVERTICAL);
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(1,3,3,3);
+	sizer->Add(new wxStaticText(panel, wxID_ANY, "Click to activate automatic accelerometer and yaw sensor calibration\nto ensure the proper zero level of the system"), 1, wxALIGN_RIGHT);
+	wxButton *calibrateButton = new wxButton(panel, wxID_ANY, "Calibrate");
+	calibrateButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AccelInputPanel::OnCalibrateAccel),NULL,this);
+	sizer->AddStretchSpacer(1);
+	sizer->AddGrowableCol(1);
+	sizer->Add(calibrateButton, 1, wxALIGN_RIGHT);
+	borderSizer->Add(sizer);
+	panel->SetSizer(borderSizer);
+	return panel;
 }
 
 wxPanel * AccelInputPanel::GetBottomInnerPanel(){
@@ -143,8 +155,6 @@ wxPanel * AccelInputPanel::GetBottomInnerPanel(){
 	m_orientationMsg->SetFont(f);
 
 	sizer->Add(m_orientationMsg, 1, wxALIGN_CENTER_HORIZONTAL);
-
-	sizer->Add(new wxStaticText(panel, wxID_DEFAULT, "Front of Vehicle"),1, wxALIGN_CENTER_HORIZONTAL);
 
 	sizer->Add(new BitmapWindow(panel, wxID_ANY, accelY_pos_xpm), 1, wxALIGN_CENTER_HORIZONTAL);
 
@@ -286,6 +296,21 @@ void AccelInputPanel::OnAccelZeroChanged(wxCommandEvent &event){
 	}
 }
 
+void AccelInputPanel::OnCalibrateAccel(wxCommandEvent &event){
+	wxMessageDialog dlg(this, "Ensure the vehicle is level and motionless, then press OK to perform calibration","Calibrate Accelerometer", wxOK | wxCANCEL);
+	if (wxID_OK == dlg.ShowModal()){
+		try{
+			m_configParams.comm->calibrateAccelZero();
+			wxMessageDialog dlg(this, "Calibration is complete. You should read your configuration to get the updated accelerometer calibration.", "Calibration Complete", wxOK);
+			dlg.ShowModal();
+		}
+		catch(CommException &e){
+			wxMessageDialog dlg(this, wxString::Format("Error calibrating accelerometer: \n\n%s", e.GetErrorMessage().ToAscii()), "Error Calibrating", wxOK | wxICON_ERROR);
+			dlg.ShowModal();
+		}
+
+	}
+}
 DatalogChannels & AccelInputPanel::GetStandardChannels(){
 	return m_configParams.appOptions->GetStandardAccelChannels();
 }

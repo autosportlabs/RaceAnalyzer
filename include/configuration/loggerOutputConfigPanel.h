@@ -51,7 +51,9 @@ class LoggerOutputConfigPanel :  public BaseConfigPanel{
 		wxTextCtrl * m_p2pAddressLowTextCtrl;
 		wxTextCtrl * m_bluetoothPasswordTextCtrl;
 		wxTextCtrl * m_bluetoothDeviceNameTextCtrl;
+
 		wxTextCtrl * m_deviceIdTextCtrl;
+
 		wxTextCtrl * m_apnHostTextCtrl;
 		wxTextCtrl * m_apnUserTextCtrl;
 		wxTextCtrl * m_apnPassTextCtrl;
