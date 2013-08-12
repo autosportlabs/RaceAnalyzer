@@ -121,7 +121,9 @@ void ScriptPanel::InitComponents(){
 }
 
 void ScriptPanel::OnConfigUpdated(){
-	m_scriptCtrl->SetValue(m_configParams.config->luaScript);
+	wxString script = m_configParams.config->luaScript;
+	m_scriptCtrl->ClearAll();
+	m_scriptCtrl->SetValue(script);
 }
 
 void ScriptPanel::InitOptions(void){
