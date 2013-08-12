@@ -148,7 +148,8 @@ void ScriptPanel::OnWriteScript(wxCommandEvent &event){
 		m_configParams.comm->writeScript(script);
 	}
 	catch(CommException &e){
-		wxLogMessage("Error writing script: %s",e.GetErrorMessage().ToAscii());
+		wxMessageDialog dlg(this, wxString::Format("Error writing script:\n\n%s", e.GetErrorMessage().ToAscii()), "Error Writing Script", wxOK | wxICON_HAND);
+		dlg.ShowModal();
 	}
 }
 

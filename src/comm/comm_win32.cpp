@@ -337,7 +337,7 @@ size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 	}
 	if (isTimeout){
 		wxLogMessage(wxString::Format("Timed out reading line. Line so far: %s", buf));
-		throw ("Timed out reading line");
+		throw SerialException(-1, "Timed out reading line");
 	}
     return totalRead;
 }
