@@ -418,6 +418,143 @@ void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 	}
 }
 
+void RaceAnalyzerComm::readAnalogConfig(AnalogConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	for (int i = 0; i < CONFIG_ANALOG_CHANNELS; i++){
+		AnalogConfig &analogConfig = (config[i]);
+		wxString cmd = wxString::Format("getAnalogCfg %d",i);
+		wxString rsp = SendCommand(serialPort,cmd);
+		populateChannelConfig(analogConfig.channelConfig,rsp);
+		analogConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
+		analogConfig.scalingMode = (scaling_mode_t)GetIntParam(rsp,"scalingMode");
+		analogConfig.linearScaling = GetFloatParam(rsp,"scaling");
+		for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
+			analogConfig.scalingMap.rawValues[ii]=GetIntParam(rsp,wxString::Format("mapRaw_%d",ii));
+		}
+		for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
+			analogConfig.scalingMap.scaledValue[ii]=GetFloatParam(rsp,wxString::Format("mapScaled_%d",ii));
+		}
+	}
+}
+
+void RaceAnalyzerComm::readTimerConfig(TimerConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
+		TimerConfig &timerConfig = config[i];
+		wxString cmd = wxString::Format("getTimerCfg %d",i);
+		wxString rsp = SendCommand(serialPort,cmd);
+		populateChannelConfig(timerConfig.channelConfig,rsp);
+		timerConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
+		timerConfig.slowTimerEnabled = GetIntParam(rsp,"slowTimer") == 1;
+		timerConfig.mode = (timer_mode_t)GetIntParam(rsp,"mode");
+		timerConfig.pulsePerRev = GetIntParam(rsp,"pulsePerRev");
+		timerConfig.timerDivider = GetIntParam(rsp,"divider");
+		timerConfig.scaling = GetIntParam(rsp,"scaling");
+	}
+}
+
+
+void RaceAnalyzerComm::readAccelConfig(AccelConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
+		AccelConfig &accelConfig = (config[i]);
+		wxString cmd = wxString::Format("getAccelCfg %d",i);
+		wxString rsp = SendCommand(serialPort,cmd);
+		populateChannelConfig(accelConfig.channelConfig,rsp);
+		accelConfig.mode = (accel_mode_t)GetIntParam(rsp,"mode");
+		accelConfig.channel = (accel_channel_t)GetIntParam(rsp,"channel");
+		accelConfig.zeroValue = GetIntParam(rsp,"zeroValue");
+	}
+}
+
+void RaceAnalyzerComm::readAnalogPulseConfig(PwmConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	for (int i = 0; i < CONFIG_ANALOG_PULSE_CHANNELS; i++){
+		PwmConfig &pwmConfig = (config[i]);
+		wxString cmd = wxString::Format("getPwmCfg %d",i);
+		wxString rsp = SendCommand(serialPort,cmd);
+		populateChannelConfig(pwmConfig.channelConfig,rsp);
+		pwmConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
+		pwmConfig.outputMode = (pwm_output_mode_t)GetIntParam(rsp,"outputMode");
+		pwmConfig.loggingMode = (pwm_logging_mode_t)GetIntParam(rsp,"loggingMode");
+		pwmConfig.startupDutyCycle = GetIntParam(rsp,"startupDutyCycle");
+		pwmConfig.startupPeriod = GetIntParam(rsp,"startupPeriod");
+		pwmConfig.voltageScaling = GetFloatParam(rsp,"voltageScaling");
+	}
+}
+
+void RaceAnalyzerComm::readGpioConfig(GpioConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
+		GpioConfig &gpioConfig = (config[i]);
+		wxString cmd = wxString::Format("getGpioCfg %d",i);
+		wxString rsp = SendCommand(serialPort,cmd);
+		populateChannelConfig(gpioConfig.channelConfig,rsp);
+		gpioConfig.mode = (gpio_mode_t)GetIntParam(rsp,"mode");
+	}
+}
+
+void RaceAnalyzerComm::readGpsConfig(GpsConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	wxString cmd = "getGpsCfg";
+	wxString rsp = SendCommand(serialPort,cmd);
+	config->gpsInstalled = GetIntParam(rsp,"installed") != 0;
+	populateChannelConfig(config->latitudeCfg,"lat",rsp);
+	populateChannelConfig(config->longitudeCfg,"long",rsp);
+	populateChannelConfig(config->speedCfg,"vel",rsp);
+	populateChannelConfig(config->timeCfg,"time",rsp);
+	populateChannelConfig(config->satellitesCfg,"sats",rsp);
+}
+
+void RaceAnalyzerComm::readGpsTargetConfig(GpsConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	wxString cmd = "getStartFinishCfg";
+	wxString rsp = SendCommand(serialPort,cmd);
+	populateChannelConfig(config->lapCountCfg,"lapCount",rsp);
+	populateChannelConfig(config->lapTimeCfg,"lapTime",rsp);
+	populateChannelConfig(config->splitTimeCfg, "splitTime", rsp);
+	config->startFinishTarget.latitude = GetFloatParam(rsp,"startFinishLat");
+	config->startFinishTarget.longitude = GetFloatParam(rsp,"startFinishLong");
+	config->startFinishTarget.targetRadius = GetFloatParam(rsp,"startFinishRadius");
+	config->splitTarget.latitude = GetFloatParam(rsp, "splitLat");
+	config->splitTarget.longitude = GetFloatParam(rsp, "splitLong");
+	config->splitTarget.targetRadius = GetFloatParam(rsp, "splitRadius");
+}
+
+void RaceAnalyzerComm::readConnectivityConfig(ConnectivityConfig *config){
+	CComm *serialPort = GetSerialPort();
+	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+
+	wxString cmd = "getOutputCfg";
+	wxString rsp = SendCommand(serialPort,cmd);
+	config->sdLoggingMode = (sd_logging_mode_t)GetIntParam(rsp,"sdLoggingMode");
+	config->connectivityMode = (connectivity_mode_t)GetIntParam(rsp,"telemetryMode");
+	config->p2pConfig.destinationAddrHigh = GetIntParam(rsp,"p2pDestAddrHigh");
+	config->p2pConfig.destinationAddrLow = GetIntParam(rsp,"p2pDestAddrLow");
+	config->telemetryConfig.telemetryServer = GetParam(rsp, "telemetryServerHost");
+	config->telemetryConfig.telemetryDeviceId = GetParam(rsp, "telemetryDeviceId");
+
+	rsp = SendCommand(serialPort, "getCellCfg");
+	config->cellularConfig.apnHost = GetParam(rsp, "apnHost");
+	config->cellularConfig.apnUser = GetParam(rsp, "apnUser");
+	config->cellularConfig.apnPass = GetParam(rsp, "apnPass");
+}
+
+
 void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCallback *callback){
 	try{
 		wxDateTime start = wxDateTime::UNow();
@@ -425,122 +562,40 @@ void RaceAnalyzerComm::readConfig(RaceCaptureConfig *config,RaceAnalyzerCommCall
 		CComm *serialPort = GetSerialPort();
 		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
-		for (int i = 0; i < CONFIG_ANALOG_CHANNELS; i++){
-			AnalogConfig &analogConfig = (config->analogConfigs[i]);
-			wxString cmd = wxString::Format("getAnalogCfg %d",i);
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(analogConfig.channelConfig,rsp);
-			analogConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
-			analogConfig.scalingMode = (scaling_mode_t)GetIntParam(rsp,"scalingMode");
-			analogConfig.linearScaling = GetFloatParam(rsp,"scaling");
-			for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
-				analogConfig.scalingMap.rawValues[ii]=GetIntParam(rsp,wxString::Format("mapRaw_%d",ii));
-			}
-			for (int ii=0; ii < CONFIG_ANALOG_SCALING_BINS;ii++){
-				analogConfig.scalingMap.scaledValue[ii]=GetFloatParam(rsp,wxString::Format("mapScaled_%d",ii));
-			}
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		updateWriteConfigPct(updateCount, callback);
 
-		for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++){
-			TimerConfig &timerConfig = config->timerConfigs[i];
-			wxString cmd = wxString::Format("getTimerCfg %d",i);
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(timerConfig.channelConfig,rsp);
-			timerConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
-			timerConfig.slowTimerEnabled = GetIntParam(rsp,"slowTimer") == 1;
-			timerConfig.mode = (timer_mode_t)GetIntParam(rsp,"mode");
-			timerConfig.pulsePerRev = GetIntParam(rsp,"pulsePerRev");
-			timerConfig.timerDivider = GetIntParam(rsp,"divider");
-			timerConfig.scaling = GetIntParam(rsp,"scaling");
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readGpsConfig(&config->gpsConfig);
+		updateWriteConfigPct(++updateCount, callback);
 
-		for (int i = 0; i < CONFIG_ACCEL_CHANNELS; i++){
-			AccelConfig &accelConfig = (config->accelConfigs[i]);
-			wxString cmd = wxString::Format("getAccelCfg %d",i);
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(accelConfig.channelConfig,rsp);
-			accelConfig.mode = (accel_mode_t)GetIntParam(rsp,"mode");
-			accelConfig.channel = (accel_channel_t)GetIntParam(rsp,"channel");
-			accelConfig.zeroValue = GetIntParam(rsp,"zeroValue");
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readGpsTargetConfig(&config->gpsConfig);
+		updateWriteConfigPct(++updateCount, callback);
 
-		for (int i = 0; i < CONFIG_ANALOG_PULSE_CHANNELS; i++){
-			PwmConfig &pwmConfig = (config->pwmConfigs[i]);
-			wxString cmd = wxString::Format("getPwmCfg %d",i);
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(pwmConfig.channelConfig,rsp);
-			pwmConfig.loggingPrecision = GetIntParam(rsp,"loggingPrecision");
-			pwmConfig.outputMode = (pwm_output_mode_t)GetIntParam(rsp,"outputMode");
-			pwmConfig.loggingMode = (pwm_logging_mode_t)GetIntParam(rsp,"loggingMode");
-			pwmConfig.startupDutyCycle = GetIntParam(rsp,"startupDutyCycle");
-			pwmConfig.startupPeriod = GetIntParam(rsp,"startupPeriod");
-			pwmConfig.voltageScaling = GetFloatParam(rsp,"voltageScaling");
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readAnalogConfig(config->analogConfigs);
+		updateCount += CONFIG_ANALOG_CHANNELS;
+		updateWriteConfigPct(updateCount, callback);
 
-		for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++){
-			GpioConfig &gpioConfig = (config->gpioConfigs[i]);
-			wxString cmd = wxString::Format("getGpioCfg %d",i);
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(gpioConfig.channelConfig,rsp);
-			gpioConfig.mode = (gpio_mode_t)GetIntParam(rsp,"mode");
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readTimerConfig(config->timerConfigs);
+		updateCount += CONFIG_TIMER_CHANNELS;
+		updateWriteConfigPct(updateCount, callback);
 
-		{
-			GpsConfig &gpsConfig = (config->gpsConfig);
-			wxString cmd = "getGpsCfg";
-			wxString rsp = SendCommand(serialPort,cmd);
-			gpsConfig.gpsInstalled = GetIntParam(rsp,"installed") != 0;
-			populateChannelConfig(gpsConfig.latitudeCfg,"lat",rsp);
-			populateChannelConfig(gpsConfig.longitudeCfg,"long",rsp);
-			populateChannelConfig(gpsConfig.speedCfg,"vel",rsp);
-			populateChannelConfig(gpsConfig.timeCfg,"time",rsp);
-			populateChannelConfig(gpsConfig.satellitesCfg,"sats",rsp);
-			updateWriteConfigPct(++updateCount,callback);
-		}
-		{
-			GpsConfig &gpsConfig = (config->gpsConfig);
-			wxString cmd = "getStartFinishCfg";
-			wxString rsp = SendCommand(serialPort,cmd);
-			populateChannelConfig(gpsConfig.lapCountCfg,"lapCount",rsp);
-			populateChannelConfig(gpsConfig.lapTimeCfg,"lapTime",rsp);
-			populateChannelConfig(gpsConfig.splitTimeCfg, "splitTime", rsp);
-			gpsConfig.startFinishTarget.latitude = GetFloatParam(rsp,"startFinishLat");
-			gpsConfig.startFinishTarget.longitude = GetFloatParam(rsp,"startFinishLong");
-			gpsConfig.startFinishTarget.targetRadius = GetFloatParam(rsp,"startFinishRadius");
-			gpsConfig.splitTarget.latitude = GetFloatParam(rsp, "splitLat");
-			gpsConfig.splitTarget.longitude = GetFloatParam(rsp, "splitLong");
-			gpsConfig.splitTarget.targetRadius = GetFloatParam(rsp, "splitRadius");
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readAccelConfig(config->accelConfigs);
+		updateCount += CONFIG_ACCEL_CHANNELS;
+		updateWriteConfigPct(updateCount, callback);
 
-		{
-			ConnectivityConfig &connectivityConfig = (config->connectivityConfig);
-			wxString cmd = "getOutputCfg";
-			wxString rsp = SendCommand(serialPort,cmd);
-			connectivityConfig.sdLoggingMode = (sd_logging_mode_t)GetIntParam(rsp,"sdLoggingMode");
-			connectivityConfig.connectivityMode = (connectivity_mode_t)GetIntParam(rsp,"telemetryMode");
-			connectivityConfig.p2pConfig.destinationAddrHigh = GetIntParam(rsp,"p2pDestAddrHigh");
-			connectivityConfig.p2pConfig.destinationAddrLow = GetIntParam(rsp,"p2pDestAddrLow");
-			connectivityConfig.telemetryConfig.telemetryServer = GetParam(rsp, "telemetryServerHost");
-			connectivityConfig.telemetryConfig.telemetryDeviceId = GetParam(rsp, "telemetryDeviceId");
+		readAnalogPulseConfig(config->pwmConfigs);
+		updateCount += CONFIG_ANALOG_PULSE_CHANNELS;
+		updateWriteConfigPct(updateCount, callback);
 
-			rsp = SendCommand(serialPort, "getCellCfg");
-			connectivityConfig.cellularConfig.apnHost = GetParam(rsp, "apnHost");
-			connectivityConfig.cellularConfig.apnUser = GetParam(rsp, "apnUser");
-			connectivityConfig.cellularConfig.apnPass = GetParam(rsp, "apnPass");
+		readGpioConfig(config->gpioConfigs);
+		updateCount += CONFIG_GPIO_CHANNELS;
+		updateWriteConfigPct(updateCount, callback);
 
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		readConnectivityConfig(&config->connectivityConfig);
+		updateWriteConfigPct(++updateCount,callback);
 
-		{
-			config->luaScript = readScript();
-			updateWriteConfigPct(++updateCount,callback);
-		}
+		config->luaScript = readScript();
+		updateWriteConfigPct(++updateCount,callback);
+
 		wxTimeSpan dur = wxDateTime::UNow() - start;
 		VERBOSE(FMT("get config in %f",dur.GetMilliseconds().ToDouble()));
 		callback->ReadConfigComplete(true,"");

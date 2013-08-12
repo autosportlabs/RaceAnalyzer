@@ -34,7 +34,18 @@ class RaceAnalyzerComm {
 		void ReadVersion(VersionData &version);
 		void reloadScript(void);
 		void ReadRuntime(RuntimeValues &values);
+
 		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
+
+		void readGpioConfig(GpioConfig *config);
+		void readAnalogConfig(AnalogConfig *config);
+		void readTimerConfig(TimerConfig *config);
+		void readAccelConfig(AccelConfig *config);
+		void readAnalogPulseConfig(PwmConfig *config);
+		void readGpsConfig(GpsConfig *config);
+		void readGpsTargetConfig(GpsConfig *config);
+		void readConnectivityConfig(ConnectivityConfig *config);
+
 		void writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 		void updateWriteConfigPct(int count, RaceAnalyzerCommCallback *callback);
 

@@ -1,6 +1,11 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.13===
+Fixed bugs around corrupt reading / writing of Lua Script
+Potential fix for live sensor monitoring crash
+Accelerometer Calibration now auto matically flashes and reads back accelerometer configuration
+
 ===1.1.12===
 *** This release requires RaceCapture/Pro firmware 1.1.10 and above
 Added accelerometer and yaw sensor automatic calibration feature

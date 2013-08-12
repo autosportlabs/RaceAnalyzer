@@ -300,8 +300,12 @@ void AccelInputPanel::OnCalibrateAccel(wxCommandEvent &event){
 	wxMessageDialog dlg(this, "Ensure the vehicle is level and motionless, then press OK to perform calibration","Calibrate Accelerometer", wxOK | wxCANCEL);
 	if (wxID_OK == dlg.ShowModal()){
 		try{
-			m_configParams.comm->calibrateAccelZero();
-			wxMessageDialog dlg(this, "Calibration is complete. You should read your configuration to get the updated accelerometer calibration.", "Calibration Complete", wxOK);
+			RaceAnalyzerComm *comm = m_configParams.comm;
+			RaceCaptureConfig *config = m_configParams.config;
+			comm->calibrateAccelZero();
+			comm->readAccelConfig(config->accelConfigs);
+			OnConfigUpdated();
+			wxMessageDialog dlg(this, "Calibration is complete- configuration has been flashed and updated.", "Calibration Complete", wxOK);
 			dlg.ShowModal();
 		}
 		catch(CommException &e){
