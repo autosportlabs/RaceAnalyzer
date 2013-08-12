@@ -48,8 +48,8 @@ void RaceCaptureConfig::SetDefaults(){
 
 void RaceCaptureConfig::ChannelConfigFromJson(ChannelConfig &channelConfig, const Object &channelConfigJson){
 
-	channelConfig.label = ((String)channelConfigJson["label"]).Value();
-	channelConfig.units = ((String)channelConfigJson["units"]).Value();
+	SetStringField(channelConfig.label, channelConfigJson, "label");
+	SetStringField(channelConfig.units, channelConfigJson, "units");
 	channelConfig.sampleRate = (sample_rate_t)((Number)channelConfigJson["sampleRate"]).Value();
 }
 
@@ -195,12 +195,22 @@ void RaceCaptureConfig::PopulateGpioConfig(Array &gpioConfigRoot){
 	}
 }
 
+void RaceCaptureConfig::SetStringField(wxString &field, const Object &object, const char * name){
+	try{
+		const String &val = object[name];
+		field = val.Value();
+	}
+	catch (const Exception& e){}
+}
+
 void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
 	try{
 		connectivityConfig.sdLoggingMode = (sd_logging_mode_t)(int)Number(outputConfig["sdLoggingMode"]);
 		connectivityConfig.connectivityMode = (connectivity_mode_t)(int)Number(outputConfig["telemetryMode"]);
-		connectivityConfig.telemetryConfig.telemetryServer = ((String)outputConfig["telemetryServer"]).Value();
-		connectivityConfig.telemetryConfig.telemetryDeviceId = ((String)outputConfig["telemetryDeviceId"]).Value();
+
+		SetStringField(connectivityConfig.telemetryConfig.telemetryServer, outputConfig, "telemetryServer");
+		SetStringField(connectivityConfig.telemetryConfig.telemetryDeviceId, outputConfig, "telemetryDeviceId");
+
 		connectivityConfig.p2pConfig.destinationAddrHigh = (unsigned int)Number(outputConfig["p2pDestAddrHigh"]);
 		connectivityConfig.p2pConfig.destinationAddrLow = (unsigned int)Number(outputConfig["p2pDestinationAddrLow"]);
 	}
@@ -211,9 +221,9 @@ void RaceCaptureConfig::PopulateOutputConfig(Object &outputConfig){
 
 void RaceCaptureConfig::PopulateCellConfig(Object &cellConfig){
 	try{
-		connectivityConfig.cellularConfig.apnHost = ((String)cellConfig["apnHost"]).Value();
-		connectivityConfig.cellularConfig.apnUser = ((String)cellConfig["apnUser"]).Value();
-		connectivityConfig.cellularConfig.apnPass = ((String)cellConfig["apnPass"]).Value();
+		SetStringField(connectivityConfig.cellularConfig.apnHost, cellConfig, "apnHost");
+		SetStringField(connectivityConfig.cellularConfig.apnUser, cellConfig, "apnUser");
+		SetStringField(connectivityConfig.cellularConfig.apnPass, cellConfig, "apnPass");
 	}catch(json::Exception &e){
 		wxLogError("Error parsing CellConfig: %s", e.what());
 	}
@@ -221,8 +231,8 @@ void RaceCaptureConfig::PopulateCellConfig(Object &cellConfig){
 
 void RaceCaptureConfig::PopulateBtConfig(Object &btConfig){
 	try{
-		connectivityConfig.bluetoothConfig.deviceName = ((String)btConfig["user"]).Value();
-		connectivityConfig.bluetoothConfig.deviceName = ((String)btConfig["pass"]).Value();
+		SetStringField(connectivityConfig.bluetoothConfig.deviceName, btConfig, "user");
+		SetStringField(connectivityConfig.bluetoothConfig.deviceName, btConfig, "pass");
 	}catch(json::Exception &e){
 		wxLogError("Error parsing ConnectivityConfig: %s", e.what());
 	}
@@ -239,7 +249,7 @@ void RaceCaptureConfig::PopulateConnectivityConfig(Object &connectivityConfig){
 
 void RaceCaptureConfig::PopulateAutomationConfig(Object &automationConfig){
 	try{
-		luaScript = ((String)automationConfig["script"]).Value();
+		SetStringField(luaScript, automationConfig, "script");
 	}
 	catch(json::Exception &e){
 		wxLogError("Error parsing AutomationConfig: %s", e.what());
@@ -248,16 +258,16 @@ void RaceCaptureConfig::PopulateAutomationConfig(Object &automationConfig){
 
 void RaceCaptureConfig::FromJson(Object root){
 	try{
-	PopulateGpsConfig(root["gpsConfig"]);
-	PopulateAnalogConfig(root["analogConfigs"]);
-	PopulatePulseInputConfig(root["pulseInputConfigs"]);
-	PopulateAccelConfig(root["accelConfigs"]);
-	PopulatePulseOutputConfig(root["pulseOutputConfigs"]);
-	PopulateGpioConfig(root["gpioConfigs"]);
-	PopulateOutputConfig(root["outputConfig"]);
-	PopulateConnectivityConfig(root["connectivityConfig"]);
+		PopulateGpsConfig(root["gpsConfig"]);
+		PopulateAnalogConfig(root["analogConfigs"]);
+		PopulatePulseInputConfig(root["pulseInputConfigs"]);
+		PopulateAccelConfig(root["accelConfigs"]);
+		PopulatePulseOutputConfig(root["pulseOutputConfigs"]);
+		PopulateGpioConfig(root["gpioConfigs"]);
+		PopulateOutputConfig(root["outputConfig"]);
+		PopulateConnectivityConfig(root["connectivityConfig"]);
 
-	PopulateAutomationConfig(root["automation"]);
+		PopulateAutomationConfig(root["automation"]);
 	}
 	catch(json::Exception &e){
 		wxLogError(wxString::Format("error parsing root of file: %s", e.what()));

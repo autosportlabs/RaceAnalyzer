@@ -288,6 +288,8 @@ private:
 	void PopulateBtConfig(Object &btConfig);
 	void PopulateAutomationConfig(Object &automationConfig);
 
+	void SetStringField(wxString &field, const Object &object, const char *name);
+
 };
 
 #endif /* RACECAPTURECONFIG_H_ */
