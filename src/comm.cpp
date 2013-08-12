@@ -217,8 +217,12 @@ void RaceAnalyzerComm::SwapCharsInsideQuotes(wxString &data, char find,char repl
 	bool insideQuotes = false;
 	int len = data.Len();
 	for (int index = 0; index < len; index++){
-		if (data[index] == '"') insideQuotes = !insideQuotes;
-		else if (data[index] == find && insideQuotes) data[index] = replace;
+		if (data[index] == '"'){
+			insideQuotes = !insideQuotes;
+		}
+		else if (data[index] == find && insideQuotes){
+			data[index] = replace;
+		}
 	}
 }
 
@@ -239,9 +243,9 @@ int RaceAnalyzerComm::GetIntParam(wxString &data, const wxString &name){
 float RaceAnalyzerComm::GetFloatParam(wxString &data,const wxString &name){
 	return atof(GetParam(data,name));
 }
-wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name){
+wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name, bool hideTokens){
 
-	HideInnerTokens(data);
+	if (hideTokens) HideInnerTokens(data);
 	wxStringTokenizer tokenizer(data,";");
 
 	while (tokenizer.HasMoreTokens()){
@@ -302,7 +306,6 @@ wxString RaceAnalyzerComm::readScript(){
 	wxString script = "";
 	int scriptPage = 0;
 	int to = 0;
-	wxLogMessage("readScript");
 	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
@@ -312,15 +315,13 @@ wxString RaceAnalyzerComm::readScript(){
 		//wxString cmd = wxString::Format("println(getScriptPage(%d))",scriptPage++);
 		wxString cmd = wxString::Format("readScriptPage %d",scriptPage++);
 		wxString buffer = SendCommand(serialPort, cmd);
-		wxLogMessage("read: %s",buffer.ToAscii());
 		buffer.Trim(false);
 		buffer.Trim(true);
 
-		size_t scriptFragmentLen = buffer.Length();
-		wxString scriptFrag = GetParam(buffer,"script");
-		Unescape(scriptFrag);
+		wxString scriptFrag = GetParam(buffer,"script", false);
 
-		wxLogMessage("unescaped script'%s",scriptFrag.ToAscii());
+		Unescape(scriptFrag);
+		size_t scriptFragmentLen = scriptFrag.Length();
 
 		if (scriptFragmentLen > 0 ) script+=scriptFrag;
 		//the last page is a 'partial page'
@@ -351,9 +352,7 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 		}else{
 			scriptFragment = script.Mid(index, SCRIPT_PAGE_LENGTH);
 		}
-		wxLogMessage("script fragment: '%s'", scriptFragment.ToAscii());
 		Escape(scriptFragment);
-		wxLogMessage("esc script fragment: '%s'",scriptFragment.ToAscii());
 		//wxString cmd = wxString::Format("updateScriptPage(%d,\"%s\")", page,data.ToAscii());
 		wxString cmd = wxString::Format("writeScriptPage %d %s",page,scriptFragment.ToAscii());
 		wxString result = SendCommand(serialPort, cmd);
@@ -412,10 +411,8 @@ void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 			}
 		}
 		wxTimeSpan dur = wxDateTime::UNow() - start;
-		VERBOSE(FMT("sample in %f",dur.GetMilliseconds().ToDouble()));
 	}
 	catch(CommException &e){
-		wxLogMessage("error reading sample %s",e.GetErrorMessage().ToAscii());
 		CloseSerialPort();
 		throw e;
 	}

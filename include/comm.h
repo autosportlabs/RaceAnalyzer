@@ -60,7 +60,7 @@ class RaceAnalyzerComm {
 		void Escape(wxString &data);
 		int GetIntParam(wxString &data, const wxString &name);
 		float GetFloatParam(wxString &data,const wxString &name);
-		wxString GetParam(wxString &data, const wxString &name);
+		wxString GetParam(wxString &data, const wxString &name, bool hideTokens = true);
 		void HideInnerTokens(wxString &data);
 		void UnhideInnerTokens(wxString &data);
 		void SwapCharsInsideQuotes(wxString &data, char find,char replace);
