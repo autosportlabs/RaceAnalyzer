@@ -137,7 +137,8 @@ void ScriptPanel::OnReadScript(wxCommandEvent &event){
 		m_scriptCtrl->SetValue(script);
 	}
 	catch(CommException &e){
-		wxLogMessage("Error reading script: %s", e.GetErrorMessage().ToAscii());
+		wxMessageDialog dlg(this, wxString::Format("Error reading script:\n\n%s", e.GetErrorMessage().ToAscii()), "Error Reading Script", wxOK | wxICON_HAND);
+		dlg.ShowModal();
 	}
 }
 
