@@ -7,6 +7,7 @@ Potential fix for live sensor monitoring crash (reduce logging output while read
 Accelerometer Calibration now auto matically flashes and reads back accelerometer configuration
 Fixed GPIO output mode not being written to RCP correctly
 Fixed error where loading of config files blanked out fields if field was missing from config file (e.g. older version of config file)
+Added error dialog to script window read/write functions
 
 ===1.1.12===
 *** This release requires RaceCapture/Pro firmware 1.1.10 and above
