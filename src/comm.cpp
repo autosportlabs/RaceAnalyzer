@@ -690,8 +690,8 @@ void RaceAnalyzerComm::writeConfig(RaceCaptureConfig *config, RaceAnalyzerCommCa
 			GpioConfig &cfg = config->gpioConfigs[i];
 			wxString cmd = "setGpioCfg";
 			cmd = AppendIntParam(cmd,i);
-			AppendChannelConfig(cmd, cfg.channelConfig);
-			AppendIntParam(cmd, cfg.mode);
+			cmd = AppendChannelConfig(cmd, cfg.channelConfig);
+			cmd = AppendIntParam(cmd, cfg.mode);
 			wxString result = SendCommand(serialPort, cmd);
 			CheckThrowResult(result);
 			updateWriteConfigPct(++updateCount,callback);
