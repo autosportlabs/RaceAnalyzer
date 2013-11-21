@@ -26,8 +26,6 @@ GPSView::GPSView(wxWindow *parent, wxWindowID id,
     const wxPoint& pos, const wxSize& size, long style, const wxString& name)
     : wxWindow(parent, id, pos, size,style,name)
     {
-	ClearGPSPoints();
-
 	if (parent){
 		SetBackgroundColour(parent->GetBackgroundColour());
 	}
@@ -38,12 +36,20 @@ GPSView::GPSView(wxWindow *parent, wxWindowID id,
 	_currentHeight = size.GetHeight();
 	_memBitmap = new wxBitmap(_currentWidth, _currentHeight);
 	m_zoom = DEFAULT_ZOOM;
+	ClearGPSPoints();
     }
 
-GPSView::~GPSView(){}
+GPSView::~GPSView() {}
 
-double GPSView::SCALE(double point, double min, double max, double currentSize, double zoom){
+Point GPSView::ZoomPoint(Point &point, Point &centerPoint, Point &minPoint, Point &maxPoint, double currentSize, double zoom){
+	Point zoomedPoint;
+	zoomedPoint.x = Zoom(point.x, minPoint.x, maxPoint.x, currentSize, zoom) + centerPoint.x;
+	zoomedPoint.y = Zoom(point.y, minPoint.y, maxPoint.y, currentSize, zoom) + centerPoint.y;
+	return zoomedPoint;
+}
 
+
+double GPSView::Zoom(double point, double min, double max, double currentSize, double zoom){
 	double scale = ((point - min) / (max - min)) * (currentSize * zoom);
 	scale += (currentSize - (currentSize * zoom)) / 2;
 	return scale;
@@ -56,14 +62,26 @@ Point GPSView::ScalePoint(Point point, int height){
 	return Point(adjustedX, adjustedY);
 }
 
+int GPSView::GetDominantSize(int width, int height){
+	if (width > height) return height; else return width;
+}
 
-void GPSView::OnPaint( wxPaintEvent& event )
-{
-	wxPaintDC old_dc(this);
+Point GPSView::GetCenterPoint(int width, int height){
+	Point centerPoint;
+	int currentSize;
+	if (width > height){
+		centerPoint.y = 0;
+		centerPoint.x = (width - height) / 2;
+	}
+	else{
+		centerPoint.x = 0;
+		centerPoint.y = (height - width) / 2;
+	}
+	return centerPoint;
+}
 
-	/////////////////
-	// Create a memory DC
-	/////////////////
+void GPSView::RefreshBackground(){
+
 	int w,h ;
 	GetClientSize(&w,&h);
 
@@ -86,75 +104,71 @@ void GPSView::OnPaint( wxPaintEvent& event )
 
 	dc.SetPen(*wxThePenList->FindOrCreatePen(*wxLIGHT_GREY, 1, wxSOLID));
 
-	int currentSize, xCenter, yCenter;
-	if (_currentWidth > _currentHeight){
-		currentSize = _currentHeight;
-		yCenter = 0;
-		xCenter = (_currentWidth - _currentHeight) / 2;
-	}
-	else{
-		currentSize = _currentWidth;
-		xCenter = 0;
-		yCenter = (_currentHeight - _currentWidth) / 2;
-	}
+	Point centerPoint = GetCenterPoint(_currentWidth, _currentHeight);
+	int currentSize = GetDominantSize(_currentWidth, _currentHeight);
 
-	Point lastScaledPoint;
+	Point minPoint = ScalePoint(m_minPoint, h);
+	Point maxPoint = ScalePoint(m_maxPoint, h);
 
-	Point minPoint(m_minX, m_minY);
-	Point maxPoint(m_maxX, m_maxY);
-	minPoint.x = minPoint.x - m_offsetPoint.x;
-	minPoint.y = minPoint.y - m_offsetPoint.y;
-
-	maxPoint.x = maxPoint.x - m_offsetPoint.x;
-	maxPoint.y = maxPoint.y - m_offsetPoint.y;
-
-	minPoint = ScalePoint(minPoint, h);
-	maxPoint = ScalePoint(maxPoint, h);
-
+	Point lastZoomedPoint;
 	for (size_t i = 0; i < m_trackPoints.size(); i++){
 		Point point = m_trackPoints[i];
-		point.x = point.x - m_offsetPoint.x;
-		point.y = point.y - m_offsetPoint.y;
-		Point scaledPoint = ScalePoint(point, h);
-		scaledPoint.x = SCALE(scaledPoint.x, minPoint.x, maxPoint.x, currentSize, m_zoom) + xCenter;
-		scaledPoint.y = SCALE(scaledPoint.y, minPoint.y, maxPoint.y, currentSize, m_zoom) + yCenter;
+		Point offsetPoint = OffsetPoint(point);
+		Point scaledPoint = ScalePoint(offsetPoint, h);
+		Point zoomedPoint = ZoomPoint(scaledPoint, centerPoint, minPoint, maxPoint, currentSize, m_zoom);
 		if (0 == i){
-			lastScaledPoint = scaledPoint;
+			lastZoomedPoint = zoomedPoint;
 		}
 		else{
-			dc.DrawLine(lastScaledPoint.x, lastScaledPoint.y, scaledPoint.x, scaledPoint.y);
-			lastScaledPoint = scaledPoint;
+			dc.DrawLine(lastZoomedPoint.x, lastZoomedPoint.y, zoomedPoint.x, zoomedPoint.y);
+			lastZoomedPoint = zoomedPoint;
 		}
 	}
-
-    dc.SetPen(*wxThePenList->FindOrCreatePen(*wxRED, 10, wxSOLID));
-    Point scaledMarker = ProjectPoint(m_marker);
-    scaledMarker.x = scaledMarker.x - m_offsetPoint.x;
-    scaledMarker.y = scaledMarker.y - m_offsetPoint.y;
-    scaledMarker = ScalePoint(scaledMarker, h);
-    double markerX = SCALE(scaledMarker.x, minPoint.x, maxPoint.x, currentSize, m_zoom) + xCenter;
-    double markerY = SCALE(scaledMarker.y, minPoint.y, maxPoint.y, currentSize, m_zoom) + yCenter;
-    dc.DrawCircle(wxPoint(markerX, markerY), 4);
-
-	//blit into the real DC
-	old_dc.Blit(0,0,_currentWidth,_currentHeight,&dc,0,0);
+    Refresh();
 }
 
+void GPSView::OnPaint( wxPaintEvent& event )
+{
+	wxPaintDC mainDc(this);
+
+	wxMemoryDC dc;
+	dc.SelectObject(*_memBitmap);
+
+	//blit into the real DC
+	mainDc.Blit(0,0,_currentWidth,_currentHeight,&dc,0,0);
+
+	Point centerPoint = GetCenterPoint(_currentWidth, _currentHeight);
+	int currentSize = GetDominantSize(_currentWidth, _currentHeight);
+	Point minPoint = ScalePoint(m_minPoint, _currentHeight);
+	Point maxPoint = ScalePoint(m_maxPoint, _currentHeight);
+
+    mainDc.SetPen(*wxThePenList->FindOrCreatePen(*wxRED, 10, wxSOLID));
+	mainDc.SetBrush(*wxTheBrushList->FindOrCreateBrush(*wxRED,wxSOLID));
+    Point offsetMarker = OffsetPoint(m_marker);
+    Point scaledMarker = ScalePoint(offsetMarker, _currentHeight);
+    Point zoomedPoint = ZoomPoint(scaledMarker, centerPoint, minPoint, maxPoint, currentSize, m_zoom);
+    mainDc.DrawCircle(wxPoint(zoomedPoint.x, zoomedPoint.y), 4);
+}
+
+
+void GPSView::Refresh( bool eraseBackground, const wxRect *rect )
+{
+	wxWindow::Refresh(eraseBackground, rect);
+}
 
 void GPSView::OnSize(wxSizeEvent& event)
 {
-	Refresh();
+	RefreshBackground();
 }
 
-GPSPoint GPSView::GetMarker()
+Point GPSView::GetMarker()
 {
 	return m_marker;
 }
 
 void GPSView::SetMarker(GPSPoint &p)
 {
-	m_marker.x = p.x;
-	m_marker.y = p.y;
+	m_marker = ProjectPoint(p);
 	Refresh();
 }
 
@@ -172,10 +186,6 @@ void GPSView::OnEraseBackground(wxEraseEvent& WXUNUSED(event))
 
 void GPSView::ClearGPSPoints(){
 	m_gpsPoints.Clear();
-	m_minX = 0;
-	m_maxX = 0;
-	m_minY = 0;
-	m_maxY = 0;
 	m_marker.x = 0;
 	m_marker.y = 0;
 	Refresh();
@@ -190,7 +200,15 @@ void GPSView::OnMouseWheel(wxMouseEvent &event){
 	else{
 		m_zoom /= ZOOM_ADJUST;
 	}
+	RefreshBackground();
 	Refresh();
+}
+
+Point GPSView::OffsetPoint(Point &point){
+	Point offsetPoint;
+    offsetPoint.x = point.x - m_offsetPoint.x;
+    offsetPoint.y = point.y - m_offsetPoint.y;
+    return offsetPoint;
 }
 
 Point GPSView::ProjectPoint(GPSPoint &gpsPoint){
@@ -247,11 +265,10 @@ void GPSView::AddGPSPoints(GPSPoints &p){
     m_widthPadding = (width - (m_globalRatio * maxXY.x)) / 2;
     m_offsetPoint = minXY;
     UpdateMinMax(m_trackPoints);
-    Refresh();
+    RefreshBackground();
 }
 
 void GPSView::UpdateMinMax(Points &p){
-
     std::vector<double> m_xSortedPoints;
     std::vector<double> m_ySortedPoints;
 
@@ -272,10 +289,13 @@ void GPSView::UpdateMinMax(Points &p){
 	int maxPercentileIndex_y = (int)(yUbound * POINT_MAX_PERCENTILE / 100);
 	int minPercentileIndex_y = (int)(yUbound * POINT_MIN_PERCENTILE / 100);
 
-	m_minX = m_xSortedPoints[minPercentileIndex_x];
-	m_maxX = m_xSortedPoints[maxPercentileIndex_x];
-	m_minY = m_ySortedPoints[minPercentileIndex_y];
-	m_maxY = m_ySortedPoints[maxPercentileIndex_y];
+	m_minPoint.x = m_xSortedPoints[minPercentileIndex_x];
+	m_maxPoint.x = m_xSortedPoints[maxPercentileIndex_x];
+	m_minPoint.y = m_ySortedPoints[minPercentileIndex_y];
+	m_maxPoint.y = m_ySortedPoints[maxPercentileIndex_y];
+
+	m_minPoint = OffsetPoint(m_minPoint);
+	m_maxPoint = OffsetPoint(m_maxPoint);
 }
 
 BEGIN_EVENT_TABLE(GPSView, wxWindow)

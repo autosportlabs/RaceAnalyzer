@@ -52,7 +52,8 @@ public:
 
 	    ~GPSView();
 	    void OnSize(wxSizeEvent& event);
-	    double SCALE(double point, double min, double max, double currentSize, double zoom);
+	    Point ZoomPoint(Point &point, Point &centerPoint, Point &minPoint, Point &maxPoint, double currentSize, double zoom);
+	    double Zoom(double point, double min, double max, double currentSize, double zoom);
 	    void OnPaint(wxPaintEvent& event);
 	    void ClearGPSPoints();
 	    void UpdateMinMax(Points &points);
@@ -60,21 +61,24 @@ public:
 	    void OnEraseBackground(wxEraseEvent& event);
 	    void OnEnterWindow( wxMouseEvent& event );
 	    void OnMouseWheel( wxMouseEvent& event );
+	    virtual void Refresh( bool eraseBackground = true, const wxRect *rect = (const wxRect *) NULL );
+	    void RefreshBackground();
 	    void SetMarker(GPSPoint &p);
-	    GPSPoint GetMarker();
+	    Point GetMarker();
 private:
 
+	    int GetDominantSize(int width, int height);
+	    Point GetCenterPoint(int width, int height);
 	    Point ProjectPoint(GPSPoint &gpsPoint);
 	    Point ScalePoint(Point point, int height);
+	    Point OffsetPoint(Point &point);
 
 	    Points			m_trackPoints;
 	    Point			m_offsetPoint;
 	    GPSPoints		m_gpsPoints;
-	    GPSPoint		m_marker;
-	    double			m_minX;
-	    double			m_maxX;
-	    double			m_minY;
-	    double			m_maxY;
+	    Point			m_marker;
+	    Point			m_minPoint;
+	    Point			m_maxPoint;
 	    double 			m_zoom;
 	    double			m_widthPadding;
 	    double			m_heightPadding;
