@@ -72,7 +72,9 @@ void GPSPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIn
 
 		GPSPoints points;
 		for (size_t i = fromIndex; i < toIndex; i++){
-			GPSPoint p = GPSPoint(ProjectPoint((*latitudeValues)[i], (*longitudeValues)[i]));
+			double latitude = (*latitudeValues)[i];
+			double longitude = (*longitudeValues)[i];
+			GPSPoint p(longitude, latitude);
 			points.Add(p);
 		}
 		m_gpsView->AddGPSPoints(points);
@@ -81,34 +83,6 @@ void GPSPane::UpdateValueRange(ViewDataHistoryArray &historyArray, size_t fromIn
 
 void GPSPane::ClearGPSPoints(){
 	m_gpsView->ClearGPSPoints();
-}
-
-GPSPoint GPSPane::ProjectPoint(double latitude, double longitude){
-
-	if (latitude == DatalogValue::NULL_VALUE && DatalogValue::NULL_VALUE) return GPSPoint();
-
-	double pi = 3.14159;
-	// convert lat/long to radians
-	latitude = pi * latitude / 180;
-	longitude = pi * longitude / 180;
-
-	// adjust position by radians
-	latitude -= 1.570795765134; // subtract 90 degrees (in radians)
-
-	double world_radius = 180;
-	// and switch z and y
-	double x = (world_radius) * sin(latitude) * cos(longitude);
-	double z = (world_radius) * sin(latitude) * sin(longitude);
-	double y = (world_radius) * cos(latitude);
-
-	double focal_length = 150;
-
-	double projected_x = x * focal_length / (focal_length + z);
-	double projected_y = y * focal_length / (focal_length + z);
-
-	projected_x = - projected_x;
-	projected_y = - projected_y;
-	return GPSPoint(projected_x, projected_y, 0, 0, 0);
 }
 
 void GPSPane::InitComponents(){
@@ -122,7 +96,6 @@ void GPSPane::InitComponents(){
 	this->SetSizer(sizer);
 }
 
-
 void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
 	if (channel == m_latitudeChannel){
 		m_currentLatitude = value;
@@ -130,8 +103,8 @@ void GPSPane::UpdateValue(ViewChannel &channel, size_t index, double value){
 	if (channel == m_longitudeChannel){
 		m_currentLongitude = value;
 	}
-	GPSPoint p = ProjectPoint(m_currentLatitude, m_currentLongitude);
-	m_gpsView->SetMarker(p);
+	GPSPoint point(m_currentLongitude, m_currentLatitude);
+	m_gpsView->SetMarker(point);
 }
 
 void GPSPane::SetOffset(ViewChannels &channels, int offset){

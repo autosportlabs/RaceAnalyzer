@@ -26,7 +26,6 @@ public:
 				);
 	~GPSPane();
 	void InitComponents();
-	GPSPoint ProjectPoint(double latitude, double longitude);
 
 	void CreateGPSView(ViewChannel &latitudeChannel, ViewChannel &longitudeChannel);
 	void ClearGPSPoints();
