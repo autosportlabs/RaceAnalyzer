@@ -1,6 +1,10 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.14===
+Updated GPS view to render more accurately
+Another potential fix for live sensor monitoring crash (make sure live monitor shuts down cleanly)
+
 ===1.1.13===
 Fixed bugs around corrupt reading / writing of Lua Script
 Potential fix for live sensor monitoring crash (reduce logging output while reading data)
