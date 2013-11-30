@@ -8,6 +8,8 @@
 #include "commonEvents.h"
 
 
+RuntimeReader::RuntimeReader() : wxThread(wxTHREAD_JOINABLE){}
+
 void RuntimeReader::Create(RaceAnalyzerComm *comm, wxWindow *parent){
 	m_comm = comm;
 	m_parent = parent;
@@ -22,10 +24,10 @@ void * RuntimeReader::Entry(){
 }
 
 void RuntimeReader::ReadRuntimeValues(){
-	RuntimeValues values;
+	RuntimeValues *values  = new RuntimeValues();
 	wxString statusMsg;
 	try{
-		m_comm->ReadRuntime(values);
+		m_comm->ReadRuntime(*values);
 	}
 	catch (CommException &e){
 		statusMsg = e.GetErrorMessage();
@@ -35,10 +37,10 @@ void RuntimeReader::ReadRuntimeValues(){
 	Sleep(50);
 }
 
-void RuntimeReader::NotifyRuntimeValues(RuntimeValues &values, wxString &statusMsg){
+void RuntimeReader::NotifyRuntimeValues(RuntimeValues *values, wxString &statusMsg){
 	wxCommandEvent event (wxEVT_COMMAND_THREAD, RUNTIME_UPDATED);
 	event.SetString(statusMsg);
-	event.SetClientData(&values);
+	event.SetClientData(values);
 	m_parent->GetEventHandler()->AddPendingEvent(event);
 }
 

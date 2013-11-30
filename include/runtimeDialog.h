@@ -37,6 +37,7 @@ WX_DECLARE_STRING_HASH_MAP( LCDDisplay *, RuntimeChannelValues);
   			const wxSize& size = wxDefaultSize,
   			long style = wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxRESIZE_BORDER);
 
+  		void OnClose(wxCloseEvent &event);
   		void CreateControls();
   		void AddChannel(wxString &name);
   		virtual void OnRuntimeValueUpdated(wxCommandEvent &event);

@@ -8,7 +8,7 @@
 IMPLEMENT_CLASS (RuntimeDialog, wxDialog)
 
 RuntimeDialog::~RuntimeDialog(){
-	m_runtimeReader.Delete();
+
 }
 
 RuntimeDialog::RuntimeDialog(wxWindow* parent,
@@ -39,6 +39,12 @@ bool RuntimeDialog::Create (wxWindow* parent,
  	m_runtimeReader.Create(m_comm, this);
  	m_runtimeReader.Run();
  	return true;
+}
+
+void RuntimeDialog::OnClose(wxCloseEvent & event){
+	m_runtimeReader.Delete();
+	m_runtimeReader.Wait();
+	Destroy();
 }
 
 void RuntimeDialog::CreateControls(){
@@ -75,8 +81,10 @@ void RuntimeDialog::OnRuntimeValueUpdated(wxCommandEvent &event){
 		lcd->SetValue(wxString::Format("%4.2f",value));
 	}
 	m_statusBar->GetIndicator() ? m_statusBar->SetIndicator(false) : m_statusBar->SetIndicator(true);
+	delete(values);
 }
 
 BEGIN_EVENT_TABLE(RuntimeDialog, wxFrame)
 EVT_COMMAND  (RUNTIME_UPDATED, wxEVT_COMMAND_THREAD, RuntimeDialog::OnRuntimeValueUpdated)
+EVT_CLOSE(RuntimeDialog::OnClose)
 END_EVENT_TABLE()

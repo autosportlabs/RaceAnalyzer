@@ -15,12 +15,13 @@
 class RuntimeReader : public wxThread {
 
 public:
+	RuntimeReader();
 	void Create(RaceAnalyzerComm *comm, wxWindow *parent);
 	void * Entry();
 
 private:
 	void ReadRuntimeValues();
-	void NotifyRuntimeValues(RuntimeValues &values, wxString &statusMsg);
+	void NotifyRuntimeValues(RuntimeValues *values, wxString &statusMsg);
 	wxWindow *m_parent;
 	RaceAnalyzerComm *m_comm;
 
