@@ -49,44 +49,33 @@ void ScriptPanel::StyleEditor(void){
 	m_scriptCtrl->SetKeyWords(0,"and break do else elseif end for function if local nil not or repeat return then until while");
 
 	wxColor medGreen(0,128,0);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_DEFAULT, *wxBLACK);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_TAG, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_TAGUNKNOWN, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_ATTRIBUTE, *wxRED);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_ATTRIBUTEUNKNOWN, *wxRED);
-	m_scriptCtrl->StyleSetBold(wxSTC_H_ATTRIBUTEUNKNOWN, true);
-	m_scriptCtrl->StyleSetForeground(wxSTC_C_WORD, wxColour(0, 0, 255));
-	m_scriptCtrl->StyleSetForeground(wxSTC_C_WORD2, wxColour(200, 0, 0));
-	m_scriptCtrl->StyleSetBold(wxSTC_C_WORD, true);
-	m_scriptCtrl->StyleSetBold(wxSTC_C_WORD2, true);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_NUMBER, *wxBLACK);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_DOUBLESTRING, medGreen);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_SINGLESTRING, medGreen);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_OTHER, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_COMMENT, wxTheColourDatabase->Find(wxT("GREY")));
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_ENTITY, *wxRED);
-	m_scriptCtrl->StyleSetBold(wxSTC_H_ENTITY, true);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_TAGEND, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_XMLSTART, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_XMLEND, *wxBLUE);
-	m_scriptCtrl->StyleSetForeground(wxSTC_H_CDATA, *wxRED);
+	wxColor grey = wxTheColourDatabase->Find(wxT("GREY"));
+	wxColor grey1(75, 75, 75);
+	wxColor grey2(220, 220, 220);
+
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_DEFAULT, *wxBLACK);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_WORD, *wxBLUE);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_OPERATOR, *wxRED);
+	m_scriptCtrl->StyleSetBold(wxSTC_LUA_OPERATOR, true);
+	m_scriptCtrl->StyleSetBold(wxSTC_LUA_IDENTIFIER, true);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_NUMBER, *wxBLACK);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_STRING, medGreen);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_STRING, medGreen);
+
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_COMMENT, grey);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_COMMENTLINE, grey);
+	m_scriptCtrl->StyleSetForeground(wxSTC_LUA_COMMENTDOC, grey);
 	m_scriptCtrl->SetTabWidth(4);
 	m_scriptCtrl->SetUseTabs(false);
-	//m_scriptCtrl->SetWrapMode(wxSTC_WRAP_WORD);
 	m_scriptCtrl->SetMarginType(0, wxSTC_MARGIN_NUMBER);
 
 	m_scriptCtrl->SetMarginWidth (MARGIN_LINE_NUMBERS, 15);
-	m_scriptCtrl->StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour (75, 75, 75) );
-	m_scriptCtrl->StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour (220, 220, 220));
+	m_scriptCtrl->StyleSetForeground (wxSTC_STYLE_LINENUMBER,  grey1 );
+	m_scriptCtrl->StyleSetBackground (wxSTC_STYLE_LINENUMBER, grey2 );
 	m_scriptCtrl->SetMarginType (MARGIN_LINE_NUMBERS, wxSTC_MARGIN_NUMBER);
-
-
-
 }
 
 void ScriptPanel::InitComponents(){
-
-
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(2,1,3,3);
 	sizer->AddGrowableCol(0);
 	sizer->AddGrowableRow(0);
