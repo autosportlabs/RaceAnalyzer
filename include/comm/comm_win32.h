@@ -125,15 +125,11 @@ public:
 
         size_t readLine(char *buf, size_t bufSize, size_t timeout);
 
-        size_t readLine2(char *buf, size_t bufSize, size_t timeout, size_t lines);
-
-        size_t writeBuffer(const char * p, unsigned short cnt );
+        size_t writeBuffer(const char * p, unsigned short length, size_t timeout );
 
         size_t writeChar(char b );
 
         size_t sendCommand(const char *cmd, char *rsp, size_t rspSize, size_t timeout = 500, bool absorbEcho = true);
-
-        size_t sendCommand2(const char *cmd, char *rsp, size_t rspSize, size_t timeout = 500, bool absorbEcho = true);
 
         bool isOpen( void ) { return  ( ( NULL != getHandle() ) ? true : false ); };
 

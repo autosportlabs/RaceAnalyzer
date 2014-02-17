@@ -18,7 +18,6 @@
 #include "stdio.h"
 #include "serialComm.h"
 #include "comm_win32.h"
-#include <wx/log.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -275,14 +274,13 @@ size_t CComm::readBuffer( char *pBuf, size_t size, size_t timeout )
 // write
 //
 
-size_t CComm::writeBuffer(const char * p, unsigned short cnt )
+size_t CComm::writeBuffer(const char * p, unsigned short length, size_t timeout )
 {
-        DWORD count;
-        bool result = WriteFile( m_hCommPort, p, cnt, &count, NULL );
-        if (!result){
-        	int err = GetLastError();
-			throw SerialException(err,"Error writing buffer to serial port");
-        }
+		size_t tstart = GetTickCount();
+		size_t count = 0;
+		while ((GetTickCount() - tstart) < timeout && count < length){
+			if (writeChar(p[count])) count++;
+		}
         return count;
 }
 
@@ -294,7 +292,11 @@ size_t CComm::writeBuffer(const char * p, unsigned short cnt )
 size_t CComm::writeChar(char b )
 {
         DWORD count;
-        WriteFile( m_hCommPort, &b, 1, &count, NULL );
+        bool result = WriteFile( m_hCommPort, &b, 1, &count, NULL );
+        if (! result){
+			int err = GetLastError();
+			throw SerialException(err,"Error writing buffer to serial port");
+        }
         return count;
 }
 
@@ -352,11 +354,9 @@ size_t CComm::sendCommand(const char *cmd, char *rsp, size_t rspSize, size_t tim
 
 	//send the command
 	size_t cmdLen = strlen(cmd);
-	size_t written = 0;
 	size_t tstart = GetTickCount();
-	while ((GetTickCount() - tstart) < timeout && written < cmdLen){
-		written += writeBuffer((cmd + written),cmdLen - written);
-	}
+	size_t written = writeBuffer(cmd, cmdLen, timeout);
+	if (written != cmdLen) throw SerialException(-1, "Timed out writing command");
 	while((GetTickCount() - tstart) < timeout && !writeChar('\r'));
 
 	//optionally absorb the command echo
@@ -369,67 +369,3 @@ size_t CComm::sendCommand(const char *cmd, char *rsp, size_t rspSize, size_t tim
 	//read the response
 	return readLine(rsp,rspSize,timeout);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// alternate readLine
-//
-
-
-size_t CComm::readLine2(char *buf, size_t bufSize, size_t timeout, size_t lines){
-
-	memset( buf, 0, bufSize );
-    size_t tstart = GetTickCount();
-    size_t totalRead = 0;
-	DWORD charsRead = 0;
-	size_t linesRead = 0;
-    while ( ( GetTickCount() - tstart ) < timeout && totalRead < bufSize && linesRead < lines) {
-    	bool result = ReadFile(m_hCommPort, (buf + totalRead), (DWORD)(bufSize - totalRead), &charsRead, NULL);
-    	if (!result){
-			int err = GetLastError();
-			throw SerialException(err, "error reading line from serial port");
-			//throw an exception
-    	}
-    	for (size_t i = totalRead; i < totalRead + charsRead; i++ ){
-    		char * curPos = buf + i;
-    		if ('\r' == *curPos){
-    			linesRead++;
-    		}
-    	}
-    	totalRead+=charsRead;
-    }
-    return totalRead;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// alternate sendCommand
-//
-
-size_t CComm::sendCommand2(const char *cmd, char *rsp, size_t rspSize, size_t timeout, bool absorbEcho)
-{
-	//flush input buffer
-	drainInput();
-
-	//send the command
-	size_t cmdLen = strlen(cmd);
-	size_t written = 0;
-	while (written < cmdLen){
-		written += writeBuffer((cmd + written),cmdLen - written);
-	}
-	while(!writeChar('\r'));
-
-	//read the response
-	readLine2(rsp,rspSize,timeout,1 + absorbEcho);
-	if (absorbEcho){
-		//find the line following the command echo, this will be the response
-		for (char *pos = rsp; *pos !='\0';pos++){
-			if ('\r' == *pos){
-				strcpy(rsp,pos + 1);
-				break;
-			}
-		}
-	}
-	return strlen(rsp);
-}
-
-
-

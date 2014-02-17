@@ -201,7 +201,7 @@ int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
 	char *buffPtr = tempBuff;
 
 	size_t len = strlen(buffPtr);
-	bool result = comPort->writeBuffer(buffPtr,len);
+	comPort->writeBuffer(buffPtr,len, timeout);
 	free(tempBuff);
 
 	return 0;
@@ -318,9 +318,11 @@ wxString RaceAnalyzerComm::readScript(){
 		buffer.Trim(false);
 		buffer.Trim(true);
 
-		wxString scriptFrag = GetParam(buffer,"script", false);
+		wxString scriptFrag = GetParam(buffer,"script", true);
 
+		VERBOSE(FMT("escaped: %s", scriptFrag.ToAscii()));
 		Unescape(scriptFrag);
+		VERBOSE(FMT("unescaped: %s", scriptFrag.ToAscii()));
 		size_t scriptFragmentLen = scriptFrag.Length();
 
 		if (scriptFragmentLen > 0 ) script+=scriptFrag;
@@ -365,7 +367,8 @@ void RaceAnalyzerComm::writeScript(wxString &script){
 	if ((length / SCRIPT_PAGE_LENGTH) < SCRIPT_PAGES - 1 ){
 		//write a null to the next page
 		wxString cmd = wxString::Format("writeScriptPage %d",page);
-		SendCommand(serialPort, cmd);
+		wxString result = SendCommand(serialPort, cmd);
+		CheckThrowResult(result);
 	}
 
 	CloseSerialPort();
