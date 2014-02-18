@@ -34,6 +34,8 @@ class RaceAnalyzerComm {
 		void ReadVersion(VersionData &version);
 		void reloadScript(void);
 		void ReadRuntime(RuntimeValues &values);
+		Object ParseJSON(wxString &json);
+		wxString GetLogfile();
 
 		void readConfig(RaceCaptureConfig *config, RaceAnalyzerCommCallback *callback);
 

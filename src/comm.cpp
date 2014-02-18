@@ -6,6 +6,9 @@
 #include <wx/tokenzr.h>
 #include <wx/hashmap.h>
 #include "logging.h"
+#include "json/reader.h"
+#include "json/writer.h"
+#include "json/elements.h"
 
 CommException::CommException(int errorStatus, wxString errorDetail){
 	_errorStatus = errorStatus;
@@ -172,6 +175,7 @@ void RaceAnalyzerComm::FlushReceiveBuffer(CComm* comPort){
 	comPort->drainInput();
 }
 
+
 wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, size_t timeout){
 
 	wxMutexLocker lock(_commMutex);
@@ -189,7 +193,7 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, s
 	catch(...){
 		throw CommException(-1, "Unknown exception while sending command");
 	}
-	return response;
+	return response.Trim(true).Trim(false);
 }
 
 int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
@@ -244,7 +248,6 @@ float RaceAnalyzerComm::GetFloatParam(wxString &data,const wxString &name){
 	return atof(GetParam(data,name));
 }
 wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name, bool hideTokens){
-
 	if (hideTokens) HideInnerTokens(data);
 	wxStringTokenizer tokenizer(data,";");
 
@@ -256,6 +259,7 @@ wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name, bool h
 			if (paramName == name){
 				wxString value = subTokenizer.GetNextToken();
 				UnhideInnerTokens(value);
+				if (value.EndsWith("\";")) value = value.Left(value.Len() - 1);
 				if (value.StartsWith("\"") && value.EndsWith("\"")){
 					value = value.Left(value.Len() - 1);
 					value = value.Right(value.Len() - 1);
@@ -315,8 +319,6 @@ wxString RaceAnalyzerComm::readScript(){
 		//wxString cmd = wxString::Format("println(getScriptPage(%d))",scriptPage++);
 		wxString cmd = wxString::Format("readScriptPage %d",scriptPage++);
 		wxString buffer = SendCommand(serialPort, cmd);
-		buffer.Trim(false);
-		buffer.Trim(true);
 
 		wxString scriptFrag = GetParam(buffer,"script", true);
 
@@ -389,6 +391,43 @@ void RaceAnalyzerComm::populateChannelConfig(ChannelConfig &cfg, wxString &data)
 	cfg.units = GetParam(data,"units");
 	cfg.sampleRate = (sample_rate_t)GetIntParam(data,"sampleRate");
 }
+
+Object RaceAnalyzerComm::ParseJSON(wxString &json){
+
+	Object root;
+	std::stringstream stream;
+	for (size_t i = 0; i < json.Len(); i++){
+		stream.put(json.ToAscii()[i]);
+	}
+	Reader::Read(root, stream);
+	return root;
+}
+
+wxString RaceAnalyzerComm::GetLogfile(){
+	wxString logfileData;
+	try{
+		wxDateTime start = wxDateTime::UNow();
+		CComm *serialPort = GetSerialPort();
+		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
+		wxString rsp = SendCommand(serialPort, "{\"getLogfile\":0}",1000);
+		try{
+			if (rsp.Len() > 0 ){
+				Object root = ParseJSON(rsp);
+				const String &val = root["logfile"];
+				logfileData = val.Value();
+				}
+			}
+			catch (const Exception& e){
+				ERROR(FMT("could not parse logfile response: %s",rsp));
+			}
+	}
+	catch(CommException &e){
+		CloseSerialPort();
+		throw e;
+	}
+	return logfileData;
+}
+
 
 void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 	try{

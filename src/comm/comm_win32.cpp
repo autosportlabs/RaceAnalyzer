@@ -18,6 +18,7 @@
 #include "stdio.h"
 #include "serialComm.h"
 #include "comm_win32.h"
+#include "logging.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -306,7 +307,6 @@ size_t CComm::writeChar(char b )
 //
 size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 
-	//wxLogMessage("Reading Line...");
 	memset( buf, 0, bufSize );
     size_t totalRead = 0;
 	DWORD charsRead = 0;
@@ -316,16 +316,22 @@ size_t CComm::readLine(char *buf, size_t bufSize, size_t timeout){
 	    size_t tstart = GetTickCount();
 		size_t telapsed = 0;
 		isTimeout = false;
+		char c;
 		while (!isTimeout && totalRead < bufSize ) {
-			bool result = ReadFile(m_hCommPort, (buf + totalRead), 1, &charsRead, NULL);
-			//wxLogMessage("elapsed %d, timeout %d, read result %d chars %d (%s)", telapsed, timeout, result, charsRead, buf);
+			bool result = ReadFile(m_hCommPort, &c, 1, &charsRead, NULL);
+			//VERBOSE(FMT("elapsed %d, timeout %d, total %d, read result %d chars %d (%s)", telapsed, timeout, totalRead, result, charsRead, buf));
 			if (!result){
 				int err = GetLastError();
 				wxLogMessage("Error reading result! %d", err);
 				throw SerialException(err, "error reading line from serial port");
 			}
-			totalRead += charsRead;
-			if ('\r' == *(buf + totalRead - 1)) return totalRead;
+			if (charsRead){
+				strncat(buf,&c,1);
+				totalRead += charsRead;
+				if ('\r' == c){
+					return totalRead;
+				}
+			}
 			telapsed = GetTickCount() - tstart;
 			isTimeout =  telapsed >= timeout;
 		}

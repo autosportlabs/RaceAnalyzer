@@ -123,6 +123,7 @@ class MainFrame : public wxFrame
 
 	void OnImportDatalog(wxCommandEvent &event);
 	void OnAppOptions(wxCommandEvent &event);
+	void OnViewLogviewer(wxCommandEvent &event);
     void OnConfigPerspective(wxCommandEvent &event);
     void OnAnalysisPerspective(wxCommandEvent &event);
 	void OnRestoreDefaultView(wxCommandEvent &event);

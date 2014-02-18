@@ -5,6 +5,7 @@
 #include "lineChart.h"
 #include "importWizardDialog.h"
 #include "exceptions.h"
+#include "logviewerPane.h"
 
 #include "inspect.xpm"
 #include "filenew.xpm"
@@ -74,6 +75,7 @@ enum{
 	ID_HELP_DOWNLOADS,
 	ID_IMPORT_DATALOG,
 
+	ID_VIEW_LOGVIEWER,
 	ID_ADD_LINE_CHART,
 	ID_ADD_ANALOG_GAUGE,
 	ID_ADD_DIGITAL_GAUGE,
@@ -124,7 +126,6 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
   &size) : wxFrame((wxFrame*)NULL,  - 1, title, pos, size)
 {
 	m_appTerminated = false;
-	//ShowSplashScreen();
 	m_currentConfigFileName = NULL;
 	m_activeConfig = -1;
 	m_appOptions.LoadAppOptions();
@@ -137,7 +138,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize
 	InitComms();
 
 	InitDatalogPlayer();
-//	/EnableVerbose(false);
+	EnableVerbose(false);
 
 	try{
 	 LoadInitialConfig();
@@ -312,6 +313,7 @@ void MainFrame::InitializeMenus(){
 	viewMenu->Append(ID_CONFIG_MODE, "Configuration\tF2");
 	viewMenu->Append(ID_ANALYSIS_MODE, "Analysis\tF3");
 	viewMenu->Append(ID_RUNTIME_MODE, "Sensor Monitor\tF4");
+	viewMenu->Append(ID_VIEW_LOGVIEWER, "Log Viewer\tF5");
 	viewMenu->AppendSeparator();
 	viewMenu->Append(ID_RESTORE_DEFAULT_VIEWS, "Restore Default View");
 
@@ -655,14 +657,14 @@ wxString MainFrame::GetMultipleSelectionLabel(DatalogChannelSelectionSet *select
 
 void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 
-	LineChartPane *logViewer = new LineChartPane(this, ChartParams(&_appPrefs,&m_appOptions));
-	logViewer->ConfigureChart(selectionSet);
+	LineChartPane *lineChartPane = new LineChartPane(this, ChartParams(&_appPrefs,&m_appOptions));
+	lineChartPane->ConfigureChart(selectionSet);
 
-	m_channelViews.Add(logViewer);
+	m_channelViews.Add(lineChartPane);
 	wxString name = wxString::Format("lineChart_%lu", (unsigned long)m_channelViews.Count());
 	wxString caption = wxString::Format(GetMultipleSelectionLabel(selectionSet));
 
-	_frameManager.AddPane(logViewer,
+	_frameManager.AddPane(lineChartPane,
 			wxAuiPaneInfo().
 			BestSize(100,50).
 			MinSize(100,50).
@@ -674,7 +676,7 @@ void MainFrame::AddNewLineChart(DatalogChannelSelectionSet *selectionSet){
 			Show(true));
 
 	_frameManager.Update();
-	m_datalogPlayer.AddView(logViewer);
+	m_datalogPlayer.AddView(lineChartPane);
 }
 
 void MainFrame::AddAnalogGauges(DatalogChannelSelectionSet *selectionSet){
@@ -820,6 +822,29 @@ void MainFrame::ShowNoChannelSelectedError(void){
 	wxMessageDialog dlg(this, "Please select one or more channels to display", "Channels", wxOK | wxICON_HAND);
 	dlg.ShowModal();
 	SwitchToPerspective(PANE_ANALYSIS);
+}
+
+void MainFrame::OnViewLogviewer(wxCommandEvent &event){
+	LogviewerPane *logviewerPane = new LogviewerPane(this, &m_raceAnalyzerComm);
+
+	wxAuiPaneInfo &info = _frameManager.GetPane("Log Viewer");
+	if (!info.IsOk()){
+		_frameManager.AddPane(logviewerPane,
+				wxAuiPaneInfo().
+				BestSize(150,150).
+				MinSize(150,150).
+				Name("Log Viewer").
+				Caption("Log Viewer").
+				Bottom().
+				Layer(1).
+				Position(2).
+				Show(true));
+		_frameManager.Update();
+	}
+	else{
+		info.Show(true);
+		_frameManager.Update();
+	}
 }
 
 void MainFrame::OnAddLineChart(wxCommandEvent &event){
@@ -1070,6 +1095,7 @@ BEGIN_EVENT_TABLE ( MainFrame, wxFrame )
 
 	EVT_WIZARD_FINISHED(wxID_ANY, MainFrame::OnImportWizardFinished)
 
+	EVT_MENU(ID_VIEW_LOGVIEWER, MainFrame::OnViewLogviewer)
 	EVT_MENU(ID_ADD_LINE_CHART, MainFrame::OnAddLineChart)
 	EVT_MENU(ID_ADD_ANALOG_GAUGE, MainFrame::OnAddAnalogGauge)
 	EVT_MENU(ID_ADD_DIGITAL_GAUGE, MainFrame::OnAddDigitalGauge)
