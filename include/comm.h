@@ -66,8 +66,6 @@ class RaceAnalyzerComm {
 		CComm* GetSerialPort();
 		void CheckThrowResult(wxString &result);
 		void FlushReceiveBuffer(CComm * comPort);
-		int ReadLine(CComm * comPort, wxString &buffer, int timeout);
-		int WriteLine(CComm * comPort, wxString &buffer, int timeout);
 		wxString SendCommand(CComm *comPort, const wxString &buffer, size_t timeout = DEFAULT_TIMEOUT);
 		void Unescape(wxString &data);
 		void Escape(wxString &data);

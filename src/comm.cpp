@@ -52,7 +52,6 @@ RaceAnalyzerComm::~RaceAnalyzerComm(){
 void RaceAnalyzerComm::CloseSerialPort(){
 
 	wxMutexLocker lock(_commMutex);
-
 	VERBOSE("closing serial port");
 	if (_serialPort){
 		if (_serialPort->isOpen()) _serialPort->closePort();
@@ -159,7 +158,6 @@ void RaceAnalyzerComm::Escape(wxString &data){
 void RaceAnalyzerComm::SetSerialPort(int port){
 
 	wxMutexLocker lock(_commMutex);
-
 	if (_serialPortNumber != port){
 
 		if (_serialPort){
@@ -194,27 +192,6 @@ wxString RaceAnalyzerComm::SendCommand(CComm *comPort, const wxString &buffer, s
 		throw CommException(-1, "Unknown exception while sending command");
 	}
 	return response.Trim(true).Trim(false);
-}
-
-int RaceAnalyzerComm::WriteLine(CComm * comPort, wxString &buffer, int timeout){
-
-	VERBOSE(FMT("writeLine: %s", buffer.ToAscii()));
-	char *tempBuff = (char*)malloc(buffer.Len() + 10);
-	strcpy(tempBuff,buffer.ToAscii());
-	strcat(tempBuff,"\r");
-	char *buffPtr = tempBuff;
-
-	size_t len = strlen(buffPtr);
-	comPort->writeBuffer(buffPtr,len, timeout);
-	free(tempBuff);
-
-	return 0;
-}
-
-int RaceAnalyzerComm::ReadLine(CComm * comPort, wxString &buffer, int timeout){
-	int count = comPort->readLine(wxStringBuffer(buffer,1024), 1024, timeout);
-	buffer.Trim(true).Trim(false);
-	return count;
 }
 
 void RaceAnalyzerComm::SwapCharsInsideQuotes(wxString &data, char find,char replace){
@@ -272,6 +249,7 @@ wxString RaceAnalyzerComm::GetParam(wxString &data, const wxString &name, bool h
 }
 
 void RaceAnalyzerComm::ReadVersion(VersionData &version){
+	wxMutexLocker lock(_commMutex);
 	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 
@@ -296,6 +274,7 @@ void RaceAnalyzerComm::ReadVersion(VersionData &version){
 }
 
 void RaceAnalyzerComm::reloadScript(void){
+	wxMutexLocker lock(_commMutex);
 
 	CComm *serialPort = GetSerialPort();
 	if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
@@ -306,6 +285,8 @@ void RaceAnalyzerComm::reloadScript(void){
 }
 
 wxString RaceAnalyzerComm::readScript(){
+
+	wxMutexLocker lock(_commMutex);
 
 	wxString script = "";
 	int scriptPage = 0;
@@ -340,6 +321,7 @@ wxString RaceAnalyzerComm::readScript(){
 
 void RaceAnalyzerComm::writeScript(wxString &script){
 
+	wxMutexLocker lock(_commMutex);
 	size_t index = 0;
 	int page,to;
 	page = 0;
@@ -404,9 +386,9 @@ Object RaceAnalyzerComm::ParseJSON(wxString &json){
 }
 
 wxString RaceAnalyzerComm::GetLogfile(){
+	wxMutexLocker lock(_commMutex);
 	wxString logfileData;
 	try{
-		wxDateTime start = wxDateTime::UNow();
 		CComm *serialPort = GetSerialPort();
 		if (NULL==serialPort) throw CommException(CommException::OPEN_PORT_FAILED);
 		wxString rsp = SendCommand(serialPort, "{\"getLogfile\":0}",1000);
@@ -430,6 +412,7 @@ wxString RaceAnalyzerComm::GetLogfile(){
 
 
 void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
+	wxMutexLocker lock(_commMutex);
 	try{
 		wxDateTime start = wxDateTime::UNow();
 		CComm *serialPort = GetSerialPort();
@@ -452,7 +435,6 @@ void RaceAnalyzerComm::ReadRuntime(RuntimeValues &values){
 				values[name] = atof(value);
 			}
 		}
-		wxTimeSpan dur = wxDateTime::UNow() - start;
 	}
 	catch(CommException &e){
 		CloseSerialPort();
@@ -823,6 +805,7 @@ void RaceAnalyzerComm::flashCurrentConfig(){
 }
 
 void RaceAnalyzerComm::calibrateAccelZero(){
+	wxMutexLocker lock(_commMutex);
 	try{
 		wxDateTime start = wxDateTime::UNow();
 		CComm *serialPort = GetSerialPort();
