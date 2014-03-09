@@ -1,6 +1,6 @@
 #!/bin/sh
 ORIGIN=$PWD
-cd ../../RaceAnalyzer/MinGW-Release
+cd ../../MinGW-Release
 make clean
 make all -j4
 cd $ORIGIN

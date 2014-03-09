@@ -17,7 +17,7 @@
 !endif
 
 !ifndef RA_DIR
-	!define RA_DIR "..\..\RaceAnalyzer"
+	!define RA_DIR "..\.."
 !endif
 
 !ifndef EXE_DIR
