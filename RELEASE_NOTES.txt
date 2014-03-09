@@ -1,6 +1,10 @@
 The latest instructions and downloads for RaceAnalyzer can be found here:
 http://autosportlabs.net/RaceCapturePro
 
+===1.1.15===
+Added the ability to view the runtime log of RaceCapture/Pro - useful for debugging
+Various bug fixes
+
 ===1.1.14===
 Updated GPS view to render more accurately
 Another potential fix for live sensor monitoring crash (make sure live monitor shuts down cleanly)
